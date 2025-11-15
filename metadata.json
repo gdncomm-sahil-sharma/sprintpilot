@@ -1,0 +1,5 @@
+{
+  "name": "SprintPilot",
+  "description": "An application for Engineering Managers to help set up sprint details, manage team capacity, import Jira tasks, and review workload allocation. It includes an AI-powered summary feature to describe sprint focus and risks.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Sprint Setup - SprintPilot</title>
+</head>
+<body>
+    <main>
+        <div class="space-y-6">
+            <!-- Header Section - Exact React Match -->
+            <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                <h2 class="text-3xl font-bold text-gray-800">Sprint Setup</h2>
+                <button onclick="saveSprintSettings()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span>Save Sprint Settings</span>
+                </button>
+            </div>
+
+            <!-- Main Grid Layout - Exact React Match -->
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <!-- Left Column - Configuration Cards -->
+                <div class="lg:col-span-3 space-y-6">
+                    
+                    <!-- Core Configuration Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                        <h3 class="text-xl font-bold mb-4 text-gray-700">Core Configuration</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Sprint Start Date -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sprint Start Date</label>
+                                <input type="date" id="startDate" name="startDate" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" onchange="calculateEndDate()" />
+                            </div>
+                            
+                            <!-- Sprint Duration -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sprint Duration (working days)</label>
+                                <input type="number" id="duration" name="duration" value="14" min="1" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" onchange="calculateEndDate()" />
+                            </div>
+                            
+                            <!-- Sprint End Date (Calculated) -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Sprint End Date (Calculated)</label>
+                                <input type="date" id="endDate" name="endDate" readonly class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500 bg-gray-100 cursor-not-allowed" />
+                            </div>
+                            
+                            <!-- Code Freeze Date -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Code Freeze Date (Optional)</label>
+                                <input type="date" id="freezeDate" name="freezeDate" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sprint Meetings Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                        <h3 class="text-xl font-bold text-gray-700">Sprint Meetings</h3>
+                        <p class="text-sm text-gray-500 mt-1">Schedule key sprint ceremonies and generate AI-powered Outlook invites.</p>
+                        
+                        <div class="divide-y divide-gray-200">
+                            <!-- Sprint Planning -->
+                            <div class="py-4">
+                                <h4 class="font-semibold text-md text-gray-800">Sprint Planning</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-2 items-end">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                        <input type="date" id="planningDate" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                                        <input type="time" id="planningTime" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Duration (min)</label>
+                                        <input type="number" id="planningDuration" value="90" step="15" min="15" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                    </div>
+                                    <button onclick="generateInvite('planning')" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                        </svg>
+                                        <span>Generate Invite</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Backlog Grooming -->
+                            <div class="py-4">
+                                <h4 class="font-semibold text-md text-gray-800">Backlog Grooming/Refinement</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-2 items-end">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                        <input type="date" id="groomingDate" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                                        <input type="time" id="groomingTime" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Duration (min)</label>
+                                        <input type="number" id="groomingDuration" value="60" step="15" min="15" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                    </div>
+                                    <button onclick="generateInvite('grooming')" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                        </svg>
+                                        <span>Generate Invite</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Sprint Retrospective -->
+                            <div class="py-4">
+                                <h4 class="font-semibold text-md text-gray-800">Sprint Retrospective</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-2 items-end">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                        <input type="date" id="retroDate" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                                        <input type="time" id="retroTime" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Duration (min)</label>
+                                        <input type="number" id="retroDuration" value="60" step="15" min="15" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                    </div>
+                                    <button onclick="generateInvite('retrospective')" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                        </svg>
+                                        <span>Generate Invite</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Holiday & Deployment Manager Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <!-- Sprint Holidays Card -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                            <h3 class="text-lg font-bold mb-2 text-gray-700">Sprint Holidays</h3>
+                            <p class="text-xs text-gray-500 mb-4">Add one-off holidays for this sprint. Master holidays are included automatically.</p>
+                            
+                            <div class="flex items-center space-x-2">
+                                <input type="date" id="newHoliday" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                <button onclick="addSprintHoliday()" class="px-3 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="mt-4 space-y-2 max-h-40 overflow-y-auto pr-2" id="holidaysList">
+                                <!-- Master holidays from holiday list -->
+                                <div class="flex justify-between items-center bg-blue-50 p-2 rounded-md">
+                                    <div>
+                                        <p class="text-sm font-semibold text-blue-800 flex items-center">
+                                            Independence Day 
+                                            <svg class="w-4 h-4 ml-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="From Holiday Master">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </p>
+                                        <p class="text-xs text-blue-600">2024-07-04</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-between items-center bg-blue-50 p-2 rounded-md">
+                                    <div>
+                                        <p class="text-sm font-semibold text-blue-800 flex items-center">
+                                            Thanksgiving Day
+                                            <svg class="w-4 h-4 ml-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="From Holiday Master">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </p>
+                                        <p class="text-xs text-blue-600">2024-11-28</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Deployment Schedule Card -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                            <h3 class="text-lg font-bold mb-2 text-gray-700">Deployment Schedule</h3>
+                            <p class="text-xs text-gray-500 mb-4">Schedule important deployments during the sprint.</p>
+                            
+                            <div class="space-y-2">
+                                <div>
+                                    <input type="text" id="deploymentName" placeholder="Deployment name" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <input type="date" id="deploymentDate" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
+                                    <button onclick="addDeployment()" class="px-3 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2 space-y-2 max-h-40 overflow-y-auto pr-2" id="deploymentsList">
+                                <!-- Sample deployment -->
+                                <div class="flex justify-between items-center bg-gray-50 p-2 rounded-md">
+                                    <div>
+                                        <p class="text-sm font-semibold text-gray-800">Production Release v2.1</p>
+                                        <p class="text-xs text-gray-500">2024-11-20</p>
+                                    </div>
+                                    <button onclick="removeDeployment(this)" class="text-danger hover:text-red-700 p-1 rounded-full">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Timeline Visualization -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 h-full">
+                        <h3 class="text-xl font-bold mb-6 text-gray-700 border-b pb-3">Sprint Timeline</h3>
+                        <div class="relative pl-6" id="timelineContainer">
+                            <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                            <div class="space-y-6" id="timelineEvents">
+                                <!-- Timeline events will be populated here -->
+                                <div class="text-center py-8 text-gray-500">
+                                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p>Set start date to view timeline</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generated Invite Modal -->
+            <div id="inviteModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+                <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-2xl">
+                    <div class="flex justify-between items-start mb-4 pb-3 border-b">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">Generated Outlook Invite</h3>
+                            <p class="text-sm text-gray-500 mt-1" id="inviteSubject"></p>
+                        </div>
+                        <div class="flex space-x-2 flex-shrink-0">
+                            <button onclick="copyInviteBody()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                <span id="copyButtonText">Copy Body</span>
+                            </button>
+                            <button onclick="openInOutlook()" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                                </svg>
+                                Open in Outlook
+                            </button>
+                        </div>
+                    </div>
+                    <pre id="inviteBody" class="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap font-sans text-gray-800 max-h-96 overflow-y-auto"></pre>
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="closeInviteModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let sprintHolidays = [];
+            let deployments = [{ name: 'Production Release v2.1', date: '2024-11-20', id: 'dep-1' }];
+            let currentInvite = null;
+
+            function calculateEndDate() {
+                const startDate = document.getElementById('startDate').value;
+                const duration = parseInt(document.getElementById('duration').value) || 14;
+                
+                if (startDate) {
+                    // Simple calculation: add duration days (not accounting for holidays/weekends for now)
+                    const start = new Date(startDate);
+                    const end = new Date(start);
+                    end.setDate(start.getDate() + duration - 1);
+                    
+                    document.getElementById('endDate').value = end.toISOString().split('T')[0];
+                    updateTimeline();
+                }
+            }
+
+            function updateTimeline() {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                const freezeDate = document.getElementById('freezeDate').value;
+                const container = document.getElementById('timelineEvents');
+                
+                if (!startDate || !endDate) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-500">
+                            <svg class="w-12 h-12 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p>Set start date to view timeline</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const events = [];
+                
+                // Add start and end events
+                events.push({ date: startDate, name: 'Sprint Start', type: 'start' });
+                events.push({ date: endDate, name: 'Sprint End', type: 'end' });
+                
+                // Add freeze date if set
+                if (freezeDate) {
+                    events.push({ date: freezeDate, name: 'Code Freeze', type: 'freeze' });
+                }
+                
+                // Add meetings
+                const meetings = [
+                    { id: 'planningDate', name: 'Sprint Planning', type: 'meeting' },
+                    { id: 'groomingDate', name: 'Backlog Grooming', type: 'meeting' },
+                    { id: 'retroDate', name: 'Sprint Retrospective', type: 'meeting' }
+                ];
+                
+                meetings.forEach(meeting => {
+                    const date = document.getElementById(meeting.id).value;
+                    const time = document.getElementById(meeting.id.replace('Date', 'Time')).value;
+                    if (date) {
+                        events.push({ 
+                            date, 
+                            name: meeting.name, 
+                            type: 'meeting',
+                            time: time || ''
+                        });
+                    }
+                });
+                
+                // Add deployments
+                deployments.forEach(dep => {
+                    events.push({ date: dep.date, name: dep.name, type: 'deployment' });
+                });
+                
+                // Sort events by date
+                events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                
+                // Generate timeline HTML
+                const eventIcons = {
+                    start: '<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8a2 2 0 002-2V8a2 2 0 00-2-2H8a2 2 0 00-2 2v4a2 2 0 002 2z"></path></svg>',
+                    end: '<svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>',
+                    freeze: '<span class="text-xl">❄️</span>',
+                    meeting: '<svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+                    deployment: '<svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>'
+                };
+                
+                container.innerHTML = events.map((event, index) => `
+                    <div class="relative flex items-start space-x-4">
+                        <div class="absolute left-[-26px] top-0.5 bg-white h-5 w-5 rounded-full border-2 border-primary-500 flex items-center justify-center">
+                            <div class="h-2 w-2 bg-primary-500 rounded-full"></div>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-800">${event.name}</p>
+                            <p class="text-sm text-gray-500 flex items-center space-x-1.5">
+                                ${eventIcons[event.type] || ''}
+                                <span>${new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} ${event.time ? `at ${event.time}` : ''}</span>
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            function addSprintHoliday() {
+                const dateInput = document.getElementById('newHoliday');
+                const date = dateInput.value;
+                
+                if (date && !sprintHolidays.includes(date)) {
+                    sprintHolidays.push(date);
+                    sprintHolidays.sort();
+                    dateInput.value = '';
+                    updateHolidaysList();
+                    updateTimeline();
+                }
+            }
+
+            function updateHolidaysList() {
+                const container = document.getElementById('holidaysList');
+                const masterHolidays = [
+                    { name: 'Independence Day', date: '2024-07-04' },
+                    { name: 'Thanksgiving Day', date: '2024-11-28' }
+                ];
+                
+                let html = masterHolidays.map(holiday => `
+                    <div class="flex justify-between items-center bg-blue-50 p-2 rounded-md">
+                        <div>
+                            <p class="text-sm font-semibold text-blue-800 flex items-center">
+                                ${holiday.name}
+                                <svg class="w-4 h-4 ml-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" title="From Holiday Master">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </p>
+                            <p class="text-xs text-blue-600">${holiday.date}</p>
+                        </div>
+                    </div>
+                `).join('');
+                
+                html += sprintHolidays.map(date => `
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded-md">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800">Sprint-specific Holiday</p>
+                            <p class="text-xs text-gray-500">${date}</p>
+                        </div>
+                        <button onclick="removeSprintHoliday('${date}')" class="text-danger hover:text-red-700 p-1 rounded-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `).join('');
+                
+                container.innerHTML = html;
+            }
+
+            function removeSprintHoliday(date) {
+                sprintHolidays = sprintHolidays.filter(d => d !== date);
+                updateHolidaysList();
+                updateTimeline();
+            }
+
+            function addDeployment() {
+                const nameInput = document.getElementById('deploymentName');
+                const dateInput = document.getElementById('deploymentDate');
+                const name = nameInput.value.trim();
+                const date = dateInput.value;
+                
+                if (name && date) {
+                    deployments.push({ name, date, id: 'dep-' + Date.now() });
+                    nameInput.value = '';
+                    dateInput.value = '';
+                    updateDeploymentsList();
+                    updateTimeline();
+                }
+            }
+
+            function updateDeploymentsList() {
+                const container = document.getElementById('deploymentsList');
+                container.innerHTML = deployments.map(dep => `
+                    <div class="flex justify-between items-center bg-gray-50 p-2 rounded-md">
+                        <div>
+                            <p class="text-sm font-semibold text-gray-800">${dep.name}</p>
+                            <p class="text-xs text-gray-500">${dep.date}</p>
+                        </div>
+                        <button onclick="removeDeployment('${dep.id}')" class="text-danger hover:text-red-700 p-1 rounded-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            function removeDeployment(id) {
+                deployments = deployments.filter(d => d.id !== id);
+                updateDeploymentsList();
+                updateTimeline();
+            }
+
+            function generateInvite(meetingType) {
+                const dateId = meetingType + 'Date';
+                const timeId = meetingType + 'Time';
+                const durationId = meetingType + 'Duration';
+                
+                const date = document.getElementById(dateId).value;
+                const time = document.getElementById(timeId).value;
+                const duration = document.getElementById(durationId).value;
+                
+                if (!date || !time) {
+                    alert('Please set a date and time for the meeting first.');
+                    return;
+                }
+                
+                const meetingNames = {
+                    planning: 'Sprint Planning',
+                    grooming: 'Backlog Grooming/Refinement',
+                    retrospective: 'Sprint Retrospective'
+                };
+                
+                const subject = `${meetingNames[meetingType]} - Sprint Nov 15-29`;
+                const body = `Hi Team,
+
+You're invited to our ${meetingNames[meetingType]} meeting.
+
+📅 Date: ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+⏰ Time: ${time}
+⏱️ Duration: ${duration} minutes
+
+Meeting Details:
+${meetingType === 'planning' ? 
+    `• Review sprint goals and objectives
+• Plan upcoming work items
+• Assign tasks to team members
+• Discuss capacity and timeline` :
+    meetingType === 'grooming' ?
+    `• Review and refine backlog items
+• Estimate story points
+• Clarify requirements
+• Prepare for next sprint` :
+    `• Reflect on sprint performance
+• Discuss what went well
+• Identify areas for improvement
+• Plan action items for next sprint`
+}
+
+Best regards,
+Sprint Team`;
+
+                currentInvite = { subject, body, date, time, duration };
+                document.getElementById('inviteSubject').textContent = subject;
+                document.getElementById('inviteBody').textContent = body;
+                document.getElementById('inviteModal').classList.remove('hidden');
+            }
+
+            function copyInviteBody() {
+                const body = document.getElementById('inviteBody').textContent;
+                navigator.clipboard.writeText(body).then(() => {
+                    const button = document.getElementById('copyButtonText');
+                    button.textContent = 'Copied!';
+                    setTimeout(() => {
+                        button.textContent = 'Copy Body';
+                    }, 2000);
+                });
+            }
+
+            function openInOutlook() {
+                if (!currentInvite) return;
+                
+                const { subject, body, date, time, duration } = currentInvite;
+                const startDateTime = new Date(`${date}T${time}`);
+                const endDateTime = new Date(startDateTime.getTime() + duration * 60000);
+                
+                const outlookUrl = new URL('https://outlook.office.com/calendar/deeplink/compose');
+                outlookUrl.searchParams.append('startdt', startDateTime.toISOString());
+                outlookUrl.searchParams.append('enddt', endDateTime.toISOString());
+                outlookUrl.searchParams.append('subject', subject);
+                outlookUrl.searchParams.append('body', body);
+                
+                window.open(outlookUrl.toString(), '_blank');
+            }
+
+            function closeInviteModal() {
+                document.getElementById('inviteModal').classList.add('hidden');
+                currentInvite = null;
+            }
+
+            function saveSprintSettings() {
+                alert('Sprint settings saved successfully! (mock functionality)');
+            }
+
+            // Initialize
+            document.addEventListener('DOMContentLoaded', function() {
+                updateHolidaysList();
+                updateDeploymentsList();
+                
+                // Set default start date to today
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('startDate').value = today;
+                calculateEndDate();
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('inviteModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeInviteModal();
+                }
+            });
+        </script>
+    </main>
+</body>
+</html>

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Sprint History - SprintPilot</title>
+</head>
+<body>
+    <main>
+        <div class="space-y-6">
+            <!-- Header Section - Exact React Match -->
+            <div>
+                <h2 class="text-3xl font-bold text-gray-800">Sprint History</h2>
+                <p class="text-gray-600">Review past sprints to identify trends and inform future planning. Select sprints to generate AI-powered performance insights.</p>
+            </div>
+
+            <!-- History Table Card -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-0 overflow-hidden">
+                <!-- Selection Banner -->
+                <div id="selectionBanner" class="hidden bg-primary-50 p-3 border-b border-primary-200 flex justify-between items-center">
+                    <p class="text-sm font-semibold text-primary-800"><span id="selectedCount">0</span> sprint(s) selected.</p>
+                    <button onclick="generateHistoricalInsights()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        Generate Insights
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="py-3 px-4 text-center">
+                                    <input type="checkbox" id="selectAll" onchange="handleSelectAll()" class="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" />
+                                </th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Sprint Dates</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Team Size</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Tasks Delivered</th>
+                                <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Total Hours</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <!-- Sprint 6 -->
+                            <tr id="sprint-6" class="hover:bg-gray-50">
+                                <td class="py-3 px-4 text-center">
+                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-6" onchange="handleSprintSelection()" />
+                                </td>
+                                <td class="py-3 px-4 font-medium text-gray-900">Nov 1 - Nov 15, 2024</td>
+                                <td class="py-3 px-4 text-gray-600">4</td>
+                                <td class="py-3 px-4 text-gray-600">18</td>
+                                <td class="py-3 px-4 text-gray-600">125h</td>
+                                <td class="py-3 px-4 text-center">
+                                    <button onclick="viewSprintDetails('sprint-6')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Sprint 5 -->
+                            <tr id="sprint-5" class="hover:bg-gray-50">
+                                <td class="py-3 px-4 text-center">
+                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-5" onchange="handleSprintSelection()" />
+                                </td>
+                                <td class="py-3 px-4 font-medium text-gray-900">Oct 15 - Oct 29, 2024</td>
+                                <td class="py-3 px-4 text-gray-600">4</td>
+                                <td class="py-3 px-4 text-gray-600">16</td>
+                                <td class="py-3 px-4 text-gray-600">110h</td>
+                                <td class="py-3 px-4 text-center">
+                                    <button onclick="viewSprintDetails('sprint-5')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Sprint 4 -->
+                            <tr id="sprint-4" class="hover:bg-gray-50">
+                                <td class="py-3 px-4 text-center">
+                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-4" onchange="handleSprintSelection()" />
+                                </td>
+                                <td class="py-3 px-4 font-medium text-gray-900">Oct 1 - Oct 14, 2024</td>
+                                <td class="py-3 px-4 text-gray-600">4</td>
+                                <td class="py-3 px-4 text-gray-600">15</td>
+                                <td class="py-3 px-4 text-gray-600">95h</td>
+                                <td class="py-3 px-4 text-center">
+                                    <button onclick="viewSprintDetails('sprint-4')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Sprint 3 -->
+                            <tr id="sprint-3" class="hover:bg-gray-50">
+                                <td class="py-3 px-4 text-center">
+                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-3" onchange="handleSprintSelection()" />
+                                </td>
+                                <td class="py-3 px-4 font-medium text-gray-900">Sep 15 - Sep 29, 2024</td>
+                                <td class="py-3 px-4 text-gray-600">4</td>
+                                <td class="py-3 px-4 text-gray-600">14</td>
+                                <td class="py-3 px-4 text-gray-600">88h</td>
+                                <td class="py-3 px-4 text-center">
+                                    <button onclick="viewSprintDetails('sprint-3')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Sprint 2 -->
+                            <tr id="sprint-2" class="hover:bg-gray-50">
+                                <td class="py-3 px-4 text-center">
+                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-2" onchange="handleSprintSelection()" />
+                                </td>
+                                <td class="py-3 px-4 font-medium text-gray-900">Sep 1 - Sep 14, 2024</td>
+                                <td class="py-3 px-4 text-gray-600">4</td>
+                                <td class="py-3 px-4 text-gray-600">13</td>
+                                <td class="py-3 px-4 text-gray-600">92h</td>
+                                <td class="py-3 px-4 text-center">
+                                    <button onclick="viewSprintDetails('sprint-2')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Sprint 1 -->
+                            <tr id="sprint-1" class="hover:bg-gray-50">
+                                <td class="py-3 px-4 text-center">
+                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-1" onchange="handleSprintSelection()" />
+                                </td>
+                                <td class="py-3 px-4 font-medium text-gray-900">Aug 15 - Aug 29, 2024</td>
+                                <td class="py-3 px-4 text-gray-600">4</td>
+                                <td class="py-3 px-4 text-gray-600">12</td>
+                                <td class="py-3 px-4 text-gray-600">85h</td>
+                                <td class="py-3 px-4 text-center">
+                                    <button onclick="viewSprintDetails('sprint-1')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Historical Insights Modal -->
+            <div id="insightsModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+                <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-4 mb-4 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                        AI Performance Insights
+                    </h2>
+                    <div id="modalInsightsContent" class="flex-grow overflow-y-auto pr-2">
+                        <!-- Content will be loaded here -->
+                    </div>
+                    <div class="border-t pt-4 mt-4 flex justify-end">
+                        <button onclick="closeInsightsModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let selectedSprints = new Set();
+
+            function handleSprintSelection() {
+                const checkboxes = document.querySelectorAll('.sprint-checkbox');
+                selectedSprints.clear();
+                
+                checkboxes.forEach(cb => {
+                    if (cb.checked) {
+                        selectedSprints.add(cb.dataset.sprint);
+                        document.getElementById(cb.dataset.sprint).classList.add('bg-primary-50');
+                    } else {
+                        document.getElementById(cb.dataset.sprint).classList.remove('bg-primary-50');
+                    }
+                });
+
+                updateSelectionBanner();
+            }
+
+            function handleSelectAll() {
+                const selectAll = document.getElementById('selectAll');
+                const checkboxes = document.querySelectorAll('.sprint-checkbox');
+                
+                checkboxes.forEach(cb => {
+                    cb.checked = selectAll.checked;
+                });
+                
+                handleSprintSelection();
+            }
+
+            function updateSelectionBanner() {
+                const banner = document.getElementById('selectionBanner');
+                const countElement = document.getElementById('selectedCount');
+                
+                if (selectedSprints.size > 0) {
+                    banner.classList.remove('hidden');
+                    countElement.textContent = selectedSprints.size;
+                } else {
+                    banner.classList.add('hidden');
+                }
+            }
+
+            function viewSprintDetails(sprintId) {
+                alert(`Sprint details for ${sprintId} (mock functionality)`);
+            }
+
+            function generateHistoricalInsights() {
+                const modal = document.getElementById('insightsModal');
+                const content = document.getElementById('modalInsightsContent');
+                
+                content.innerHTML = `
+                    <div class="flex items-center justify-center h-48 text-gray-500">
+                        <svg class="w-6 h-6 animate-pulse mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        Analyzing trends and generating insights...
+                    </div>
+                `;
+                
+                modal.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    content.innerHTML = `
+                        <div class="text-sm text-gray-700 space-y-4">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-blue-800 mb-2">📈 Velocity Trends</h4>
+                                <ul class="space-y-1 text-blue-700">
+                                    <li>• Steady improvement: 85h → 125h (+47% over 6 sprints)</li>
+                                    <li>• Most significant jump in Sprint 5 (+15.8%)</li>
+                                    <li>• Consistent delivery growth with manageable variance</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-green-800 mb-2">✅ Team Performance</h4>
+                                <ul class="space-y-1 text-green-700">
+                                    <li>• Team size stable at 4 members (good consistency)</li>
+                                    <li>• Average delivery: 15.3 tasks per sprint</li>
+                                    <li>• Task completion trending upward (+50% from Sprint 1)</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-yellow-800 mb-2">🎯 Future Predictions</h4>
+                                <ul class="space-y-1 text-yellow-700">
+                                    <li>• Projected Sprint 7 velocity: 135-140h</li>
+                                    <li>• Team approaching optimal sustainable pace</li>
+                                    <li>• Consider capacity planning for continued growth</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-purple-800 mb-2">💡 Strategic Insights</h4>
+                                <ol class="space-y-1 text-purple-700 list-decimal list-inside">
+                                    <li>Team has found effective collaboration rhythm</li>
+                                    <li>Incremental improvements indicate healthy growth</li>
+                                    <li>No signs of velocity plateau or burnout</li>
+                                    <li>Process optimizations yielding measurable results</li>
+                                </ol>
+                            </div>
+                        </div>
+                    `;
+                }, 3000);
+            }
+
+            function closeInsightsModal() {
+                document.getElementById('insightsModal').classList.add('hidden');
+            }
+
+            // Close modal when clicking outside
+            document.getElementById('insightsModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeInsightsModal();
+                }
+            });
+        </script>
+    </main>
+</body>
+</html>

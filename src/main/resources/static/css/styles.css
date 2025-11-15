@@ -1,0 +1,378 @@
+/* SprintPilot Custom Styles */
+
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #17a2b8;
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --sidebar-width: 250px;
+    --header-height: 60px;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #f5f7fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navigation */
+.navbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand svg {
+    margin-right: 0.5rem;
+}
+
+/* Main Content */
+main {
+    flex: 1;
+    background: #f5f7fa;
+}
+
+.container-fluid {
+    max-width: 1400px;
+}
+
+/* Dashboard Cards */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+}
+
+/* Sprint Timeline */
+.timeline {
+    position: relative;
+    padding: 20px 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+    border: 3px solid var(--primary-color);
+    z-index: 1;
+}
+
+.timeline-content {
+    flex: 1;
+    padding: 15px 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin: 0 20px;
+}
+
+.timeline-date {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+/* Task Cards */
+.task-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid;
+    transition: transform 0.2s;
+}
+
+.task-card:hover {
+    transform: translateX(5px);
+}
+
+.task-card.feature {
+    border-left-color: var(--info-color);
+}
+
+.task-card.tech-debt {
+    border-left-color: var(--warning-color);
+}
+
+.task-card.bug {
+    border-left-color: var(--danger-color);
+}
+
+/* Risk Indicators */
+.risk-indicator {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.risk-on-track {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.risk-at-risk {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.risk-off-track {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Capacity Status */
+.capacity-ok {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.capacity-overloaded {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.capacity-underutilized {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+/* Sprint Status Badges */
+.badge {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Forms */
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-radius: 0.375rem;
+    border: 1px solid #ced4da;
+    padding: 0.5rem 0.75rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Tables */
+.table {
+    background: #fff;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.table thead {
+    background: #f8f9fa;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.02);
+}
+
+/* Modals */
+.modal-content {
+    border-radius: 0.5rem;
+    border: none;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.modal-title {
+    font-weight: 600;
+}
+
+/* Sprint Board */
+.sprint-board {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 20px 0;
+}
+
+.board-column {
+    flex: 0 0 300px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.board-column-header {
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* AI Response Container */
+.ai-response {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 1px solid #dee2e6;
+}
+
+.ai-response h5 {
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.ai-response .loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ai-response .spinner-border {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Footer */
+.footer {
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    margin-top: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .timeline::before {
+        left: 30px;
+    }
+    
+    .timeline-item::before {
+        left: 30px;
+    }
+    
+    .timeline-content {
+        margin-left: 60px;
+        margin-right: 0;
+    }
+    
+    .sprint-board {
+        flex-direction: column;
+    }
+    
+    .board-column {
+        flex: 1 1 auto;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

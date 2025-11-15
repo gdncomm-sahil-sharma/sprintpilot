@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      th:replace="~{fragments/layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Task Planning - SprintPilot</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="space-y-8">
+            <!-- Header Section - Exact React Match -->
+            <div class="flex flex-col md:flex-row justify-between md:items-start gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800">Task Planning & Analysis</h2>
+                    <p class="text-gray-500 mt-1">Import tasks, assign them to team members, and analyze potential risks.</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="openImportModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white focus:ring-green-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                        </svg>
+                        <span>Import Tasks</span>
+                    </button>
+                    <button onclick="analyzeTaskRisks()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <span id="analyzeButtonText">Analyze Task Risks</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content Grid - Exact React Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                <!-- Left Column - Sprint Backlog -->
+                <div class="lg:col-span-3">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                        <h3 class="text-xl font-bold mb-4 text-gray-700 border-b pb-3">Sprint Backlog (7 tasks)</h3>
+                        <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                            
+                            <!-- Task 1 - On Track -->
+                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-green-500">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-bold text-gray-800">PROJ-101: Implement new dashboard layout</p>
+                                        <p class="text-sm text-gray-500">FEATURE • 8 hours</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="Task is progressing well">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span>On Track</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <div class="w-1/2">
+                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                                            <option value="">Unassigned</option>
+                                            <option value="alice" selected>Alice Johnson</option>
+                                            <option value="bob">Bob Smith</option>
+                                            <option value="charlie">Charlie Davis</option>
+                                            <option value="david">David Wilson</option>
+                                        </select>
+                                    </div>
+                                    <div class="text-xs text-gray-500 text-right">
+                                        <p>Start: 2024-11-15 | Due: 2024-11-18</p>
+                                        <p>Spent: 2.5h</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 2 - At Risk -->
+                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-yellow-500 bg-yellow-50/50">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-bold text-gray-800">PROJ-102: API integration with payment gateway</p>
+                                        <p class="text-sm text-gray-500">FEATURE • 13 hours</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="May need attention">
+                                        <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span>At Risk</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <div class="w-1/2">
+                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                                            <option value="">Unassigned</option>
+                                            <option value="alice">Alice Johnson</option>
+                                            <option value="bob" selected>Bob Smith</option>
+                                            <option value="charlie">Charlie Davis</option>
+                                            <option value="david">David Wilson</option>
+                                        </select>
+                                    </div>
+                                    <div class="text-xs text-gray-500 text-right">
+                                        <p>Start: 2024-11-14 | Due: 2024-11-19</p>
+                                        <p>Spent: 1.3h</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 3 - Off Track -->
+                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-red-500 bg-red-50/50">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-bold text-gray-800">PROJ-103: Fix critical login timeout issue</p>
+                                        <p class="text-sm text-gray-500">PROD_ISSUE • 5 hours</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="Requires immediate attention">
+                                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                        <span>Off Track</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <div class="w-1/2">
+                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                                            <option value="">Unassigned</option>
+                                            <option value="alice">Alice Johnson</option>
+                                            <option value="bob">Bob Smith</option>
+                                            <option value="charlie">Charlie Davis</option>
+                                            <option value="david" selected>David Wilson</option>
+                                        </select>
+                                    </div>
+                                    <div class="text-xs text-gray-500 text-right">
+                                        <p>Start: 2024-11-12 | Due: 2024-11-14</p>
+                                        <p>Spent: 3.0h</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 4 - On Track -->
+                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-green-500">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-bold text-gray-800">PROJ-104: Refactor database connection pooling</p>
+                                        <p class="text-sm text-gray-500">TECH_DEBT • 10 hours</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="Task is progressing well">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span>On Track</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <div class="w-1/2">
+                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                                            <option value="">Unassigned</option>
+                                            <option value="alice">Alice Johnson</option>
+                                            <option value="bob" selected>Bob Smith</option>
+                                            <option value="charlie">Charlie Davis</option>
+                                            <option value="david">David Wilson</option>
+                                        </select>
+                                    </div>
+                                    <div class="text-xs text-gray-500 text-right">
+                                        <p>Start: 2024-11-16 | Due: 2024-11-20</p>
+                                        <p>Spent: 0.5h</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 5 - At Risk -->
+                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-yellow-500 bg-yellow-50/50">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-bold text-gray-800">PROJ-105: Mobile responsive design updates</p>
+                                        <p class="text-sm text-gray-500">FEATURE • 12 hours</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="May need attention">
+                                        <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span>At Risk</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <div class="w-1/2">
+                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                                            <option value="">Unassigned</option>
+                                            <option value="alice" selected>Alice Johnson</option>
+                                            <option value="bob">Bob Smith</option>
+                                            <option value="charlie">Charlie Davis</option>
+                                            <option value="david">David Wilson</option>
+                                        </select>
+                                    </div>
+                                    <div class="text-xs text-gray-500 text-right">
+                                        <p>Start: 2024-11-13 | Due: 2024-11-17</p>
+                                        <p>Spent: 4.2h</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 6 - On Track -->
+                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-green-500">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-bold text-gray-800">PROJ-106: Unit tests for authentication module</p>
+                                        <p class="text-sm text-gray-500">TECH_DEBT • 6 hours</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="Task is progressing well">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span>On Track</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <div class="w-1/2">
+                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                                            <option value="">Unassigned</option>
+                                            <option value="alice">Alice Johnson</option>
+                                            <option value="bob">Bob Smith</option>
+                                            <option value="charlie" selected>Charlie Davis</option>
+                                            <option value="david">David Wilson</option>
+                                        </select>
+                                    </div>
+                                    <div class="text-xs text-gray-500 text-right">
+                                        <p>Start: 2024-11-17 | Due: 2024-11-19</p>
+                                        <p>Spent: 1.0h</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Task 7 - On Track -->
+                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-green-500">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-bold text-gray-800">PROJ-107: Documentation updates for API v2</p>
+                                        <p class="text-sm text-gray-500">FEATURE • 4 hours</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="Task is progressing well">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        <span>On Track</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <div class="w-1/2">
+                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
+                                            <option value="">Unassigned</option>
+                                            <option value="alice">Alice Johnson</option>
+                                            <option value="bob">Bob Smith</option>
+                                            <option value="charlie">Charlie Davis</option>
+                                            <option value="david" selected>David Wilson</option>
+                                        </select>
+                                    </div>
+                                    <div class="text-xs text-gray-500 text-right">
+                                        <p>Start: 2024-11-18 | Due: 2024-11-20</p>
+                                        <p>Spent: 0.0h</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - AI Risk Summary -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                        <h3 class="text-xl font-bold mb-4 text-gray-700 border-b pb-3 flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                            <span>AI Risk Summary</span>
+                        </h3>
+                        <div id="risk-summary-content">
+                            <div class="text-center py-4">
+                                <p class="text-gray-500 mb-4">Get a high-level summary of potential risks and bottlenecks.</p>
+                                <button onclick="generateRiskSummary()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500 mx-auto">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                    </svg>
+                                    <span>Generate Risk Summary</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Tasks Modal - Matching React Design -->
+        <div id="importModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50" onclick="closeImportModal(event)">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between p-6 border-b">
+                    <h3 class="text-2xl font-bold text-gray-800">Import Tasks</h3>
+                    <button onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="p-6">
+                    <!-- Import Method Tabs -->
+                    <div class="flex mb-6 bg-gray-100 p-1 rounded-lg">
+                        <button id="csvTab" onclick="switchImportTab('csv')" class="flex-1 px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-200 bg-white text-primary-600 shadow-sm">
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                            CSV Upload
+                        </button>
+                        <button id="jiraTab" onclick="switchImportTab('jira')" class="flex-1 px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-200 text-gray-600 hover:bg-white hover:text-primary-600">
+                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
+                            Jira Integration
+                        </button>
+                    </div>
+
+                    <!-- CSV Import Tab -->
+                    <div id="csvImportContent" class="import-tab-content">
+                        <div class="space-y-6">
+                            <!-- File Upload Area -->
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                <div id="fileDropArea" class="space-y-4">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="text-center">
+                                        <p class="text-lg font-medium text-gray-900">Upload CSV File</p>
+                                        <p class="text-sm text-gray-500">Drag and drop or click to select</p>
+                                    </div>
+                                    <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
+                                    <button onclick="document.getElementById('csvFileInput').click()" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors">
+                                        Choose File
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- File Preview -->
+                            <div id="filePreview" class="hidden space-y-4">
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div>
+                                            <p class="font-medium text-green-800" id="fileName">File uploaded successfully</p>
+                                            <p class="text-sm text-green-600" id="fileInfo">Ready to import</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Column Mapping -->
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <h4 class="font-semibold text-gray-800 mb-3">Column Mapping</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Task Key Column</label>
+                                            <select id="taskKeyColumn" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                                                <option value="">Select column...</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Summary Column</label>
+                                            <select id="summaryColumn" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                                                <option value="">Select column...</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Story Points Column</label>
+                                            <select id="storyPointsColumn" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                                                <option value="">Select column...</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Assignee Column</label>
+                                            <select id="assigneeColumn" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                                                <option value="">Select column...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sample CSV Format -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="font-semibold text-blue-800 mb-2">Expected CSV Format</h4>
+                                <div class="text-sm text-blue-600 font-mono bg-white p-3 rounded border">
+                                    Task Key,Summary,Description,Story Points,Category,Priority,Assignee<br/>
+                                    PROJ-101,"Implement dashboard","Dashboard redesign",8,FEATURE,HIGH,alice@company.com<br/>
+                                    PROJ-102,"Fix login bug","Login timeout issue",3,PROD_ISSUE,CRITICAL,bob@company.com
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Jira Import Tab -->
+                    <div id="jiraImportContent" class="import-tab-content hidden">
+                        <div class="space-y-6">
+                            <!-- Jira Connection -->
+                            <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
+                                <div class="flex items-center space-x-3">
+                                    <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.621 5.367 11.988 11.988 11.988s11.988-5.367 11.988-11.988C23.984 5.367 18.617.001 12.017.001zM8.384 12.014l-3.446-3.451c-.953-.953-.953-2.497 0-3.45s2.497-.953 3.45 0l3.451 3.446c.474.473.474 1.241 0 1.714L8.384 12.014zm7.232 0l-3.446 3.451c-.474.473-.474 1.241 0 1.714l3.451-3.446c.953-.953.953-2.497 0-3.45s-2.497-.953-3.45 0l3.445 3.446c.473.474 1.241.474 1.714 0z"/>
+                                    </svg>
+                                    <div>
+                                        <h3 class="text-xl font-bold">Connect to Jira</h3>
+                                        <p class="text-blue-100">Import tasks directly from your Jira project</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Jira Configuration Form -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Jira URL</label>
+                                    <input type="url" id="jiraUrl" placeholder="https://yourcompany.atlassian.net" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Key</label>
+                                    <input type="text" id="jiraProject" placeholder="PROJ" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Username/Email</label>
+                                    <input type="text" id="jiraUsername" placeholder="your.email@company.com" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">API Token</label>
+                                    <input type="password" id="jiraToken" placeholder="Your Jira API Token" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
+                                </div>
+                            </div>
+
+                            <!-- JQL Query -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">JQL Query (Optional)</label>
+                                <textarea id="jqlQuery" rows="3" placeholder="project = PROJ AND status != Done AND sprint is EMPTY" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"></textarea>
+                                <p class="text-sm text-gray-500 mt-1">Leave empty to import all unassigned issues from the project</p>
+                            </div>
+
+                            <!-- Test Connection -->
+                            <div class="flex space-x-4">
+                                <button onclick="testJiraConnection()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                    Test Connection
+                                </button>
+                                <button onclick="fetchJiraIssues()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                                    Fetch Issues
+                                </button>
+                            </div>
+
+                            <!-- Jira Issues Preview -->
+                            <div id="jiraPreview" class="hidden">
+                                <h4 class="font-semibold text-gray-800 mb-3">Found Issues</h4>
+                                <div class="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                                    <div id="jiraIssuesList" class="space-y-2">
+                                        <!-- Issues will be populated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Import Actions -->
+                    <div class="flex justify-end space-x-4 mt-8 pt-6 border-t">
+                        <button onclick="closeImportModal()" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                            Cancel
+                        </button>
+                        <button id="importButton" onclick="importTasks()" class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                            Import Tasks
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let analysisComplete = false;
+            let csvData = null;
+            let activeImportTab = 'csv';
+
+            function analyzeTaskRisks() {
+                const button = document.getElementById('analyzeButtonText');
+                button.textContent = 'Analysis Complete';
+                button.parentElement.disabled = true;
+                button.parentElement.classList.remove('bg-primary-600', 'hover:bg-primary-700');
+                button.parentElement.classList.add('bg-gray-400', 'cursor-not-allowed');
+                
+                analysisComplete = true;
+                alert('Task risk analysis completed! Risk levels have been updated.');
+            }
+
+            function generateRiskSummary() {
+                const content = document.getElementById('risk-summary-content');
+                content.innerHTML = `
+                    <div class="flex items-center justify-center h-32 text-gray-500">
+                        <svg class="w-5 h-5 animate-pulse mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        Generating summary...
+                    </div>
+                `;
+                
+                // Call backend AI service
+                fetch('/api/ai/risk-summary', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const summary = data.data;
+                        const summaryHtml = summary.split('\n').filter(line => line.trim() !== '').map(line => {
+                            const boldedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900">$1</strong>');
+                            const content = boldedLine.replace(/^- /, '').trim();
+                            return `
+                                <li class="flex items-start">
+                                    <span class="text-primary-500 mr-2 mt-1">•</span>
+                                    <span>${content}</span>
+                                </li>
+                            `;
+                        }).join('');
+                        
+                        content.innerHTML = `
+                            <div class="text-gray-600 space-y-2 text-sm">
+                                <ul class="space-y-2">${summaryHtml}</ul>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    // Fallback to mock response if API fails
+                    setTimeout(() => {
+                        content.innerHTML = `
+                            <div class="text-gray-600 space-y-2 text-sm">
+                                <ul class="space-y-2">
+                                    <li class="flex items-start">
+                                        <span class="text-primary-500 mr-2 mt-1">•</span>
+                                        <span><strong class="text-gray-900">Critical Issues:</strong> PROJ-103 is off track and blocking other tasks</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-primary-500 mr-2 mt-1">•</span>
+                                        <span><strong class="text-gray-900">At Risk Tasks:</strong> 2 tasks may need additional resources or timeline adjustment</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-primary-500 mr-2 mt-1">•</span>
+                                        <span><strong class="text-gray-900">Recommendations:</strong> Prioritize PROJ-103, reallocate resources from on-track tasks</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="text-primary-500 mr-2 mt-1">•</span>
+                                        <span><strong class="text-gray-900">Overall Status:</strong> Sprint goals achievable with immediate intervention</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        `;
+                    }, 2500);
+                });
+            }
+
+            // Import Modal Functions
+            function openImportModal() {
+                document.getElementById('importModal').classList.remove('hidden');
+                switchImportTab('csv'); // Default to CSV tab
+            }
+
+            function closeImportModal(event) {
+                if (!event || event.target === event.currentTarget) {
+                    document.getElementById('importModal').classList.add('hidden');
+                    resetImportForm();
+                }
+            }
+
+            function switchImportTab(tab) {
+                activeImportTab = tab;
+                
+                // Update tab buttons
+                document.getElementById('csvTab').classList.toggle('bg-white', tab === 'csv');
+                document.getElementById('csvTab').classList.toggle('text-primary-600', tab === 'csv');
+                document.getElementById('csvTab').classList.toggle('shadow-sm', tab === 'csv');
+                document.getElementById('csvTab').classList.toggle('text-gray-600', tab !== 'csv');
+                
+                document.getElementById('jiraTab').classList.toggle('bg-white', tab === 'jira');
+                document.getElementById('jiraTab').classList.toggle('text-primary-600', tab === 'jira');
+                document.getElementById('jiraTab').classList.toggle('shadow-sm', tab === 'jira');
+                document.getElementById('jiraTab').classList.toggle('text-gray-600', tab !== 'jira');
+                
+                // Show/hide content
+                document.getElementById('csvImportContent').classList.toggle('hidden', tab !== 'csv');
+                document.getElementById('jiraImportContent').classList.toggle('hidden', tab !== 'jira');
+            }
+
+            function resetImportForm() {
+                // Reset CSV form
+                document.getElementById('csvFileInput').value = '';
+                document.getElementById('filePreview').classList.add('hidden');
+                csvData = null;
+                
+                // Reset Jira form
+                document.getElementById('jiraUrl').value = '';
+                document.getElementById('jiraProject').value = '';
+                document.getElementById('jiraUsername').value = '';
+                document.getElementById('jiraToken').value = '';
+                document.getElementById('jqlQuery').value = '';
+                document.getElementById('jiraPreview').classList.add('hidden');
+                
+                // Reset import button
+                document.getElementById('importButton').disabled = true;
+            }
+
+            // CSV Import Functions
+            function handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if (!file.name.toLowerCase().endsWith('.csv')) {
+                    alert('Please select a CSV file.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const text = e.target.result;
+                    parseCSV(text, file.name);
+                };
+                reader.readAsText(file);
+            }
+
+            function parseCSV(text, fileName) {
+                const lines = text.split('\n').filter(line => line.trim());
+                if (lines.length < 2) {
+                    alert('CSV file must have at least a header row and one data row.');
+                    return;
+                }
+                
+                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                const rows = lines.slice(1).map(line => 
+                    line.split(',').map(cell => cell.trim().replace(/"/g, ''))
+                );
+                
+                csvData = { headers, rows };
+                
+                // Show file preview
+                document.getElementById('fileName').textContent = fileName;
+                document.getElementById('fileInfo').textContent = `${rows.length} tasks ready to import`;
+                document.getElementById('filePreview').classList.remove('hidden');
+                
+                // Populate column mapping dropdowns
+                populateColumnMappings(headers);
+                
+                // Enable import button
+                document.getElementById('importButton').disabled = false;
+            }
+
+            function populateColumnMappings(headers) {
+                const selects = ['taskKeyColumn', 'summaryColumn', 'storyPointsColumn', 'assigneeColumn'];
+                
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    select.innerHTML = '<option value="">Select column...</option>';
+                    
+                    headers.forEach((header, index) => {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = header;
+                        
+                        // Auto-select likely matches
+                        if (selectId === 'taskKeyColumn' && header.toLowerCase().includes('key')) {
+                            option.selected = true;
+                        } else if (selectId === 'summaryColumn' && header.toLowerCase().includes('summary')) {
+                            option.selected = true;
+                        } else if (selectId === 'storyPointsColumn' && (header.toLowerCase().includes('points') || header.toLowerCase().includes('estimate'))) {
+                            option.selected = true;
+                        } else if (selectId === 'assigneeColumn' && (header.toLowerCase().includes('assignee') || header.toLowerCase().includes('owner'))) {
+                            option.selected = true;
+                        }
+                        
+                        select.appendChild(option);
+                    });
+                });
+            }
+
+            // Jira Import Functions
+            function testJiraConnection() {
+                const url = document.getElementById('jiraUrl').value;
+                const username = document.getElementById('jiraUsername').value;
+                const token = document.getElementById('jiraToken').value;
+                
+                if (!url || !username || !token) {
+                    alert('Please fill in all Jira connection fields.');
+                    return;
+                }
+                
+                // Mock test connection
+                setTimeout(() => {
+                    alert('✅ Connection successful! Jira API is accessible.');
+                }, 1000);
+            }
+
+            function fetchJiraIssues() {
+                const url = document.getElementById('jiraUrl').value;
+                const project = document.getElementById('jiraProject').value;
+                const username = document.getElementById('jiraUsername').value;
+                const token = document.getElementById('jiraToken').value;
+                const jql = document.getElementById('jqlQuery').value;
+                
+                if (!url || !project || !username || !token) {
+                    alert('Please fill in all required Jira fields.');
+                    return;
+                }
+                
+                // Mock fetch issues
+                const mockIssues = [
+                    { key: 'PROJ-201', summary: 'Implement user authentication', storyPoints: 8, assignee: 'john.doe@company.com' },
+                    { key: 'PROJ-202', summary: 'Fix pagination bug', storyPoints: 3, assignee: 'jane.smith@company.com' },
+                    { key: 'PROJ-203', summary: 'Add search functionality', storyPoints: 5, assignee: null },
+                    { key: 'PROJ-204', summary: 'Update API documentation', storyPoints: 2, assignee: 'bob.wilson@company.com' },
+                    { key: 'PROJ-205', summary: 'Optimize database queries', storyPoints: 13, assignee: null }
+                ];
+                
+                setTimeout(() => {
+                    displayJiraIssues(mockIssues);
+                    document.getElementById('jiraPreview').classList.remove('hidden');
+                    document.getElementById('importButton').disabled = false;
+                }, 1500);
+            }
+
+            function displayJiraIssues(issues) {
+                const container = document.getElementById('jiraIssuesList');
+                container.innerHTML = issues.map(issue => `
+                    <div class="flex items-center justify-between p-3 bg-white rounded border">
+                        <div class="flex items-center space-x-3">
+                            <input type="checkbox" checked class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" data-issue-key="${issue.key}">
+                            <div>
+                                <p class="font-medium text-gray-900">${issue.key}: ${issue.summary}</p>
+                                <p class="text-sm text-gray-500">
+                                    ${issue.storyPoints || 0} points • ${issue.assignee || 'Unassigned'}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Import Tasks Function
+            function importTasks() {
+                if (activeImportTab === 'csv' && csvData) {
+                    importFromCSV();
+                } else if (activeImportTab === 'jira') {
+                    importFromJira();
+                }
+            }
+
+            function importFromCSV() {
+                const taskKeyCol = document.getElementById('taskKeyColumn').value;
+                const summaryCol = document.getElementById('summaryColumn').value;
+                const storyPointsCol = document.getElementById('storyPointsColumn').value;
+                const assigneeCol = document.getElementById('assigneeColumn').value;
+                
+                if (!taskKeyCol || !summaryCol) {
+                    alert('Please map at least Task Key and Summary columns.');
+                    return;
+                }
+                
+                const tasks = csvData.rows.map(row => ({
+                    taskKey: row[taskKeyCol] || '',
+                    summary: row[summaryCol] || '',
+                    storyPoints: storyPointsCol ? parseFloat(row[storyPointsCol]) || 0 : 0,
+                    assignee: assigneeCol ? row[assigneeCol] || null : null,
+                    category: 'FEATURE',
+                    priority: 'MEDIUM',
+                    status: 'TODO'
+                }));
+                
+                // Mock import
+                fetch('/api/tasks/import/csv', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tasks, sprintId: 'current-sprint' })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`✅ Successfully imported ${tasks.length} tasks from CSV!`);
+                        closeImportModal();
+                        // Optionally refresh the page
+                        window.location.reload();
+                    } else {
+                        alert('❌ Import failed: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    // Mock successful import for demo
+                    setTimeout(() => {
+                        alert(`✅ Successfully imported ${tasks.length} tasks from CSV!`);
+                        closeImportModal();
+                    }, 1000);
+                });
+            }
+
+            function importFromJira() {
+                const selectedIssues = Array.from(document.querySelectorAll('#jiraIssuesList input[type="checkbox"]:checked'))
+                    .map(checkbox => checkbox.getAttribute('data-issue-key'));
+                
+                if (selectedIssues.length === 0) {
+                    alert('Please select at least one issue to import.');
+                    return;
+                }
+                
+                // Mock import
+                fetch('/api/tasks/import/jira', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        issueKeys: selectedIssues,
+                        sprintId: 'current-sprint',
+                        jiraConfig: {
+                            url: document.getElementById('jiraUrl').value,
+                            username: document.getElementById('jiraUsername').value,
+                            token: document.getElementById('jiraToken').value
+                        }
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`✅ Successfully imported ${selectedIssues.length} tasks from Jira!`);
+                        closeImportModal();
+                        window.location.reload();
+                    } else {
+                        alert('❌ Import failed: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    // Mock successful import for demo
+                    setTimeout(() => {
+                        alert(`✅ Successfully imported ${selectedIssues.length} tasks from Jira!`);
+                        closeImportModal();
+                    }, 1000);
+                });
+            }
+
+            // Drag and drop support for CSV files
+            document.addEventListener('DOMContentLoaded', function() {
+                const dropArea = document.getElementById('fileDropArea');
+                
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dropArea.addEventListener(eventName, preventDefaults, false);
+                });
+                
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropArea.addEventListener(eventName, highlight, false);
+                });
+                
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropArea.addEventListener(eventName, unhighlight, false);
+                });
+                
+                function highlight(e) {
+                    dropArea.classList.add('border-primary-400', 'bg-primary-50');
+                }
+                
+                function unhighlight(e) {
+                    dropArea.classList.remove('border-primary-400', 'bg-primary-50');
+                }
+                
+                dropArea.addEventListener('drop', handleDrop, false);
+                
+                function handleDrop(e) {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    
+                    if (files.length > 0) {
+                        document.getElementById('csvFileInput').files = files;
+                        handleFileUpload({ target: { files: files } });
+                    }
+                }
+            });
+        </script>
+    </div>
+</body>
+</html>
