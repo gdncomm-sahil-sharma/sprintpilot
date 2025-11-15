@@ -158,23 +158,20 @@ GRANT ALL PRIVILEGES ON DATABASE sprintpilot TO inventory;
 ```
 
 ### **3. Configure Application**
-```yaml
-# src/main/resources/application.yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/sprintpilot
-    username: inventory
-    password: inventory
-  
-  jpa:
-    hibernate:
-      ddl-auto: create-drop  # Use 'update' for production
+```properties
+# src/main/resources/application.properties
+
+# Database Configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/sprintpilot
+spring.datasource.username=inventory
+spring.datasource.password=inventory
+
+# JPA Configuration
+spring.jpa.hibernate.ddl-auto=create-drop
 
 # AI Configuration (Optional)
-app:
-  ai:
-    mock-mode: true  # Set to false for real Gemini integration
-    
+app.ai.mock-mode=true
+
 # Environment variables for production:
 # GEMINI_API_KEY=your-gemini-api-key
 # DB_URL=your-database-url
@@ -195,7 +192,25 @@ java -jar target/sprintpilot-1.0.0-SNAPSHOT.jar
 ### **5. Access the Application**
 Open your browser and navigate to: `http://localhost:8080`
 
+**Swagger UI**: Access interactive API documentation at `http://localhost:8080/swagger-ui.html`
+
 ## 📡 API Documentation
+
+SprintPilot includes comprehensive **OpenAPI/Swagger** documentation for all REST APIs. Once the application is running, you can:
+
+- **Interactive Swagger UI**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **OpenAPI JSON Spec**: [http://localhost:8080/api-docs](http://localhost:8080/api-docs)
+
+The Swagger UI provides:
+- Complete API endpoint documentation
+- Request/response schemas and examples
+- Interactive testing interface ("Try it out" feature)
+- Organized by tags: Team Members, Tasks, Sprints, AI Services
+- Real-time validation and error responses
+
+For detailed Swagger setup and customization, see [SWAGGER_SETUP.md](SWAGGER_SETUP.md)
+
+### **Sample API Endpoints**
 
 ### **Task Import APIs**
 
