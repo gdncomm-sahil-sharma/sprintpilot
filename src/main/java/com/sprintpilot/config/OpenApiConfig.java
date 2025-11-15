@@ -33,20 +33,13 @@ public class OpenApiConfig {
                         .title("SprintPilot API")
                         .description("Sprint Management System API - Manage your agile sprints, team members, tasks, and analytics")
                         .version("v1.0.0")
-                        .contact(new Contact()
-                                .name("SprintPilot Team")
-                                .email("support@sprintpilot.com")
-                                .url("https://sprintpilot.com"))
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0.html")))
                 .servers(List.of(
                         new Server()
                                 .url(String.format("http://localhost:%s%s", serverPort, contextPath))
-                                .description("Local Development Server"),
-                        new Server()
-                                .url("https://api.sprintpilot.com")
-                                .description("Production Server")
+                                .description("Local Development Server")
                 ));
     }
 }
