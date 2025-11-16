@@ -190,7 +190,7 @@
         
         <script>
             // Exact React AI Summary Generation Function
-            function generateSprintSummary() {
+            async function generateSprintSummary() {
                 const content = document.getElementById('ai-summary-content');
                 content.innerHTML = `
                     <div class="flex items-center justify-center h-32 text-gray-500">
@@ -201,61 +201,76 @@
                     </div>
                 `;
                 
-                // Call backend AI service - matches React implementation
-                fetch('/api/ai/sprint-summary', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({})
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const summary = data.data;
-                        const summaryHtml = summary.split('\n').filter(line => line.trim() !== '').map(line => {
-                            const boldedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900">$1</strong>');
-                            const content = boldedLine.replace(/^- /, '').trim();
-                            return `
-                                <li class="flex items-start">
-                                    <span class="text-primary-500 mr-2 mt-1">•</span>
-                                    <span>${content}</span>
-                                </li>
-                            `;
-                        }).join('');
-                        
-                        content.innerHTML = `
-                            <div class="text-gray-600 space-y-2 text-sm">
-                                <ul class="space-y-2">${summaryHtml}</ul>
-                            </div>
-                        `;
+                try {
+                    // Fetch current sprint data
+                    const sprintResponse = await fetch('/api/sprints/active');
+                    if (!sprintResponse.ok) throw new Error('Failed to fetch sprint data');
+                    const sprints = await sprintResponse.json();
+                    
+                    if (!sprints.data || sprints.data.length === 0) {
+                        content.innerHTML = `<div class="text-center py-4"><p class="text-gray-500">No active sprint found. Please create a sprint first.</p></div>`;
+                        return;
                     }
-                })
-                .catch(error => {
-                    // Fallback to mock response if API fails
-                    setTimeout(() => {
-                        content.innerHTML = `
-                            <div class="text-gray-600 space-y-2 text-sm">
-                                <ul class="space-y-2">
-                                    <li class="flex items-start">
-                                        <span class="text-primary-500 mr-2 mt-1">•</span>
-                                        <span><strong class="text-gray-900">Primary Focus:</strong> This sprint focuses on feature development and technical improvements.</span>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <span class="text-primary-500 mr-2 mt-1">•</span>
-                                        <span><strong class="text-gray-900">Workload Balance:</strong> Team capacity is well-balanced with 85% utilization.</span>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <span class="text-primary-500 mr-2 mt-1">•</span>
-                                        <span><strong class="text-gray-900">Potential Risks:</strong> One team member is slightly overloaded, consider redistribution.</span>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <span class="text-primary-500 mr-2 mt-1">•</span>
-                                        <span><strong class="text-gray-900">Overall Assessment:</strong> Sprint is well-planned with achievable goals.</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        `;
-                    }, 2000);
-                });
+                    
+                    const activeSprint = sprints.data[0];
+                    
+                    // Fetch team members
+                    const teamResponse = await fetch('/api/team');
+                    const teamData = await teamResponse.json();
+                    const team = teamData.data || [];
+                    
+                    // Fetch tasks for the sprint
+                    const tasksResponse = await fetch(`/api/tasks?sprintId=${activeSprint.id}`);
+                    const tasksData = await tasksResponse.json();
+                    const tasks = tasksData.data || [];
+                    
+                    // Calculate workload
+                    const workload = team.map(member => {
+                        const assignedTasks = tasks.filter(task => task.assigneeId === member.id);
+                        const assignedHours = assignedTasks.reduce((sum, task) => sum + (task.storyPoints || 0), 0);
+                        const totalCapacity = member.dailyCapacity * activeSprint.duration;
+                        const utilization = totalCapacity > 0 ? (assignedHours / totalCapacity) * 100 : 0;
+                        return {
+                            memberId: member.id,
+                            memberName: member.name,
+                            totalCapacity: totalCapacity,
+                            assignedHours: assignedHours,
+                            availableHours: totalCapacity - assignedHours,
+                            utilization: utilization,
+                            status: utilization > 100 ? 'OVERLOADED' : utilization < 70 ? 'UNDERUTILIZED' : 'OK'
+                        };
+                    });
+                    
+                    content.innerHTML = `<div class="flex items-center justify-center h-32 text-gray-500"><svg class="w-5 h-5 animate-pulse mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>Analyzing with AI...</div>`;
+                    
+                    // Call backend AI service with proper parameters
+                    const aiResponse = await fetch('/api/ai/sprint-summary', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            team: team,
+                            sprint: activeSprint,
+                            tasks: tasks,
+                            workload: workload
+                        })
+                    });
+                    
+                    const aiData = await aiResponse.json();
+                    if (!aiData.success) throw new Error(aiData.error || aiData.message || 'AI generation failed');
+                    
+                    const summary = aiData.data;
+                    const summaryHtml = summary.split('\n').filter(line => line.trim() !== '').map(line => {
+                        const boldedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900">$1</strong>');
+                        const content = boldedLine.replace(/^- /, '').trim();
+                        return `<li class="flex items-start"><span class="text-primary-500 mr-2 mt-1">•</span><span>${content}</span></li>`;
+                    }).join('');
+                    
+                    content.innerHTML = `<div class="text-gray-600 space-y-2 text-sm"><ul class="space-y-2">${summaryHtml}</ul></div>`;
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    content.innerHTML = `<div class="text-gray-600 space-y-2 text-sm"><p class="text-amber-600 mb-3 text-xs">⚠️ ${error.message}</p><ul class="space-y-2"><li class="flex items-start"><span class="text-primary-500 mr-2 mt-1">•</span><span><strong class="text-gray-900">Primary Focus:</strong> This sprint focuses on feature development and technical improvements.</span></li><li class="flex items-start"><span class="text-primary-500 mr-2 mt-1">•</span><span><strong class="text-gray-900">Workload Balance:</strong> Team capacity is well-balanced with 85% utilization.</span></li><li class="flex items-start"><span class="text-primary-500 mr-2 mt-1">•</span><span><strong class="text-gray-900">Potential Risks:</strong> One team member is slightly overloaded, consider redistribution.</span></li><li class="flex items-start"><span class="text-primary-500 mr-2 mt-1">•</span><span><strong class="text-gray-900">Overall Assessment:</strong> Sprint is well-planned with achievable goals.</span></li></ul></div>`;
+                }
             }
         </script>
     </main>

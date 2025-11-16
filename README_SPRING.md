@@ -150,7 +150,7 @@ By default, the application uses H2 in-memory database. To use PostgreSQL:
 
 ```yaml
 # Set these environment variables or update application.yaml
-DB_URL=jdbc:postgresql://localhost:5432/sprintpilot
+DB_URL=jdbc:postgresql://localhost:5432/sprint_pilot
 DB_USERNAME=your_username
 DB_PASSWORD=your_password
 DB_DRIVER=org.postgresql.Driver

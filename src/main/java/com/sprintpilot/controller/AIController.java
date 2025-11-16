@@ -1,35 +1,56 @@
 package com.sprintpilot.controller;
 
-import com.sprintpilot.dto.*;
+import com.sprintpilot.dto.ApiResponse;
+import com.sprintpilot.dto.CapacitySummaryDto;
+import com.sprintpilot.dto.SprintDto;
+import com.sprintpilot.dto.SprintEventDto;
+import com.sprintpilot.dto.SprintSummaryRequest;
+import com.sprintpilot.dto.TaskDto;
+import com.sprintpilot.dto.TaskRiskDto;
+import com.sprintpilot.dto.TeamMemberDto;
 import com.sprintpilot.service.AIService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ai")
+@Slf4j
 public class AIController {
     
     @Autowired
     private AIService aiService;
     
     @PostMapping("/sprint-summary")
-    public ResponseEntity<ApiResponse<String>> generateSprintSummary(@RequestBody Map<String, Object> request) {
-        try {
-            @SuppressWarnings("unchecked")
-            List<TeamMemberDto> team = (List<TeamMemberDto>) request.get("team");
-            SprintDto sprint = (SprintDto) request.get("sprint");
-            @SuppressWarnings("unchecked")
-            List<TaskDto> tasks = (List<TaskDto>) request.get("tasks");
-            @SuppressWarnings("unchecked")
-            List<CapacitySummaryDto> workload = (List<CapacitySummaryDto>) request.get("workload");
+    public ResponseEntity<ApiResponse<String>> generateSprintSummary(@RequestBody SprintSummaryRequest request) {
+        try {    
+            // Use top-level team/tasks if available, otherwise fall back to sprint's nested data
+            List<TeamMemberDto> team = (request.team() != null && !request.team().isEmpty()) 
+                ? request.team() 
+                : (request.sprint() != null ? request.sprint().teamMembers() : List.of());
+                
+            List<TaskDto> tasks = (request.tasks() != null && !request.tasks().isEmpty()) 
+                ? request.tasks() 
+                : (request.sprint() != null ? request.sprint().tasks() : List.of());
             
-            String summary = aiService.generateSprintSummary(team, sprint, tasks, workload);
+            String summary = aiService.generateSprintSummary(
+                team, 
+                request.sprint(), 
+                tasks, 
+                request.workload()
+            );
+            
             return ResponseEntity.ok(ApiResponse.success(summary));
         } catch (Exception e) {
+            log.error("Failed to generate sprint summary {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Failed to generate sprint summary", e.getMessage()));
         }
