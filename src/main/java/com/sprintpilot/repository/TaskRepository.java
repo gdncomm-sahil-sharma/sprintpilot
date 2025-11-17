@@ -2,6 +2,8 @@ package com.sprintpilot.repository;
 
 import com.sprintpilot.entity.Task;
 import com.sprintpilot.dto.TaskDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -17,6 +19,7 @@ public interface TaskRepository extends JpaRepository<Task, String> {
     @Query("SELECT t FROM Task t WHERE t.id = :id")
     Optional<Task> findByIdWithDetails(@Param("id") String id);
     
+    @EntityGraph(attributePaths = {"assignees", "sprint"})
     @Query("SELECT t FROM Task t WHERE t.sprint.id = :sprintId ORDER BY t.priority DESC, t.createdAt ASC")
     List<Task> findBySprintId(@Param("sprintId") String sprintId);
     
@@ -46,4 +49,36 @@ public interface TaskRepository extends JpaRepository<Task, String> {
     
     @Query("SELECT t FROM Task t WHERE t.sprint.id = :sprintId AND t.taskKey IN :taskKeys")
     List<Task> findBySprintIdAndTaskKeyIn(@Param("sprintId") String sprintId, @Param("taskKeys") List<String> taskKeys);
+    
+    /**
+     * Find tasks by sprint ID and risk factor with pagination
+     * Treats null riskFactor in DB as ON_TRACK
+     * Sorts by assignee name (tasks with no assignees come last)
+     */
+    @EntityGraph(attributePaths = {"assignees", "sprint"})
+    @Query("SELECT t FROM Task t " +
+           "WHERE t.sprint.id = :sprintId " +
+           "AND (:riskFactor IS NULL OR " +
+           "     (t.riskFactor IS NULL AND :riskFactor = 'ON_TRACK') OR " +
+           "     (STR(t.riskFactor) = :riskFactor)) " +
+           "ORDER BY t.priority DESC, t.createdAt ASC")
+    Page<Task> findBySprintIdAndRiskFactorPaginated(
+            @Param("sprintId") String sprintId,
+            @Param("riskFactor") String riskFactor,
+            Pageable pageable
+    );
+    
+    /**
+     * Count tasks by sprint ID and risk factor
+     * Treats null riskFactor in DB as ON_TRACK
+     */
+    @Query("SELECT COUNT(t) FROM Task t " +
+           "WHERE t.sprint.id = :sprintId " +
+           "AND (:riskFactor IS NULL OR " +
+           "     (t.riskFactor IS NULL AND :riskFactor = 'ON_TRACK') OR " +
+           "     (STR(t.riskFactor) = :riskFactor))")
+    long countBySprintIdAndRiskFactor(
+            @Param("sprintId") String sprintId,
+            @Param("riskFactor") String riskFactor
+    );
 }

@@ -55,6 +55,10 @@ public class Task {
     @Column(name = "time_spent")
     private BigDecimal timeSpent = BigDecimal.ZERO;
     
+    @Column(name = "risk_factor")
+    @Enumerated(EnumType.STRING)
+    private RiskFactor riskFactor;
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -101,5 +105,11 @@ public class Task {
         IN_PROGRESS,
         IN_REVIEW,
         DONE
+    }
+    
+    public enum RiskFactor {
+        ON_TRACK,
+        AT_RISK,
+        OFF_TRACK
     }
 }
