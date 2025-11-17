@@ -3,6 +3,7 @@ package com.sprintpilot.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprintpilot.config.JiraConfigProperties;
+import com.sprintpilot.dto.SprintMetricsDto;
 import com.sprintpilot.dto.TaskImportRequest;
 import com.sprintpilot.service.JiraClient;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +12,19 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -82,6 +89,211 @@ public class JiraClientImpl implements JiraClient {
     private String getBasicAuthHeader() {
         String auth = jiraConfig.getEmail() + ":" + jiraConfig.getApiToken();
         return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes());
+    }
+
+    private boolean isCompletedStatus(String status) {
+        if (status == null) {
+            return false;
+        }
+        String normalized = status.toLowerCase();
+        return normalized.contains("done") || normalized.contains("closed") || normalized.contains("resolve");
+    }
+
+    private List<SprintMetricsDto.BurndownPoint> buildBurndownPoints(
+            BigDecimal totalPoints,
+            LocalDate startDate,
+            LocalDate endDate,
+            Map<LocalDate, BigDecimal> completedByDate) {
+
+        if (startDate == null || endDate == null) {
+            return Collections.emptyList();
+        }
+
+        if (endDate.isBefore(startDate)) {
+            endDate = startDate;
+        }
+
+        List<SprintMetricsDto.BurndownPoint> points = new ArrayList<>();
+        BigDecimal cumulativeCompleted = BigDecimal.ZERO;
+        long totalDays = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        BigDecimal dailyIdealBurn = (totalDays > 1)
+                ? totalPoints.divide(BigDecimal.valueOf(totalDays - 1), 2, RoundingMode.HALF_UP)
+                : totalPoints;
+
+        LocalDate currentDate = startDate;
+        while (!currentDate.isAfter(endDate)) {
+            BigDecimal completedToday = completedByDate.getOrDefault(currentDate, BigDecimal.ZERO);
+            cumulativeCompleted = cumulativeCompleted.add(completedToday);
+
+            BigDecimal remaining = totalPoints.subtract(cumulativeCompleted);
+            if (remaining.compareTo(BigDecimal.ZERO) < 0) {
+                remaining = BigDecimal.ZERO;
+            }
+
+            long daysElapsed = ChronoUnit.DAYS.between(startDate, currentDate);
+            BigDecimal idealRemaining = totalPoints;
+            if (totalDays > 1) {
+                idealRemaining = totalPoints.subtract(dailyIdealBurn.multiply(BigDecimal.valueOf(daysElapsed)));
+                if (idealRemaining.compareTo(BigDecimal.ZERO) < 0) {
+                    idealRemaining = BigDecimal.ZERO;
+                }
+            }
+
+            points.add(SprintMetricsDto.BurndownPoint.builder()
+                    .date(currentDate.toString())
+                    .remainingPoints(remaining)
+                    .idealRemaining(idealRemaining)
+                    .completedPoints(cumulativeCompleted)
+                    .build());
+
+            currentDate = currentDate.plusDays(1);
+        }
+
+        return points;
+    }
+
+    private LocalDate parseDate(String dateStr) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(dateStr);
+        } catch (Exception e) {
+            log.warn("Failed to parse date: {}", dateStr, e);
+            return null;
+        }
+    }
+
+    @Override
+    public SprintMetricsDto fetchSprintMetrics(String projectKey, String sprintName) {
+        String jql = String.format("project = %s AND Sprint = \"%s\"", projectKey, sprintName);
+        List<TaskImportRequest.TaskImportDto> tasks = fetchTasks(projectKey, jql);
+
+        if (tasks.isEmpty()) {
+            SprintMetricsDto.BurndownData emptyBurndown = SprintMetricsDto.BurndownData.builder()
+                    .points(Collections.emptyList())
+                    .totalStoryPoints(BigDecimal.ZERO)
+                    .completedStoryPoints(BigDecimal.ZERO)
+                    .remainingStoryPoints(BigDecimal.ZERO)
+                    .startDate(null)
+                    .endDate(null)
+                    .build();
+
+            SprintMetricsDto.VelocityData emptyVelocity = SprintMetricsDto.VelocityData.builder()
+                    .currentSprintVelocity(BigDecimal.ZERO)
+                    .averageVelocity(BigDecimal.ZERO)
+                    .historicalVelocity(Collections.emptyList())
+                    .committedPoints(BigDecimal.ZERO)
+                    .completedPoints(BigDecimal.ZERO)
+                    .completedIssues(0)
+                    .totalIssues(0)
+                    .build();
+
+            return SprintMetricsDto.builder()
+                    .projectName(projectKey)
+                    .sprintName(sprintName)
+                    .burndown(emptyBurndown)
+                    .velocity(emptyVelocity)
+                    .build();
+        }
+
+        BigDecimal totalPoints = BigDecimal.ZERO;
+        BigDecimal completedPoints = BigDecimal.ZERO;
+        int completedIssues = 0;
+        Map<LocalDate, BigDecimal> completedByDate = new HashMap<>();
+        LocalDate earliestStart = null;
+        LocalDate latestEnd = null;
+
+        for (TaskImportRequest.TaskImportDto task : tasks) {
+            BigDecimal storyPoints = task.storyPoints() != null ? task.storyPoints() : BigDecimal.ZERO;
+            totalPoints = totalPoints.add(storyPoints);
+
+            if (isCompletedStatus(task.status())) {
+                completedPoints = completedPoints.add(storyPoints);
+                completedIssues++;
+
+                LocalDate completionDate = parseDate(task.endDate());
+                if (completionDate == null) {
+                    completionDate = parseDate(task.dueDate());
+                }
+                if (completionDate != null) {
+                    completedByDate.merge(completionDate, storyPoints, BigDecimal::add);
+                    if (latestEnd == null || completionDate.isAfter(latestEnd)) {
+                        latestEnd = completionDate;
+                    }
+                }
+            }
+
+            LocalDate taskStart = parseDate(task.startDate());
+            if (taskStart != null) {
+                if (earliestStart == null || taskStart.isBefore(earliestStart)) {
+                    earliestStart = taskStart;
+                }
+            }
+            LocalDate taskEnd = parseDate(task.endDate());
+            if (taskEnd == null) {
+                taskEnd = parseDate(task.dueDate());
+            }
+            if (taskEnd != null) {
+                if (latestEnd == null || taskEnd.isAfter(latestEnd)) {
+                    latestEnd = taskEnd;
+                }
+            }
+        }
+
+        BigDecimal remainingPoints = totalPoints.subtract(completedPoints);
+        if (remainingPoints.compareTo(BigDecimal.ZERO) < 0) {
+            remainingPoints = BigDecimal.ZERO;
+        }
+
+        LocalDate startDateLocal = earliestStart;
+        if (startDateLocal == null && !completedByDate.isEmpty()) {
+            startDateLocal = completedByDate.keySet().stream().min(LocalDate::compareTo).orElse(null);
+        }
+        if (startDateLocal == null) {
+            startDateLocal = LocalDate.now();
+        }
+
+        LocalDate endDateLocal = latestEnd;
+        if (endDateLocal == null && !completedByDate.isEmpty()) {
+            endDateLocal = completedByDate.keySet().stream().max(LocalDate::compareTo).orElse(startDateLocal);
+        }
+        if (endDateLocal == null || endDateLocal.isBefore(startDateLocal)) {
+            endDateLocal = startDateLocal;
+        }
+
+        List<SprintMetricsDto.BurndownPoint> burndownPoints = buildBurndownPoints(
+                totalPoints,
+                startDateLocal,
+                endDateLocal,
+                completedByDate
+        );
+
+        SprintMetricsDto.BurndownData burndownData = SprintMetricsDto.BurndownData.builder()
+            .points(burndownPoints)
+            .totalStoryPoints(totalPoints)
+            .completedStoryPoints(completedPoints)
+            .remainingStoryPoints(remainingPoints)
+            .startDate(startDateLocal != null ? startDateLocal.toString() : null)
+            .endDate(endDateLocal != null ? endDateLocal.toString() : null)
+            .build();
+
+        SprintMetricsDto.VelocityData velocityData = SprintMetricsDto.VelocityData.builder()
+            .currentSprintVelocity(completedPoints)
+            .averageVelocity(completedPoints)
+            .historicalVelocity(Collections.emptyList())
+            .committedPoints(totalPoints)
+            .completedPoints(completedPoints)
+            .completedIssues(completedIssues)
+            .totalIssues(tasks.size())
+            .build();
+
+        return SprintMetricsDto.builder()
+            .projectName(projectKey)
+            .sprintName(sprintName)
+            .burndown(burndownData)
+            .velocity(velocityData)
+            .build();
     }
 
     private List<TaskImportRequest.TaskImportDto> parseJiraResponse(String responseBody) {

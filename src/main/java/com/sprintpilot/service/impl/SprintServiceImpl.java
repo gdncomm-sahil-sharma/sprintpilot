@@ -5,19 +5,15 @@ import com.sprintpilot.entity.Sprint;
 import com.sprintpilot.entity.SprintEvent;
 import com.sprintpilot.entity.TeamMember;
 import com.sprintpilot.repository.SprintRepository;
-import com.sprintpilot.repository.TeamMemberRepository;
 import com.sprintpilot.service.SprintService;
 import com.sprintpilot.util.DateUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,13 +23,9 @@ public class SprintServiceImpl implements SprintService {
     @Autowired
     private SprintRepository sprintRepository;
     
-    @Autowired
-    private TeamMemberRepository teamMemberRepository;
-    
     @Value("${app.data.mock-data-path}")
     private String mockDataPath;
     
-    private final ObjectMapper objectMapper = new ObjectMapper();
     private List<SprintDto> mockSprints = new ArrayList<>();
     
     @PostConstruct
@@ -471,5 +463,12 @@ public class SprintServiceImpl implements SprintService {
         
         mockSprints.add(cloned);
         return cloned;
+    }
+
+    @Override
+    public String getSprintName(String sprintId) {
+        return sprintRepository.findById(sprintId)
+            .map(Sprint::getSprintName)
+            .orElseThrow(() -> new RuntimeException("Sprint not found: " + sprintId));
     }
 }
