@@ -81,6 +81,7 @@ SprintPilot is a modern, full-stack sprint management system designed to help ag
 - **Spring AI** - Gemini integration for intelligent features
 - **PostgreSQL** - Robust relational database
 - **Maven** - Dependency management and build automation
+- **Bucket4j** - Rate limiting for API calls
 
 ### **Frontend**
 - **Thymeleaf** - Server-side templating engine
@@ -158,25 +159,37 @@ GRANT ALL PRIVILEGES ON DATABASE sprintpilot TO inventory;
 ```
 
 ### **3. Configure Application**
-```properties
-# src/main/resources/application.properties
 
+**A. Get Google Gemini API Key:**
+1. Visit: https://aistudio.google.com/app/apikey
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy your API key
+
+**B. Set Environment Variable:**
+```bash
+export GEMINI_API_KEY="your-api-key-here"
+```
+
+**C. Configuration in `application.properties`:**
+```properties
 # Database Configuration
-spring.datasource.url=jdbc:postgresql://localhost:5432/sprintpilot
+spring.datasource.url=jdbc:postgresql://localhost:5432/sprint_pilot
 spring.datasource.username=inventory
 spring.datasource.password=inventory
 
 # JPA Configuration
 spring.jpa.hibernate.ddl-auto=create-drop
 
-# AI Configuration (Optional)
-app.ai.mock-mode=true
+# Google Gemini AI Integration (Spring AI)
+spring.ai.google.genai.api-key=${GEMINI_API_KEY:}
+spring.ai.google.genai.chat.options.model=gemini-2.5-flash
+spring.ai.google.genai.chat.options.temperature=0.7
 
-# Environment variables for production:
-# GEMINI_API_KEY=your-gemini-api-key
-# DB_URL=your-database-url
-# DB_USERNAME=your-db-username  
-# DB_PASSWORD=your-db-password
+# AI Service Configuration
+app.ai.enabled=true
+app.ai.mock-mode=false  # Set to true for development without API key
+app.ai.rate-limit.requests-per-minute=10
 ```
 
 ### **4. Run the Application**
@@ -193,6 +206,45 @@ java -jar target/sprintpilot-1.0.0-SNAPSHOT.jar
 Open your browser and navigate to: `http://localhost:8080`
 
 **Swagger UI**: Access interactive API documentation at `http://localhost:8080/swagger-ui.html`
+
+---
+
+## 🤖 Google Gemini AI Setup
+
+SprintPilot uses **Spring AI with Google Gemini** for AI-powered features.
+
+### **Quick Setup:**
+
+1. **Get API Key**: Visit https://aistudio.google.com/app/apikey
+2. **Set Environment Variable**:
+   ```bash
+   export GEMINI_API_KEY="your-api-key-here"
+   ```
+3. **Run Application**: `mvn spring-boot:run`
+
+### **Development Without API Key:**
+
+Set mock mode in `application-dev.properties`:
+```properties
+app.ai.mock-mode=true
+```
+
+Then run with dev profile:
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+### **Features Powered by Gemini:**
+- ✅ Sprint summaries with workload analysis
+- ✅ Risk identification and recommendations
+- ✅ Meeting invite generation
+- ✅ Confluence page creation
+- ✅ Teams message generation
+- ✅ Historical performance insights
+
+**Rate Limiting**: Built-in rate limiting (10 requests/minute) to stay within free tier quotas.
+
+---
 
 ## 📡 API Documentation
 
