@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SprintEventRepository extends JpaRepository<SprintEvent, String> {
@@ -14,8 +15,16 @@ public interface SprintEventRepository extends JpaRepository<SprintEvent, String
     @Query("SELECT e FROM SprintEvent e WHERE e.sprint.id = :sprintId ORDER BY e.eventDate, e.eventTime")
     List<SprintEvent> findBySprintId(@Param("sprintId") String sprintId);
     
-    @Query("SELECT e FROM SprintEvent e WHERE e.eventType = :type AND e.sprint.id = :sprintId")
-    List<SprintEvent> findBySprintIdAndType(@Param("sprintId") String sprintId, @Param("type") SprintEvent.EventType type);
+    @Query("SELECT e FROM SprintEvent e WHERE e.sprint.id = :sprintId ORDER BY e.eventDate, e.eventTime")
+    List<SprintEvent> findBySprintIdOrderByEventDate(@Param("sprintId") String sprintId);
+    
+    @Query("SELECT e FROM SprintEvent e WHERE e.eventType = :type AND e.sprint.id = :sprintId ORDER BY e.eventDate, e.eventTime")
+    List<SprintEvent> findBySprintIdAndEventTypeOrderByEventDate(@Param("sprintId") String sprintId, @Param("type") SprintEvent.EventType type);
+    
+    @Query("SELECT e FROM SprintEvent e WHERE e.sprint.id = :sprintId AND e.eventType = :eventType AND e.eventSubtype = :eventSubtype")
+    Optional<SprintEvent> findBySprintIdAndEventTypeAndEventSubtype(@Param("sprintId") String sprintId, 
+                                                                    @Param("eventType") SprintEvent.EventType eventType,
+                                                                    @Param("eventSubtype") SprintEvent.MeetingType eventSubtype);
     
     @Query("SELECT e FROM SprintEvent e WHERE e.eventDate BETWEEN :startDate AND :endDate ORDER BY e.eventDate")
     List<SprintEvent> findByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);

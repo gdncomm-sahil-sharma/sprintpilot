@@ -1,5 +1,6 @@
 package com.sprintpilot.controller;
 
+import com.sprintpilot.dto.SprintDto;
 import com.sprintpilot.service.SprintService;
 import com.sprintpilot.service.TeamService;
 import com.sprintpilot.service.HolidayService;
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseBody;
+import java.util.List;
 
 @Controller
 public class PageController {
@@ -38,8 +41,30 @@ public class PageController {
     
     @GetMapping("/sprint/new")
     public String newSprint(Model model) {
-        model.addAttribute("pageTitle", "New Sprint");
+        // Simple approach - always show sprint/new page
+        // JavaScript will call API to get active sprint and populate form
+        model.addAttribute("pageTitle", "Sprint Setup");
         return "sprint/new";
+    }
+    
+    @GetMapping("/sprint/{id}/setup")
+    public String setupSprint(@PathVariable String id, Model model) {
+        try {
+            SprintDto sprint = sprintService.getSprintWithFullDetails(id);
+            List<SprintDto> templates = sprintService.getSprintTemplates();
+            
+            model.addAttribute("pageTitle", "Sprint Setup - " + sprint.id());
+            model.addAttribute("hasActiveSprint", true);
+            model.addAttribute("currentSprint", sprint);
+            model.addAttribute("sprintTemplates", templates);
+            model.addAttribute("hasTemplates", !templates.isEmpty());
+            model.addAttribute("currentSprintId", id);
+            
+            return "sprint/new";
+        } catch (Exception e) {
+            // Sprint not found, redirect to new sprint page
+            return "redirect:/sprint/new";
+        }
     }
     
     @GetMapping("/sprint/{id}")
@@ -111,5 +136,11 @@ public class PageController {
     public String exportCenter(Model model) {
         model.addAttribute("pageTitle", "Export Center");
         return "export/index";
+    }
+    
+    @GetMapping("/test")
+    @ResponseBody
+    public String testEndpoint() {
+        return "PageController is working! Current time: " + java.time.LocalDateTime.now();
     }
 }

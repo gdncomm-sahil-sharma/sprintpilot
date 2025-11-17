@@ -19,9 +19,7 @@ public record SprintDto(
         if (startDate == null) {
             throw new IllegalArgumentException("Start date cannot be null");
         }
-        if (endDate == null) {
-            throw new IllegalArgumentException("End date cannot be null");
-        }
+        // Allow null endDate for new sprints - will be calculated by service
         if (duration == null || duration <= 0) {
             throw new IllegalArgumentException("Duration must be positive");
         }

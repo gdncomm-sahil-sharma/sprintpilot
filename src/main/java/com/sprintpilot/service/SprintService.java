@@ -42,4 +42,13 @@ public interface SprintService {
     SprintDto cloneSprint(String sourceSprintId);
 
     String getSprintName(String sprintId);
+    
+    // New methods for active sprint detection and templates
+    SprintDto getCurrentActiveSprint();
+    
+    boolean hasActiveSprint();
+    
+    List<SprintDto> getSprintTemplates();
+    
+    SprintDto createSprintFromTemplate(String templateSprintId, LocalDate newStartDate);
 }
