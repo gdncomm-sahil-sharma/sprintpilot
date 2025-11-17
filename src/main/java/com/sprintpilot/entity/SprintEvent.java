@@ -54,7 +54,8 @@ public class SprintEvent {
     public enum EventType {
         DEPLOYMENT,
         MEETING,
-        HOLIDAY
+        HOLIDAY,
+        CODE_FREEZE
     }
     
     public enum MeetingType {

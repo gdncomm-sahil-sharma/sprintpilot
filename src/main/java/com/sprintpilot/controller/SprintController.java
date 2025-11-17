@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.util.StringUtils;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -239,6 +240,75 @@ public class SprintController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Failed to fetch sprint metrics", e.getMessage()));
+        }
+    }
+    
+    // New endpoints for sprint management starting point
+    
+    @GetMapping("/current")
+    public ResponseEntity<ApiResponse<SprintDto>> getCurrentActiveSprint() {
+        try {
+            SprintDto currentSprint = sprintService.getCurrentActiveSprint();
+            if (currentSprint != null) {
+                return ResponseEntity.ok(ApiResponse.success("Current active sprint found", currentSprint));
+            } else {
+                return ResponseEntity.ok(ApiResponse.success("No active sprint found", null));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Failed to get current sprint", e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/status")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getSprintStatus() {
+        try {
+            boolean hasActive = sprintService.hasActiveSprint();
+            SprintDto currentSprint = sprintService.getCurrentActiveSprint();
+            List<SprintDto> templates = sprintService.getSprintTemplates();
+            
+            Map<String, Object> status = new HashMap<>();
+            status.put("hasActiveSprint", hasActive);
+            status.put("currentSprint", currentSprint);
+            status.put("hasTemplates", !templates.isEmpty());
+            status.put("templatesCount", templates.size());
+            
+            return ResponseEntity.ok(ApiResponse.success("Sprint status retrieved", status));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Failed to get sprint status", e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/templates")
+    public ResponseEntity<ApiResponse<List<SprintDto>>> getSprintTemplates() {
+        try {
+            List<SprintDto> templates = sprintService.getSprintTemplates();
+            return ResponseEntity.ok(ApiResponse.success("Sprint templates retrieved", templates));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Failed to get sprint templates", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/create-from-template")
+    public ResponseEntity<ApiResponse<SprintDto>> createSprintFromTemplate(@RequestBody Map<String, Object> request) {
+        try {
+            String templateId = (String) request.get("templateId");
+            String startDateStr = (String) request.get("startDate");
+            
+            if (!StringUtils.hasText(templateId) || !StringUtils.hasText(startDateStr)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Template ID and start date are required", null));
+            }
+            
+            LocalDate startDate = LocalDate.parse(startDateStr);
+            SprintDto newSprint = sprintService.createSprintFromTemplate(templateId, startDate);
+            
+            return ResponseEntity.ok(ApiResponse.success("Sprint created from template successfully", newSprint));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Failed to create sprint from template", e.getMessage()));
         }
     }
 }

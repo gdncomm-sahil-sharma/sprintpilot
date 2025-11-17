@@ -90,6 +90,10 @@ public class GeminiAIService implements AIService {
         String meetingType = meeting.eventSubtype() != null ? 
                            meeting.eventSubtype().toString() : "Sprint Meeting";
         
+        // Get meeting-specific agenda and description
+        String agendaTemplate = getMeetingAgendaTemplate(meetingType, meeting.durationMinutes());
+        String meetingPurpose = getMeetingPurpose(meetingType);
+        
         String prompt = String.format(
             """
             Generate a professional meeting invite for a %s meeting.
@@ -100,19 +104,112 @@ public class GeminiAIService implements AIService {
             - Duration: %d minutes
             - Sprint Period: %s to %s
             
-            Include:
-            - Subject line starting with "Subject: "
-            - Meeting purpose
-            - Detailed agenda items
-            - Professional closing
+            IMPORTANT FORMATTING REQUIREMENTS:
+            1. Start with "Subject: [Meeting Type] - Sprint Period: [dates]" on its own line
+            2. After the subject, add TWO blank lines
+            3. Use PLAIN TEXT formatting only (NO markdown, NO asterisks, NO special symbols)
+            4. For the body:
+               - Start with "Dear Team,"
+               - Add a clear meeting purpose: %s
+               - Include "MEETING DETAILS:" section with Date, Time, Duration
+               - Create an "AGENDA:" section header
+               - Use this agenda: %s
+               - Add "Please come prepared" note
+               - End with "Best regards," and "Sprint Team"
+            5. Use simple numbered format (1., 2., 3.) for agenda items
+            6. Add blank lines between sections for readability
             
-            Format the response with clear sections.
+            Generate the invite following this exact structure.
             """,
             meetingType, meeting.eventDate(), meeting.eventTime(), 
-            meeting.durationMinutes(), sprint.startDate(), sprint.endDate()
+            meeting.durationMinutes(), sprint.startDate(), sprint.endDate(),
+            meetingPurpose, agendaTemplate
         );
         
         return callAI(prompt, "Meeting Invite");
+    }
+    
+    /**
+     * Get meeting purpose based on type
+     */
+    private String getMeetingPurpose(String meetingType) {
+        return switch (meetingType.toUpperCase()) {
+            case "PLANNING" -> 
+                "You are invited to our Sprint Planning meeting where we will define the sprint goal, select backlog items, and commit to the sprint scope.";
+            case "GROOMING" -> 
+                "You are invited to our Backlog Grooming session where we will refine user stories, clarify requirements, and prepare items for upcoming sprints.";
+            case "RETROSPECTIVE" -> 
+                "You are invited to our Sprint Retrospective where we will reflect on our sprint, celebrate successes, and identify improvements for future sprints.";
+            default -> 
+                "You are invited to our team meeting to discuss sprint activities and progress.";
+        };
+    }
+    
+    /**
+     * Get meeting-specific agenda template
+     */
+    private String getMeetingAgendaTemplate(String meetingType, Integer duration) {
+        int totalMin = duration != null ? duration : 60;
+        
+        return switch (meetingType.toUpperCase()) {
+            case "PLANNING" -> String.format(
+                """
+                1. Welcome & Review Sprint Goal (%d min)
+                2. Review Team Capacity & Availability (%d min)
+                3. Backlog Review & Story Selection (%d min)
+                4. Story Estimation & Discussion (%d min)
+                5. Sprint Commitment & Finalization (%d min)
+                6. Questions & Next Steps (%d min)
+                """,
+                Math.max(5, totalMin * 5 / 100),
+                Math.max(10, totalMin * 10 / 100),
+                Math.max(30, totalMin * 40 / 100),
+                Math.max(20, totalMin * 25 / 100),
+                Math.max(10, totalMin * 15 / 100),
+                Math.max(5, totalMin * 5 / 100)
+            );
+            
+            case "GROOMING" -> String.format(
+                """
+                1. Review Upcoming User Stories (%d min)
+                2. Clarify Requirements & Acceptance Criteria (%d min)
+                3. Story Breakdown & Task Identification (%d min)
+                4. Estimation & Complexity Discussion (%d min)
+                5. Prioritization & Dependencies (%d min)
+                6. Action Items & Follow-ups (%d min)
+                """,
+                Math.max(10, totalMin * 15 / 100),
+                Math.max(15, totalMin * 25 / 100),
+                Math.max(15, totalMin * 25 / 100),
+                Math.max(10, totalMin * 20 / 100),
+                Math.max(5, totalMin * 10 / 100),
+                Math.max(5, totalMin * 5 / 100)
+            );
+            
+            case "RETROSPECTIVE" -> String.format(
+                """
+                1. Welcome & Set the Stage (%d min)
+                2. Review Sprint Metrics & Outcomes (%d min)
+                3. What Went Well (Celebrations) (%d min)
+                4. What Didn't Go Well (Challenges) (%d min)
+                5. Action Items & Improvements (%d min)
+                6. Closing & Appreciation (%d min)
+                """,
+                Math.max(5, totalMin * 5 / 100),
+                Math.max(10, totalMin * 15 / 100),
+                Math.max(15, totalMin * 25 / 100),
+                Math.max(15, totalMin * 25 / 100),
+                Math.max(15, totalMin * 25 / 100),
+                Math.max(5, totalMin * 5 / 100)
+            );
+            
+            default -> 
+                """
+                1. Welcome & Introductions
+                2. Main Discussion Topics
+                3. Action Items & Next Steps
+                """;
+        };
     }
     
     /**
