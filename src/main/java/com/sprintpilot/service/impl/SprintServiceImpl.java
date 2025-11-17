@@ -31,7 +31,7 @@ public class SprintServiceImpl implements SprintService {
     
     @Value("${app.data.mock-data-path}")
     private String mockDataPath;
-    
+
     private List<SprintDto> mockSprints = new ArrayList<>();
     
     @PostConstruct
@@ -133,6 +133,7 @@ public class SprintServiceImpl implements SprintService {
             TeamMember.Role.FRONTEND,
             new BigDecimal("6"),
             "alice@company.com",
+            "Bangalore",
             true,
             List.of(), false
         ));
@@ -143,6 +144,7 @@ public class SprintServiceImpl implements SprintService {
             TeamMember.Role.BACKEND,
             new BigDecimal("7"),
             "bob@company.com",
+            "Coimbatore",
             true,
             List.of(), false
         ));
@@ -153,6 +155,7 @@ public class SprintServiceImpl implements SprintService {
             TeamMember.Role.QA,
             new BigDecimal("5"),
             "charlie@company.com",
+            "Indonesia",
             true,
             List.of(), false
         ));
@@ -163,6 +166,7 @@ public class SprintServiceImpl implements SprintService {
             TeamMember.Role.BACKEND,
             new BigDecimal("7"),
             "david@company.com",
+            "Bangalore",
             true,
             List.of(), false
         ));
@@ -278,7 +282,7 @@ public class SprintServiceImpl implements SprintService {
                 log.error("Failed to create Confluence page for sprint: {}", newSprint.id(), e);
             }
         }
-        
+
         return newSprint;
     }
     
@@ -478,5 +482,12 @@ public class SprintServiceImpl implements SprintService {
         
         mockSprints.add(cloned);
         return cloned;
+    }
+
+    @Override
+    public String getSprintName(String sprintId) {
+        return sprintRepository.findById(sprintId)
+            .map(Sprint::getSprintName)
+            .orElseThrow(() -> new RuntimeException("Sprint not found: " + sprintId));
     }
 }

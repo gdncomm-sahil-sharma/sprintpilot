@@ -72,6 +72,7 @@ public class TeamServiceImpl implements TeamService {
         member.setRole(memberDto.role());
         member.setDailyCapacity(memberDto.dailyCapacity());
         member.setEmail(memberDto.email());
+        member.setLocation(memberDto.location());
         member.setActive(memberDto.active() != null ? memberDto.active() : true);
         
         // Save member first
@@ -116,6 +117,9 @@ public class TeamServiceImpl implements TeamService {
         }
         if (memberDto.email() != null) {
             existingMember.setEmail(memberDto.email());
+        }
+        if (memberDto.location() != null) {
+            existingMember.setLocation(memberDto.location());
         }
         if (memberDto.active() != null) {
             existingMember.setActive(memberDto.active());
@@ -241,6 +245,7 @@ public class TeamServiceImpl implements TeamService {
                 member.getRole(),
                 member.getDailyCapacity(),
                 member.getEmail(),
+                member.getLocation(),
                 member.getActive(),
                 leaveDays,
                 assignedMemberIds.contains(member.getId())
