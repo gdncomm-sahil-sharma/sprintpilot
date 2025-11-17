@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Export Center - SprintPilot</title>
+</head>
+<body>
+<main>
+    <div class="space-y-8">
+        <div class="flex flex-col md:flex-row justify-between md:items-start gap-4">
+            <div>
+                <h2 class="text-3xl font-extrabold text-gray-800">Export Center</h2>
+                <p class="text-gray-500 mt-2 text-lg">Generate formatted content for other platforms based on your sprint plan.</p>
+            </div>
+        </div>
+
+        <div class="bg-white border border-gray-100 shadow-sm rounded-2xl p-6 space-y-6">
+            <div class="space-y-2">
+                <p class="text-xs uppercase tracking-widest text-primary-600 font-semibold">Select Export Type</p>
+                <div class="border-2 border-primary-300 bg-primary-50 rounded-2xl p-4 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-primary-700">Confluence Page</h3>
+                        <p class="text-sm text-primary-600">Create a documentation page in Confluence with the latest sprint insights.</p>
+                    </div>
+                    <span class="px-3 py-1 text-xs font-semibold rounded-full text-primary-700 bg-white border border-primary-200">Active Sprint</span>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <button id="exportButton"
+                        onclick="generateConfluenceExport()"
+                        class="w-full md:w-auto px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    <span>Generate Confluence Page</span>
+                </button>
+                <div id="exportStatus" class="text-sm text-gray-500"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.generateConfluenceExport = async function() {
+            const statusEl = document.getElementById('exportStatus');
+            const button = document.getElementById('exportButton');
+
+            if (!statusEl || !button) {
+                console.error('Export elements not found');
+                return;
+            }
+
+            statusEl.className = 'text-sm text-gray-500';
+            statusEl.textContent = 'Generating Confluence page...';
+            button.disabled = true;
+            button.classList.add('opacity-70', 'cursor-not-allowed');
+
+            try {
+                const response = await fetch('/api/export/confluence', { method: 'POST' });
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    statusEl.className = 'text-sm text-green-600';
+                    const link = result.data;
+                    statusEl.innerHTML = `Confluence page is ready: <a class="underline font-semibold" href="${link}" target="_blank" rel="noopener noreferrer">${link}</a>`;
+                } else {
+                    throw new Error(result.error || result.message || 'Unable to generate Confluence page.');
+                }
+            } catch (error) {
+                console.error('Export failed', error);
+                statusEl.className = 'text-sm text-red-600';
+                statusEl.textContent = error.message || 'Failed to generate Confluence page.';
+            } finally {
+                button.disabled = false;
+                button.classList.remove('opacity-70', 'cursor-not-allowed');
+            }
+        };
+    </script>
+</main>
+</body>
+</html>
+

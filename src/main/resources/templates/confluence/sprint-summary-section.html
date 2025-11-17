@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <hr>
+    <h1>✅ Sprint Completion Summary</h1>
+    <p><strong>Completed on:</strong> {{completionDate}}</p>
+
+    <div class="executive-summary">
+        <h2>📊 Executive Summary</h2>
+        <table>
+            <tr>
+                <td><strong>Sprint Status:</strong></td>
+                <td><strong>{{completionStatus}}</strong></td>
+            </tr>
+            <tr>
+                <td><strong>Completion Rate:</strong></td>
+                <td>{{completionRate}}%</td>
+            </tr>
+            <tr>
+                <td><strong>Velocity Achieved:</strong></td>
+                <td>{{velocity}} SP</td>
+            </tr>
+            <tr>
+                <td><strong>Team Performance:</strong></td>
+                <td>{{teamPerformance}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="metrics-section">
+        <h2>📈 Key Metrics</h2>
+        <table>
+            <tr>
+                <td><strong>Total Story Points Planned:</strong></td>
+                <td>{{totalStoryPoints}} SP</td>
+            </tr>
+            <tr>
+                <td><strong>Story Points Completed:</strong></td>
+                <td>{{completedStoryPoints}} SP</td>
+            </tr>
+            <tr>
+                <td><strong>Story Points Incomplete:</strong></td>
+                <td>{{incompleteStoryPoints}} SP</td>
+            </tr>
+            <tr>
+                <td><strong>Completion Percentage:</strong></td>
+                <td>{{completionPercentage}}%</td>
+            </tr>
+            <tr>
+                <td><strong>Team Size:</strong></td>
+                <td>{{teamSize}} members</td>
+            </tr>
+            <tr>
+                <td><strong>Average Velocity:</strong></td>
+                <td>{{averageVelocity}} SP/sprint</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="completed-tasks-section">
+        <h2>✅ Completed Tasks</h2>
+        <p><strong>Total Completed:</strong> {{completedTasksCount}} tasks ({{completedStoryPoints}} SP)</p>
+        {{completedTasks}}
+    </div>
+
+    <div class="incomplete-tasks-section">
+        <h2>⏳ Incomplete Tasks</h2>
+        <p><strong>Total Incomplete:</strong> {{incompleteTasksCount}} tasks ({{incompleteStoryPoints}} SP)</p>
+        {{incompleteTasks}}
+    </div>
+
+    <div class="category-analysis">
+        <h2>📊 Category-wise Analysis</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Planned</th>
+                    <th>Completed</th>
+                    <th>Completion %</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Features</strong></td>
+                    <td>{{featurePlanned}} SP</td>
+                    <td>{{featureCompleted}} SP</td>
+                    <td>{{featureCompletionPercentage}}%</td>
+                </tr>
+                <tr>
+                    <td><strong>Tech Debt</strong></td>
+                    <td>{{techDebtPlanned}} SP</td>
+                    <td>{{techDebtCompleted}} SP</td>
+                    <td>{{techDebtCompletionPercentage}}%</td>
+                </tr>
+                <tr>
+                    <td><strong>Production Issues</strong></td>
+                    <td>{{prodIssuePlanned}} SP</td>
+                    <td>{{prodIssueCompleted}} SP</td>
+                    <td>{{prodIssueCompletionPercentage}}%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="team-performance">
+        <h2>👥 Team Performance</h2>
+        <table>
+            <tr>
+                <td><strong>Team Size:</strong></td>
+                <td>{{teamSize}} members</td>
+            </tr>
+            <tr>
+                <td><strong>Active Team Members:</strong></td>
+                <td>{{activeTeamMembers}}</td>
+            </tr>
+            <tr>
+                <td><strong>Total Capacity Utilized:</strong></td>
+                <td>{{capacityUtilized}}%</td>
+            </tr>
+            <tr>
+                <td><strong>Average Story Points per Member:</strong></td>
+                <td>{{storyPointsPerMember}} SP</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="velocity-trends">
+        <h2>📈 Velocity Trends</h2>
+        <table>
+            <tr>
+                <td><strong>Current Sprint Velocity:</strong></td>
+                <td>{{velocity}} SP</td>
+            </tr>
+            <tr>
+                <td><strong>Average Velocity (Last 3 sprints):</strong></td>
+                <td>{{averageVelocity3Sprints}} SP</td>
+            </tr>
+            <tr>
+                <td><strong>Velocity Trend:</strong></td>
+                <td>{{velocityTrend}}</td>
+            </tr>
+            <tr>
+                <td><strong>Velocity vs Plan:</strong></td>
+                <td>{{velocityVsPlan}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="blockers-issues">
+        <h2>🚧 Blockers & Issues Encountered</h2>
+        {{blockers}}
+    </div>
+
+    <div class="achievements">
+        <h2>🎉 Key Achievements</h2>
+        {{achievements}}
+    </div>
+
+    <div class="lessons-learned">
+        <h2>💡 Lessons Learned</h2>
+        {{lessonsLearned}}
+    </div>
+
+    <div class="next-sprint-recommendations">
+        <h2>🔮 Recommendations for Next Sprint</h2>
+        {{recommendations}}
+    </div>
+
+    <div class="data-quality-note">
+        <h2>📝 Data Quality Note</h2>
+        <p><em>This summary is generated based on available sprint data. Some insights may be limited if complete task information is not available.</em></p>
+        <p><strong>Data Sources:</strong> {{dataSources}}</p>
+    </div>
+
+    <hr>
+    <p><em>Summary generated on {{generatedAt}} | Sprint completed: {{completionDate}}</em></p>
+</body>
+</html>
+

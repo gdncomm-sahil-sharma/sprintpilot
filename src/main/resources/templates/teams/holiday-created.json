@@ -1,0 +1,34 @@
+{
+  "@type": "MessageCard",
+  "@context": "https://schema.org/extensions",
+  "summary": "Holiday Created",
+  "themeColor": "0078D4",
+  "title": "🎉 New Holiday Created",
+  "sections": [{
+    "activityTitle": "Holiday Management",
+    "activitySubtitle": "A new holiday has been added to the system",
+    "facts": [
+      {
+        "name": "Holiday Name:",
+        "value": "{{holidayName}}"
+      },
+      {
+        "name": "Date:",
+        "value": "{{holidayDate}}"
+      },
+      {
+        "name": "Type:",
+        "value": "{{holidayType}}"
+      },
+      {
+        "name": "Locations:",
+        "value": "{{locations}}"
+      },
+      {
+        "name": "Recurring:",
+        "value": "{{recurring}}"
+      }
+    ]
+  }]
+}
+

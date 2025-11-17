@@ -2,7 +2,7 @@ package com.sprintpilot.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sprintpilot.config.JiraConfigProperties;
+import com.sprintpilot.config.AtlassianConfigProperties;
 import com.sprintpilot.dto.TaskImportRequest;
 import com.sprintpilot.service.JiraClient;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.List;
 public class JiraClientImpl implements JiraClient {
 
     @Autowired
-    private JiraConfigProperties jiraConfig;
+    private AtlassianConfigProperties jiraConfig;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private HttpClient httpClient;

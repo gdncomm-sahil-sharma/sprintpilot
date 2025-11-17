@@ -106,4 +106,10 @@ public class PageController {
         model.addAttribute("pageTitle", "Settings");
         return "configuration/settings";
     }
+
+    @GetMapping("/export")
+    public String exportCenter(Model model) {
+        model.addAttribute("pageTitle", "Export Center");
+        return "export/index";
+    }
 }

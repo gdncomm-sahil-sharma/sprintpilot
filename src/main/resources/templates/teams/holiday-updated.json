@@ -1,0 +1,30 @@
+{
+  "@type": "MessageCard",
+  "@context": "https://schema.org/extensions",
+  "summary": "Holiday Updated",
+  "themeColor": "FF8C00",
+  "title": "✏️ Holiday Updated",
+  "sections": [{
+    "activityTitle": "Holiday Management",
+    "activitySubtitle": "A holiday has been updated",
+    "facts": [
+      {
+        "name": "Holiday Name:",
+        "value": "{{holidayName}}"
+      },
+      {
+        "name": "Date:",
+        "value": "{{holidayDate}}"
+      },
+      {
+        "name": "Type:",
+        "value": "{{holidayType}}"
+      },
+      {
+        "name": "Locations:",
+        "value": "{{locations}}"
+      }
+    ]
+  }]
+}
+

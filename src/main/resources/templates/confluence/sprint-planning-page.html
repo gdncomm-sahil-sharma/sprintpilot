@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>🚀 Sprint Planning: {{sprintId}}</h1>
+    
+    <div class="sprint-overview">
+        <h2>📅 Sprint Overview</h2>
+        <table>
+            <tr>
+                <td><strong>Sprint ID:</strong></td>
+                <td>{{sprintId}}</td>
+            </tr>
+            <tr>
+                <td><strong>Start Date:</strong></td>
+                <td>{{startDate}}</td>
+            </tr>
+            <tr>
+                <td><strong>End Date:</strong></td>
+                <td>{{endDate}}</td>
+            </tr>
+            <tr>
+                <td><strong>Duration:</strong></td>
+                <td>{{duration}} working days</td>
+            </tr>
+            <tr>
+                <td><strong>Status:</strong></td>
+                <td>{{status}}</td>
+            </tr>
+            {{freezeDateRow}}
+        </table>
+    </div>
+
+    <div class="team-section">
+        <h2>👥 Team Members</h2>
+        <p><strong>Team Size:</strong> {{teamSize}} members</p>
+        {{teamMembers}}
+    </div>
+
+    <div class="capacity-section">
+        <h2>📊 Capacity Planning</h2>
+        <table>
+            <tr>
+                <td><strong>Total Team Capacity:</strong></td>
+                <td>{{totalCapacity}} hours</td>
+            </tr>
+            <tr>
+                <td><strong>Sprint Capacity:</strong></td>
+                <td>{{sprintCapacity}} hours</td>
+            </tr>
+            <tr>
+                <td><strong>Planned Story Points:</strong></td>
+                <td>{{plannedStoryPoints}} SP</td>
+            </tr>
+            <tr>
+                <td><strong>Average Velocity:</strong></td>
+                <td>{{averageVelocity}} SP/sprint</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="timeline-section">
+        <h2>📅 Sprint Timeline</h2>
+        <p><strong>Working Days:</strong> {{workingDays}} days</p>
+        <p><strong>Holidays in Sprint:</strong> {{holidayCount}} days</p>
+        {{holidaysInfo}}
+    </div>
+
+    <div class="goals-section">
+        <h2>🎯 Sprint Goals & Objectives</h2>
+        {{sprintGoals}}
+    </div>
+
+    <div class="planned-tasks-section">
+        <h2>📋 Planned Tasks</h2>
+        {{plannedTasks}}
+        <p><strong>Total Planned Story Points:</strong> {{totalPlannedStoryPoints}} SP</p>
+    </div>
+
+    <div class="category-breakdown">
+        <h2>📊 Work Distribution</h2>
+        <table>
+            <tr>
+                <td><strong>Features:</strong></td>
+                <td>{{featureStoryPoints}} SP ({{featurePercentage}}%)</td>
+            </tr>
+            <tr>
+                <td><strong>Tech Debt:</strong></td>
+                <td>{{techDebtStoryPoints}} SP ({{techDebtPercentage}}%)</td>
+            </tr>
+            <tr>
+                <td><strong>Production Issues:</strong></td>
+                <td>{{prodIssueStoryPoints}} SP ({{prodIssuePercentage}}%)</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="risks-section">
+        <h2>⚠️ Potential Risks & Blockers</h2>
+        {{risks}}
+    </div>
+
+    <div class="events-section">
+        <h2>📅 Sprint Events</h2>
+        {{events}}
+    </div>
+
+    <hr>
+    <p><em>Page created on {{createdAt}} | Last updated: {{updatedAt}}</em></p>
+</body>
+</html>
+
