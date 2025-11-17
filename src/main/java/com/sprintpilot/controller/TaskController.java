@@ -2,10 +2,17 @@ package com.sprintpilot.controller;
 
 import com.sprintpilot.dto.*;
 import com.sprintpilot.service.TaskImportService;
+import com.sprintpilot.service.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
@@ -15,12 +22,99 @@ import java.util.List;
 /**
  * REST Controller for task management operations
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/tasks")
+@Tag(name = "Tasks", description = "Task management and import operations")
 public class TaskController {
     
     @Autowired
     private TaskImportService taskImportService;
+    
+    @Autowired
+    private TaskService taskService;
+    
+    @Autowired
+    private com.sprintpilot.service.MemberService memberService;
+    
+    /**
+     * Get all tasks for a sprint with assignee details (with pagination and filtering)
+     * 
+     * @param sprintId The sprint ID
+     * @param riskFactor Optional risk factor filter (ON_TRACK, AT_RISK, OFF_TRACK)
+     * @param page Page number (0-based)
+     * @param size Number of items per page
+     * @return Paginated list of tasks with assignee names
+     */
+    @Operation(
+        summary = "Get tasks by sprint ID",
+        description = "Retrieves tasks for a specific sprint with pagination and optional risk factor filtering. Results are sorted by assignee name."
+    )
+    @GetMapping("/sprint/{sprintId}")
+    public ResponseEntity<ApiResponse<TaskPageResponse>> getTasksBySprintId(
+            @Parameter(description = "Sprint ID to fetch tasks for", required = true)
+            @PathVariable("sprintId") String sprintId,
+            @Parameter(description = "Risk factor filter (ON_TRACK, AT_RISK, OFF_TRACK)", required = true)
+            @RequestParam(required = true) String riskFactor,
+            @Parameter(description = "Page number (0-based)")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Number of items per page")
+            @RequestParam(defaultValue = "10") int size) {
+        try {
+            log.info("GET /api/tasks/sprint/{} - riskFactor: {}, page: {}, size: {}", sprintId, riskFactor, page, size);
+            TaskPageResponse response = taskService.getTasksBySprintIdPaginated(sprintId, riskFactor, page, size);
+            log.info("Returning {} tasks (page {}/{})", response.tasks().size(), response.currentPage() + 1, response.totalPages());
+            return ResponseEntity.ok(ApiResponse.success(response));
+        } catch (Exception e) {
+            log.error("Failed to fetch tasks for sprint {}: {}", sprintId, e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.failure("Failed to fetch tasks: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Analyze risks for all tasks in the current sprint (reads sprintId from cookie)
+     * 
+     * @param request HttpServletRequest to read cookies
+     * @return Number of tasks analyzed
+     */
+    @Operation(
+        summary = "Analyze task risks",
+        description = "Analyzes and updates risk factors for all tasks in the current sprint. Reads sprint ID from cookie 'currentSprintId'"
+    )
+    @PostMapping("/analyze-risks")
+    public ResponseEntity<ApiResponse<Integer>> analyzeTaskRisks(HttpServletRequest request) {
+        try {
+            // Read sprint ID from cookie
+            String sprintId = getSprintIdFromCookie(request);
+            
+            if (sprintId == null || sprintId.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.failure("Sprint ID not found in cookie"));
+            }
+            
+            int tasksAnalyzed = taskService.analyzeSprintRisks(sprintId);
+            return ResponseEntity.ok(ApiResponse.success(tasksAnalyzed));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.failure("Failed to analyze risks: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Helper method to extract sprint ID from cookies
+     */
+    private String getSprintIdFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("currentSprintId".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
     
     /**
      * Import tasks from CSV file
@@ -45,7 +139,8 @@ public class TaskController {
             TaskImportResponse response = taskImportService.importFromJira(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            TaskImportResponse errorResponse = TaskImportResponse.failure("Jira import failed: " + e.getMessage());
+            String errorMsg = e.getMessage() != null ? e.getMessage() : "Unknown error";
+            TaskImportResponse errorResponse = TaskImportResponse.failure("Jira import failed: " + errorMsg);
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
@@ -212,6 +307,32 @@ public class TaskController {
             }
         }
         return -1;
+    }
+    
+    /**
+     * Get member utilization metrics for a sprint
+     * 
+     * @param sprintId Sprint ID to calculate utilization for
+     * @return List of member utilization metrics
+     */
+    @Operation(
+        summary = "Get member utilization by sprint",
+        description = "Calculates utilization metrics for all team members in a sprint, including remaining estimate, capacity, gap, and utilization status"
+    )
+    @GetMapping("/utilization/sprint/{sprintId}")
+    public ResponseEntity<ApiResponse<List<com.sprintpilot.dto.MemberUtilizationDto>>> getMemberUtilization(
+            @Parameter(description = "Sprint ID to calculate utilization for", required = true)
+            @PathVariable("sprintId") String sprintId) {
+        try {
+            log.info("GET /api/tasks/utilization/sprint/{}", sprintId);
+            List<com.sprintpilot.dto.MemberUtilizationDto> utilizations = memberService.getMemberUtilizationBySprintId(sprintId);
+            log.info("Returning utilization data for {} members", utilizations.size());
+            return ResponseEntity.ok(ApiResponse.success(utilizations));
+        } catch (Exception e) {
+            log.error("Failed to calculate member utilization for sprint {}: {}", sprintId, e.getMessage(), e);
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.failure("Failed to calculate member utilization: " + e.getMessage()));
+        }
     }
     
     /**

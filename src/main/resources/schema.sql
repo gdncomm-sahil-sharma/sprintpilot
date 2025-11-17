@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS task (
     start_date DATE,
     due_date DATE,
     time_spent DECIMAL(5,2) DEFAULT 0,
+    risk_factor VARCHAR(20), -- ON_TRACK, AT_RISK, OFF_TRACK
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sprint_id) REFERENCES sprint(id) ON DELETE CASCADE

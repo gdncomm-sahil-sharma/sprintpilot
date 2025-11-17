@@ -6,6 +6,9 @@
 </head>
 <body>
     <div th:fragment="content">
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+        
         <div class="space-y-8">
             <!-- Header Section - Exact React Match -->
             <div class="flex flex-col md:flex-row justify-between md:items-start gap-4">
@@ -29,232 +32,150 @@
                 </div>
             </div>
 
+            <!-- Tabs Navigation -->
+            <div class="mb-6">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button id="tasksTab" onclick="switchTab('tasks')" class="tab-button active border-primary-500 text-primary-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            Tasks
+                        </button>
+                        <button id="utilizationTab" onclick="switchTab('utilization')" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                            <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            Member Utilization
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Tasks Tab Content -->
+            <div id="tasksTabContent" class="tab-content">
             <!-- Main Content Grid - Exact React Layout -->
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 <!-- Left Column - Sprint Backlog -->
                 <div class="lg:col-span-3">
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
-                        <h3 class="text-xl font-bold mb-4 text-gray-700 border-b pb-3">Sprint Backlog (7 tasks)</h3>
-                        <div class="space-y-3 max-h-[600px] overflow-y-auto pr-2">
-                            
-                            <!-- Task 1 - On Track -->
-                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-green-500">
-                                <div class="flex justify-between items-start">
+                    
+                    <!-- 3 Risk Factor Cards -->
+                    <div class="space-y-6">
+                        
+                        <!-- OFF TRACK Card -->
+                        <div class="bg-white rounded-xl shadow-sm border-2 border-red-200">
+                            <div class="p-4 bg-red-50 border-b border-red-200 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-1 h-8 bg-red-500 rounded"></div>
                                     <div>
-                                        <p class="font-bold text-gray-800">PROJ-101: Implement new dashboard layout</p>
-                                        <p class="text-sm text-gray-500">FEATURE • 8 hours</p>
+                                        <h4 class="text-lg font-bold text-red-700">Off Track</h4>
+                                        <p class="text-xs text-red-600" id="offtrack-count">Loading...</p>
                                     </div>
-                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="Task is progressing well">
-                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </div>
+                                <span class="text-xs text-red-600 bg-red-100 px-3 py-1 rounded-full font-semibold">Requires Immediate Attention</span>
+                                </div>
+                            <div class="p-4">
+                                <div id="offtrack-tasks" class="space-y-3 min-h-[100px]">
+                                    <div class="text-center py-4 text-gray-500">
+                                        <svg class="mx-auto h-8 w-8 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        <span>On Track</span>
                                     </div>
                                 </div>
-                                <div class="mt-3 flex items-center justify-between">
-                                    <div class="w-1/2">
-                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                                            <option value="">Unassigned</option>
-                                            <option value="alice" selected>Alice Johnson</option>
-                                            <option value="bob">Bob Smith</option>
-                                            <option value="charlie">Charlie Davis</option>
-                                            <option value="david">David Wilson</option>
-                                        </select>
+                                <!-- Pagination for Off Track -->
+                                <div id="offtrack-pagination" class="mt-4 pt-4 border-t border-red-100 flex items-center justify-between hidden">
+                                    <div class="text-xs text-gray-600">
+                                        <span id="offtrack-pagination-info"></span>
                                     </div>
-                                    <div class="text-xs text-gray-500 text-right">
-                                        <p>Start: 2024-11-15 | Due: 2024-11-18</p>
-                                        <p>Spent: 2.5h</p>
+                                    <div class="flex space-x-2">
+                                        <button onclick="loadOffTrackPage('prev')" id="offtrack-prev" class="px-3 py-1 text-xs bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                            Previous
+                                        </button>
+                                        <button onclick="loadOffTrackPage('next')" id="offtrack-next" class="px-3 py-1 text-xs bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                            Next
+                                        </button>
+                                    </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Task 2 - At Risk -->
-                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-yellow-500 bg-yellow-50/50">
-                                <div class="flex justify-between items-start">
+                        <!-- AT RISK Card -->
+                        <div class="bg-white rounded-xl shadow-sm border-2 border-yellow-200">
+                            <div class="p-4 bg-yellow-50 border-b border-yellow-200 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-1 h-8 bg-yellow-500 rounded"></div>
                                     <div>
-                                        <p class="font-bold text-gray-800">PROJ-102: API integration with payment gateway</p>
-                                        <p class="text-sm text-gray-500">FEATURE • 13 hours</p>
+                                        <h4 class="text-lg font-bold text-yellow-700">At Risk</h4>
+                                        <p class="text-xs text-yellow-600" id="atrisk-count">Loading...</p>
                                     </div>
-                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="May need attention">
-                                        <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </div>
+                                <span class="text-xs text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full font-semibold">May Need Attention</span>
+                                </div>
+                            <div class="p-4">
+                                <div id="atrisk-tasks" class="space-y-3 min-h-[100px]">
+                                    <div class="text-center py-4 text-gray-500">
+                                        <svg class="mx-auto h-8 w-8 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        <span>At Risk</span>
                                     </div>
                                 </div>
-                                <div class="mt-3 flex items-center justify-between">
-                                    <div class="w-1/2">
-                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                                            <option value="">Unassigned</option>
-                                            <option value="alice">Alice Johnson</option>
-                                            <option value="bob" selected>Bob Smith</option>
-                                            <option value="charlie">Charlie Davis</option>
-                                            <option value="david">David Wilson</option>
-                                        </select>
+                                <!-- Pagination for At Risk -->
+                                <div id="atrisk-pagination" class="mt-4 pt-4 border-t border-yellow-100 flex items-center justify-between hidden">
+                                    <div class="text-xs text-gray-600">
+                                        <span id="atrisk-pagination-info"></span>
                                     </div>
-                                    <div class="text-xs text-gray-500 text-right">
-                                        <p>Start: 2024-11-14 | Due: 2024-11-19</p>
-                                        <p>Spent: 1.3h</p>
+                                    <div class="flex space-x-2">
+                                        <button onclick="loadAtRiskPage('prev')" id="atrisk-prev" class="px-3 py-1 text-xs bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                            Previous
+                                        </button>
+                                        <button onclick="loadAtRiskPage('next')" id="atrisk-next" class="px-3 py-1 text-xs bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                            Next
+                                        </button>
+                                    </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Task 3 - Off Track -->
-                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-red-500 bg-red-50/50">
-                                <div class="flex justify-between items-start">
+                        <!-- ON TRACK Card -->
+                        <div class="bg-white rounded-xl shadow-sm border-2 border-green-200">
+                            <div class="p-4 bg-green-50 border-b border-green-200 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-1 h-8 bg-green-500 rounded"></div>
                                     <div>
-                                        <p class="font-bold text-gray-800">PROJ-103: Fix critical login timeout issue</p>
-                                        <p class="text-sm text-gray-500">PROD_ISSUE • 5 hours</p>
+                                        <h4 class="text-lg font-bold text-green-700">On Track</h4>
+                                        <p class="text-xs text-green-600" id="ontrack-count">Loading...</p>
                                     </div>
-                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="Requires immediate attention">
-                                        <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </div>
+                                <span class="text-xs text-green-600 bg-green-100 px-3 py-1 rounded-full font-semibold">Progressing Well</span>
+                                </div>
+                            <div class="p-4">
+                                <div id="ontrack-tasks" class="space-y-3 min-h-[100px]">
+                                    <div class="text-center py-4 text-gray-500">
+                                        <svg class="mx-auto h-8 w-8 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        <span>Off Track</span>
                                     </div>
                                 </div>
-                                <div class="mt-3 flex items-center justify-between">
-                                    <div class="w-1/2">
-                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                                            <option value="">Unassigned</option>
-                                            <option value="alice">Alice Johnson</option>
-                                            <option value="bob">Bob Smith</option>
-                                            <option value="charlie">Charlie Davis</option>
-                                            <option value="david" selected>David Wilson</option>
-                                        </select>
+                                <!-- Pagination for On Track -->
+                                <div id="ontrack-pagination" class="mt-4 pt-4 border-t border-green-100 flex items-center justify-between hidden">
+                                    <div class="text-xs text-gray-600">
+                                        <span id="ontrack-pagination-info"></span>
                                     </div>
-                                    <div class="text-xs text-gray-500 text-right">
-                                        <p>Start: 2024-11-12 | Due: 2024-11-14</p>
-                                        <p>Spent: 3.0h</p>
+                                    <div class="flex space-x-2">
+                                        <button onclick="loadOnTrackPage('prev')" id="ontrack-prev" class="px-3 py-1 text-xs bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                            Previous
+                                        </button>
+                                        <button onclick="loadOnTrackPage('next')" id="ontrack-next" class="px-3 py-1 text-xs bg-white border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                            Next
+                                        </button>
+                                    </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Task 4 - On Track -->
-                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-green-500">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="font-bold text-gray-800">PROJ-104: Refactor database connection pooling</p>
-                                        <p class="text-sm text-gray-500">TECH_DEBT • 10 hours</p>
-                                    </div>
-                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="Task is progressing well">
-                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                        <span>On Track</span>
-                                    </div>
-                                </div>
-                                <div class="mt-3 flex items-center justify-between">
-                                    <div class="w-1/2">
-                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                                            <option value="">Unassigned</option>
-                                            <option value="alice">Alice Johnson</option>
-                                            <option value="bob" selected>Bob Smith</option>
-                                            <option value="charlie">Charlie Davis</option>
-                                            <option value="david">David Wilson</option>
-                                        </select>
-                                    </div>
-                                    <div class="text-xs text-gray-500 text-right">
-                                        <p>Start: 2024-11-16 | Due: 2024-11-20</p>
-                                        <p>Spent: 0.5h</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Task 5 - At Risk -->
-                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-yellow-500 bg-yellow-50/50">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="font-bold text-gray-800">PROJ-105: Mobile responsive design updates</p>
-                                        <p class="text-sm text-gray-500">FEATURE • 12 hours</p>
-                                    </div>
-                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="May need attention">
-                                        <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        <span>At Risk</span>
-                                    </div>
-                                </div>
-                                <div class="mt-3 flex items-center justify-between">
-                                    <div class="w-1/2">
-                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                                            <option value="">Unassigned</option>
-                                            <option value="alice" selected>Alice Johnson</option>
-                                            <option value="bob">Bob Smith</option>
-                                            <option value="charlie">Charlie Davis</option>
-                                            <option value="david">David Wilson</option>
-                                        </select>
-                                    </div>
-                                    <div class="text-xs text-gray-500 text-right">
-                                        <p>Start: 2024-11-13 | Due: 2024-11-17</p>
-                                        <p>Spent: 4.2h</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Task 6 - On Track -->
-                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-green-500">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="font-bold text-gray-800">PROJ-106: Unit tests for authentication module</p>
-                                        <p class="text-sm text-gray-500">TECH_DEBT • 6 hours</p>
-                                    </div>
-                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="Task is progressing well">
-                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                        <span>On Track</span>
-                                    </div>
-                                </div>
-                                <div class="mt-3 flex items-center justify-between">
-                                    <div class="w-1/2">
-                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                                            <option value="">Unassigned</option>
-                                            <option value="alice">Alice Johnson</option>
-                                            <option value="bob">Bob Smith</option>
-                                            <option value="charlie" selected>Charlie Davis</option>
-                                            <option value="david">David Wilson</option>
-                                        </select>
-                                    </div>
-                                    <div class="text-xs text-gray-500 text-right">
-                                        <p>Start: 2024-11-17 | Due: 2024-11-19</p>
-                                        <p>Spent: 1.0h</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Task 7 - On Track -->
-                            <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-green-500">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <p class="font-bold text-gray-800">PROJ-107: Documentation updates for API v2</p>
-                                        <p class="text-sm text-gray-500">FEATURE • 4 hours</p>
-                                    </div>
-                                    <div class="flex items-center space-x-2 text-sm font-semibold" title="Task is progressing well">
-                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                        <span>On Track</span>
-                                    </div>
-                                </div>
-                                <div class="mt-3 flex items-center justify-between">
-                                    <div class="w-1/2">
-                                        <select class="block w-full border-gray-300 rounded-md shadow-sm p-2 text-sm focus:ring-primary-500 focus:border-primary-500">
-                                            <option value="">Unassigned</option>
-                                            <option value="alice">Alice Johnson</option>
-                                            <option value="bob">Bob Smith</option>
-                                            <option value="charlie">Charlie Davis</option>
-                                            <option value="david" selected>David Wilson</option>
-                                        </select>
-                                    </div>
-                                    <div class="text-xs text-gray-500 text-right">
-                                        <p>Start: 2024-11-18 | Due: 2024-11-20</p>
-                                        <p>Spent: 0.0h</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
                     </div>
                 </div>
 
@@ -281,6 +202,83 @@
                     </div>
                 </div>
             </div>
+            </div>
+            <!-- End Tasks Tab Content -->
+
+            <!-- Utilization Tab Content -->
+            <div id="utilizationTabContent" class="tab-content hidden">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                    <div class="flex items-center justify-end mb-6">
+                        <button onclick="loadMemberUtilization()" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+
+                    <!-- Utilization Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <h4 class="font-semibold text-red-700">Over-Utilized</h4>
+                            </div>
+                            <p class="text-2xl font-bold text-red-600 mt-2" id="overUtilizedCount">0</p>
+                            <p class="text-sm text-red-600">members</p>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h4 class="font-semibold text-green-700">Properly Utilized</h4>
+                            </div>
+                            <p class="text-2xl font-bold text-green-600 mt-2" id="properlyUtilizedCount">0</p>
+                            <p class="text-sm text-green-600">members</p>
+                        </div>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h4 class="font-semibold text-yellow-700">Under-Utilized</h4>
+                            </div>
+                            <p class="text-2xl font-bold text-yellow-600 mt-2" id="underUtilizedCount">0</p>
+                            <p class="text-sm text-yellow-600">members</p>
+                        </div>
+                    </div>
+
+                    <!-- Member Utilization Table -->
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member Name</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining Work (hrs)</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity (hrs)</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gap (hrs)</th>
+                                    <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="utilizationTableBody" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <p class="mt-2">Loading utilization data...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- End Utilization Tab Content -->
         </div>
 
         <!-- Import Tasks Modal - Matching React Design -->
@@ -470,20 +468,365 @@
             </div>
         </div>
 
+        <!-- Include ApiService -->
+        <script th:src="@{/js/app.js}"></script>
+
         <script>
             let analysisComplete = false;
             let csvData = null;
             let activeImportTab = 'csv';
+            let currentSprintId = null;
+            let currentTasks = [];
 
-            function analyzeTaskRisks() {
+            // Toast Notification Function
+            function showToast(message, type = 'success') {
+                const container = document.getElementById('toast-container');
+                const toastId = 'toast-' + Date.now();
+                
+                const colors = {
+                    success: 'bg-green-500',
+                    error: 'bg-red-500',
+                    info: 'bg-blue-500',
+                    warning: 'bg-yellow-500'
+                };
+                
+                const icons = {
+                    success: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`,
+                    error: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`,
+                    info: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+                    warning: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>`
+                };
+                
+                const toast = document.createElement('div');
+                toast.id = toastId;
+                toast.className = `${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 min-w-[300px] transform transition-all duration-300 translate-x-full opacity-0`;
+                toast.innerHTML = `
+                    ${icons[type]}
+                    <span class="flex-1">${message}</span>
+                    <button onclick="removeToast('${toastId}')" class="text-white hover:text-gray-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                `;
+                
+                container.appendChild(toast);
+                
+                // Trigger animation
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-full', 'opacity-0');
+                }, 10);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    removeToast(toastId);
+                }, 5000);
+            }
+            
+            function removeToast(toastId) {
+                const toast = document.getElementById(toastId);
+                if (toast) {
+                    toast.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
+                }
+            }
+
+            // Initialize sprint ID from cookie
+            function initializeSprintId() {
+                // Try to get sprint ID from cookie first
+                currentSprintId = CookieUtils.getCookie('currentSprintId');
+                
+                // If no cookie exists, try to get from URL parameter
+                if (!currentSprintId) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    currentSprintId = urlParams.get('sprintId');
+                }
+                
+                // Fall back to default if still not set
+                if (!currentSprintId) {
+                    currentSprintId = 'current-sprint';
+                }
+                
+                // Save to cookie for future use
+                CookieUtils.setCookie('currentSprintId', currentSprintId);
+                
+                console.log('Using Sprint ID from cookie:', currentSprintId);
+            }
+            
+            // Function to change sprint ID (can be called from UI or other pages)
+            function changeSprintId(newSprintId) {
+                currentSprintId = newSprintId;
+                CookieUtils.setCookie('currentSprintId', currentSprintId);
+                
+                // Reload tasks for new sprint
+                loadTasks();
+                
+                console.log('Sprint ID changed to:', currentSprintId);
+            }
+
+            // Load tasks when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeSprintId();
+                loadTasks();
+                setupDragAndDrop();
+            });
+
+            // Pagination state for each risk factor
+            const paginationState = {
+                offtrack: { currentPage: 0, totalPages: 0, hasNext: false, hasPrevious: false },
+                atrisk: { currentPage: 0, totalPages: 0, hasNext: false, hasPrevious: false },
+                ontrack: { currentPage: 0, totalPages: 0, hasNext: false, hasPrevious: false }
+            };
+
+            // Fetch tasks from API - load all 3 sections
+            async function loadTasks() {
+                console.log('loadTasks() called with sprintId:', currentSprintId);
+                
+                if (!currentSprintId) {
+                    console.error('No sprint ID available');
+                    return;
+                }
+                
+                // Load all 3 sections in parallel
+                await Promise.all([
+                    loadOffTrackTasks(0),
+                    loadAtRiskTasks(0),
+                    loadOnTrackTasks(0)
+                ]);
+            }
+
+            // Load Off Track tasks
+            async function loadOffTrackTasks(page = 0, size = 10) {
+                try {
+                    console.log('Loading OFF_TRACK tasks - Sprint:', currentSprintId, 'Page:', page, 'Size:', size);
+                    const response = await ApiService.getTasksBySprintId(currentSprintId, 'OFF_TRACK', page, size);
+                    console.log('OFF_TRACK response:', response);
+                    if (response && response.success && response.data) {
+                        renderTasksInSection('offtrack', response.data.tasks);
+                        updatePaginationForSection('offtrack', response.data);
+                    } else {
+                        console.warn('OFF_TRACK - No data or unsuccessful response');
+                    }
+                } catch (error) {
+                    console.error('Failed to load Off Track tasks:', error);
+                    document.getElementById('offtrack-tasks').innerHTML = '<div class="text-center py-4 text-red-500">Failed to load tasks</div>';
+                }
+            }
+
+            // Load At Risk tasks
+            async function loadAtRiskTasks(page = 0, size = 10) {
+                try {
+                    console.log('Loading AT_RISK tasks - Sprint:', currentSprintId, 'Page:', page, 'Size:', size);
+                    const response = await ApiService.getTasksBySprintId(currentSprintId, 'AT_RISK', page, size);
+                    console.log('AT_RISK response:', response);
+                    if (response && response.success && response.data) {
+                        renderTasksInSection('atrisk', response.data.tasks);
+                        updatePaginationForSection('atrisk', response.data);
+                    } else {
+                        console.warn('AT_RISK - No data or unsuccessful response');
+                    }
+                } catch (error) {
+                    console.error('Failed to load At Risk tasks:', error);
+                    document.getElementById('atrisk-tasks').innerHTML = '<div class="text-center py-4 text-yellow-500">Failed to load tasks</div>';
+                }
+            }
+
+            // Load On Track tasks
+            async function loadOnTrackTasks(page = 0, size = 10) {
+                try {
+                    console.log('Loading ON_TRACK tasks - Sprint:', currentSprintId, 'Page:', page, 'Size:', size);
+                    const response = await ApiService.getTasksBySprintId(currentSprintId, 'ON_TRACK', page, size);
+                    console.log('ON_TRACK response:', response);
+                    if (response && response.success && response.data) {
+                        renderTasksInSection('ontrack', response.data.tasks);
+                        updatePaginationForSection('ontrack', response.data);
+                    } else {
+                        console.warn('ON_TRACK - No data or unsuccessful response');
+                    }
+                } catch (error) {
+                    console.error('Failed to load On Track tasks:', error);
+                    document.getElementById('ontrack-tasks').innerHTML = '<div class="text-center py-4 text-green-500">Failed to load tasks</div>';
+                }
+            }
+
+            // Pagination handlers for each section
+            async function loadOffTrackPage(direction) {
+                const currentPage = paginationState.offtrack.currentPage;
+                const newPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
+                await loadOffTrackTasks(newPage);
+            }
+
+            async function loadAtRiskPage(direction) {
+                const currentPage = paginationState.atrisk.currentPage;
+                const newPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
+                await loadAtRiskTasks(newPage);
+            }
+
+            async function loadOnTrackPage(direction) {
+                const currentPage = paginationState.ontrack.currentPage;
+                const newPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
+                await loadOnTrackTasks(newPage);
+            }
+
+            // Render tasks in a specific section
+            function renderTasksInSection(section, tasks) {
+                const container = document.getElementById(`${section}-tasks`);
+                const countElement = document.getElementById(`${section}-count`);
+                
+                if (tasks.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-4 text-gray-500">
+                            <p class="text-sm">No tasks in this category</p>
+                        </div>
+                    `;
+                    countElement.textContent = '0 tasks';
+                } else {
+                    const html = tasks.map(task => createTaskHTML(task)).join('');
+                    container.innerHTML = html;
+                    countElement.textContent = `${paginationState[section].totalElements || tasks.length} tasks`;
+                }
+            }
+
+            // Update pagination controls for a section
+            function updatePaginationForSection(section, pageData) {
+                paginationState[section] = {
+                    currentPage: pageData.currentPage,
+                    totalPages: pageData.totalPages,
+                    totalElements: pageData.totalElements,
+                    hasNext: pageData.hasNext,
+                    hasPrevious: pageData.hasPrevious
+                };
+
+                // Update count display
+                const countElement = document.getElementById(`${section}-count`);
+                countElement.textContent = `${pageData.totalElements} tasks`;
+
+                // Update pagination controls
+                const paginationContainer = document.getElementById(`${section}-pagination`);
+                const paginationInfo = document.getElementById(`${section}-pagination-info`);
+                const prevBtn = document.getElementById(`${section}-prev`);
+                const nextBtn = document.getElementById(`${section}-next`);
+
+                // Show/hide pagination based on whether there are multiple pages
+                if (pageData.totalPages > 1) {
+                    paginationContainer.classList.remove('hidden');
+                    
+                    const start = pageData.currentPage * pageData.pageSize + 1;
+                    const end = Math.min((pageData.currentPage + 1) * pageData.pageSize, pageData.totalElements);
+                    paginationInfo.textContent = `Showing ${start}-${end} of ${pageData.totalElements}`;
+
+                    prevBtn.disabled = !pageData.hasPrevious;
+                    nextBtn.disabled = !pageData.hasNext;
+                } else {
+                    paginationContainer.classList.add('hidden');
+                }
+            }
+
+            // Create HTML for a single task
+            function createTaskHTML(task) {
+                // Use backend risk factor, default to ON_TRACK if null
+                const riskLevel = getRiskLevelDisplay(task.riskFactor);
+                const riskColors = {
+                    'On Track': { border: 'green-500', bg: '', text: 'green-500', icon: 'M5 13l4 4L19 7' },
+                    'At Risk': { border: 'yellow-500', bg: 'bg-yellow-50/50', text: 'yellow-500', icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+                    'Off Track': { border: 'red-500', bg: 'bg-red-50/50', text: 'red-500', icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z' }
+                };
+                const risk = riskColors[riskLevel];
+                
+                return `
+                    <div class="p-4 rounded-lg bg-white shadow-sm border border-gray-200 border-l-4 border-${risk.border} ${risk.bg}">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-bold text-gray-800">${task.taskKey}: ${task.summary}</p>
+                                <p class="text-sm text-gray-500">${task.category} • ${task.storyPoints} hours</p>
+                            </div>
+                            <div class="flex items-center space-x-2 text-sm font-semibold" title="${getRiskTooltip(riskLevel)}">
+                                <svg class="w-5 h-5 text-${risk.text}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${risk.icon}"></path>
+                                </svg>
+                                <span>${riskLevel}</span>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center justify-between">
+                            <div class="w-1/2">
+                                <span class="block text-sm font-medium text-gray-700">
+                                    ${task.assigneeName ? task.assigneeName : 'Unassigned'}
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-500 text-right">
+                                <p>Start: ${task.startDate || 'N/A'} | Due: ${task.dueDate || 'N/A'}</p>
+                                <p>Spent: ${task.timeSpent || 0}h</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Convert backend risk factor to display text
+            function getRiskLevelDisplay(riskFactor) {
+                if (!riskFactor) return 'On Track'; // Default if null
+                
+                const riskMap = {
+                    'ON_TRACK': 'On Track',
+                    'AT_RISK': 'At Risk',
+                    'OFF_TRACK': 'Off Track'
+                };
+                return riskMap[riskFactor] || 'On Track';
+            }
+
+            // Get risk tooltip text
+            function getRiskTooltip(riskLevel) {
+                const tooltips = {
+                    'On Track': 'Task is progressing well',
+                    'At Risk': 'May need attention',
+                    'Off Track': 'Requires immediate attention'
+                };
+                return tooltips[riskLevel] || '';
+            }
+
+            async function analyzeTaskRisks() {
                 const button = document.getElementById('analyzeButtonText');
-                button.textContent = 'Analysis Complete';
+                const originalText = button.textContent;
+                
+                // Show loading state
+                button.textContent = 'Analyzing...';
                 button.parentElement.disabled = true;
+                showToast('Starting risk analysis...', 'info');
+                
+                try {
+                    // Call backend API to analyze risks
+                    const response = await fetch('/api/tasks/analyze-risks', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        button.textContent = 'Analysis Complete';
                 button.parentElement.classList.remove('bg-primary-600', 'hover:bg-primary-700');
                 button.parentElement.classList.add('bg-gray-400', 'cursor-not-allowed');
                 
-                analysisComplete = true;
-                alert('Task risk analysis completed! Risk levels have been updated.');
+                        showToast(`Risk analysis completed! ${data.data} task${data.data !== 1 ? 's' : ''} analyzed successfully.`, 'success');
+                        
+                        // Reload tasks to show updated risk factors
+                        await loadTasks();
+                        
+                        // Scroll to top to see grouped results
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                        button.textContent = originalText;
+                        button.parentElement.disabled = false;
+                        showToast('Analysis failed: ' + (data.message || 'Unknown error'), 'error');
+                    }
+                } catch (error) {
+                    console.error('Failed to analyze risks:', error);
+                    button.textContent = originalText;
+                    button.parentElement.disabled = false;
+                    showToast('Failed to analyze risks. Please check your connection and try again.', 'error');
+                }
             }
 
             function generateRiskSummary() {
@@ -772,24 +1115,26 @@
                 fetch('/api/tasks/import/csv', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tasks, sprintId: 'current-sprint' })
+                    body: JSON.stringify({ tasks, sprintId: currentSprintId })
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert(`✅ Successfully imported ${tasks.length} tasks from CSV!`);
+                        showToast(`Successfully imported ${tasks.length} tasks from CSV!`, 'success');
                         closeImportModal();
-                        // Optionally refresh the page
-                        window.location.reload();
+                        // Reload tasks from API
+                        loadTasks();
                     } else {
-                        alert('❌ Import failed: ' + data.message);
+                        showToast('Import failed: ' + data.message, 'error');
                     }
                 })
                 .catch(error => {
                     // Mock successful import for demo
                     setTimeout(() => {
-                        alert(`✅ Successfully imported ${tasks.length} tasks from CSV!`);
+                        showToast(`Successfully imported ${tasks.length} tasks from CSV!`, 'success');
                         closeImportModal();
+                        // Reload tasks from API
+                        loadTasks();
                     }, 1000);
                 });
             }
@@ -809,7 +1154,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         issueKeys: selectedIssues,
-                        sprintId: 'current-sprint',
+                        sprintId: currentSprintId,
                         jiraConfig: {
                             url: document.getElementById('jiraUrl').value,
                             username: document.getElementById('jiraUsername').value,
@@ -820,24 +1165,27 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert(`✅ Successfully imported ${selectedIssues.length} tasks from Jira!`);
+                        showToast(`Successfully imported ${selectedIssues.length} tasks from Jira!`, 'success');
                         closeImportModal();
-                        window.location.reload();
+                        // Reload tasks from API
+                        loadTasks();
                     } else {
-                        alert('❌ Import failed: ' + data.message);
+                        showToast('Import failed: ' + data.message, 'error');
                     }
                 })
                 .catch(error => {
                     // Mock successful import for demo
                     setTimeout(() => {
-                        alert(`✅ Successfully imported ${selectedIssues.length} tasks from Jira!`);
+                        showToast(`Successfully imported ${selectedIssues.length} tasks from Jira!`, 'success');
                         closeImportModal();
+                        // Reload tasks from API
+                        loadTasks();
                     }, 1000);
                 });
             }
 
             // Drag and drop support for CSV files
-            document.addEventListener('DOMContentLoaded', function() {
+            function setupDragAndDrop() {
                 const dropArea = document.getElementById('fileDropArea');
                 
                 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -876,7 +1224,129 @@
                         handleFileUpload({ target: { files: files } });
                     }
                 }
-            });
+            }
+
+            // Tab Switching Functions
+            function switchTab(tabName) {
+                // Hide all tab contents
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab-button').forEach(button => {
+                    button.classList.remove('active', 'border-primary-500', 'text-primary-600');
+                    button.classList.add('border-transparent', 'text-gray-500');
+                });
+
+                // Show selected tab content
+                if (tabName === 'tasks') {
+                    document.getElementById('tasksTabContent').classList.remove('hidden');
+                    document.getElementById('tasksTab').classList.add('active', 'border-primary-500', 'text-primary-600');
+                    document.getElementById('tasksTab').classList.remove('border-transparent', 'text-gray-500');
+                } else if (tabName === 'utilization') {
+                    document.getElementById('utilizationTabContent').classList.remove('hidden');
+                    document.getElementById('utilizationTab').classList.add('active', 'border-primary-500', 'text-primary-600');
+                    document.getElementById('utilizationTab').classList.remove('border-transparent', 'text-gray-500');
+                    
+                    // Load utilization data when tab is opened
+                    loadMemberUtilization();
+                }
+            }
+
+            // Load Member Utilization
+            async function loadMemberUtilization() {
+                if (!currentSprintId) {
+                    console.error('No sprint ID available');
+                    showToast('No active sprint found', 'error');
+                    return;
+                }
+
+                console.log('Loading member utilization for sprint:', currentSprintId);
+                
+                try {
+                    const response = await fetch(`/api/tasks/utilization/sprint/${currentSprintId}`);
+                    const data = await response.json();
+
+                    console.log('Utilization response:', data);
+
+                    if (data.success && data.data) {
+                        renderUtilizationData(data.data);
+                    } else {
+                        showToast('Failed to load utilization data: ' + (data.message || 'Unknown error'), 'error');
+                    }
+                } catch (error) {
+                    console.error('Failed to load utilization:', error);
+                    showToast('Failed to load utilization data', 'error');
+                }
+            }
+
+            // Render Utilization Data
+            function renderUtilizationData(utilizations) {
+                console.log('Rendering utilization data:', utilizations);
+
+                // Count by status
+                let overUtilized = 0;
+                let properlyUtilized = 0;
+                let underUtilized = 0;
+
+                utilizations.forEach(u => {
+                    if (u.status === 'OVER_UTILIZED') overUtilized++;
+                    else if (u.status === 'PROPERLY_UTILIZED') properlyUtilized++;
+                    else if (u.status === 'UNDER_UTILIZED') underUtilized++;
+                });
+
+                // Update summary cards
+                document.getElementById('overUtilizedCount').textContent = overUtilized;
+                document.getElementById('properlyUtilizedCount').textContent = properlyUtilized;
+                document.getElementById('underUtilizedCount').textContent = underUtilized;
+
+                // Render table
+                const tableBody = document.getElementById('utilizationTableBody');
+                
+                if (utilizations.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                No member utilization data found
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const rows = utilizations.map(u => {
+                    const statusColors = {
+                        'OVER_UTILIZED': 'bg-red-100 text-red-800',
+                        'PROPERLY_UTILIZED': 'bg-green-100 text-green-800',
+                        'UNDER_UTILIZED': 'bg-yellow-100 text-yellow-800'
+                    };
+
+                    const statusLabels = {
+                        'OVER_UTILIZED': 'Over Utilized',
+                        'PROPERLY_UTILIZED': 'Properly Utilized',
+                        'UNDER_UTILIZED': 'Under Utilized'
+                    };
+
+                    const gapClass = u.gap > 0 ? 'text-red-600' : u.gap < 0 ? 'text-blue-600' : 'text-gray-600';
+
+                    return `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${u.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">${Number(u.remainingEstimate).toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">${Number(u.capacity).toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${gapClass}">${Number(u.gap).toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[u.status]}">
+                                    ${statusLabels[u.status]}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+
+                tableBody.innerHTML = rows;
+            }
         </script>
     </div>
 </body>
