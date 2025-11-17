@@ -1,0 +1,38 @@
+{
+  "@type": "MessageCard",
+  "@context": "https://schema.org/extensions",
+  "summary": "Task Assigned",
+  "themeColor": "17A2B8",
+  "title": "📋 Task Assigned",
+  "sections": [{
+    "activityTitle": "Task Management",
+    "activitySubtitle": "A new task has been assigned",
+    "facts": [
+      {
+        "name": "Task Key:",
+        "value": "{{taskKey}}"
+      },
+      {
+        "name": "Summary:",
+        "value": "{{summary}}"
+      },
+      {
+        "name": "Assigned To:",
+        "value": "{{assignedTo}}"
+      },
+      {
+        "name": "Story Points:",
+        "value": "{{storyPoints}}"
+      },
+      {
+        "name": "Priority:",
+        "value": "{{priority}}"
+      },
+      {
+        "name": "Sprint:",
+        "value": "{{sprintId}}"
+      }
+    ]
+  }]
+}
+

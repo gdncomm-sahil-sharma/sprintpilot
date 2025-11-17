@@ -1,0 +1,34 @@
+{
+  "@type": "MessageCard",
+  "@context": "https://schema.org/extensions",
+  "summary": "Sprint Created",
+  "themeColor": "28A745",
+  "title": "🚀 New Sprint Created",
+  "sections": [{
+    "activityTitle": "Sprint Planning",
+    "activitySubtitle": "A new sprint has been created",
+    "facts": [
+      {
+        "name": "Sprint ID:",
+        "value": "{{sprintId}}"
+      },
+      {
+        "name": "Start Date:",
+        "value": "{{startDate}}"
+      },
+      {
+        "name": "End Date:",
+        "value": "{{endDate}}"
+      },
+      {
+        "name": "Duration:",
+        "value": "{{duration}} working days"
+      },
+      {
+        "name": "Status:",
+        "value": "{{status}}"
+      }
+    ]
+  }]
+}
+

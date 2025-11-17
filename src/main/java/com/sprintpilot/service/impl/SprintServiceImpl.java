@@ -6,7 +6,9 @@ import com.sprintpilot.entity.SprintEvent;
 import com.sprintpilot.entity.TeamMember;
 import com.sprintpilot.repository.SprintRepository;
 import com.sprintpilot.service.SprintService;
+import com.sprintpilot.service.ConfluenceService;
 import com.sprintpilot.util.DateUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,14 +20,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class SprintServiceImpl implements SprintService {
-    
+
     @Autowired
     private SprintRepository sprintRepository;
     
+    @Autowired(required = false)
+    private ConfluenceService confluenceService;
+    
     @Value("${app.data.mock-data-path}")
     private String mockDataPath;
-    
+
     private List<SprintDto> mockSprints = new ArrayList<>();
     
     @PostConstruct
@@ -268,6 +274,15 @@ public class SprintServiceImpl implements SprintService {
             .status(sprintDto.status())
             .build();
         sprintRepository.save(sprint);
+
+        if (confluenceService.isEnabled()) {
+            try {
+                confluenceService.createSprintPage(newSprint, null);
+            } catch (Exception e) {
+                log.error("Failed to create Confluence page for sprint: {}", newSprint.id(), e);
+            }
+        }
+
         return newSprint;
     }
     

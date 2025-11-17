@@ -1,0 +1,38 @@
+{
+  "@type": "MessageCard",
+  "@context": "https://schema.org/extensions",
+  "summary": "Sprint Completed",
+  "themeColor": "6F42C1",
+  "title": "✅ Sprint Completed",
+  "sections": [{
+    "activityTitle": "Sprint Summary",
+    "activitySubtitle": "Sprint has been successfully completed",
+    "facts": [
+      {
+        "name": "Sprint ID:",
+        "value": "{{sprintId}}"
+      },
+      {
+        "name": "Completion Date:",
+        "value": "{{completionDate}}"
+      },
+      {
+        "name": "Total Story Points:",
+        "value": "{{totalStoryPoints}}"
+      },
+      {
+        "name": "Completed Story Points:",
+        "value": "{{completedStoryPoints}}"
+      },
+      {
+        "name": "Team Size:",
+        "value": "{{teamSize}}"
+      },
+      {
+        "name": "Velocity:",
+        "value": "{{velocity}}"
+      }
+    ]
+  }]
+}
+
