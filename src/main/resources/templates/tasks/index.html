@@ -407,50 +407,18 @@
                             </div>
 
                             <!-- Jira Configuration Form -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-6">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Jira URL</label>
-                                    <input type="url" id="jiraUrl" placeholder="https://yourcompany.atlassian.net" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Key</label>
-                                    <input type="text" id="jiraProject" placeholder="PROJ" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Username/Email</label>
-                                    <input type="text" id="jiraUsername" placeholder="your.email@company.com" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">API Token</label>
-                                    <input type="password" id="jiraToken" placeholder="Your Jira API Token" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
-                                </div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-3">Project Key</label>
+                                    <input type="text" id="jiraProject" placeholder="PROJ" oninput="updateImportButton()" class="w-full px-4 py-3 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-base">
                             </div>
 
                             <!-- JQL Query -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">JQL Query (Optional)</label>
-                                <textarea id="jqlQuery" rows="3" placeholder="project = PROJ AND status != Done AND sprint is EMPTY" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500"></textarea>
-                                <p class="text-sm text-gray-500 mt-1">Leave empty to import all unassigned issues from the project</p>
+                                    <label class="block text-sm font-medium text-gray-700 mb-3">JQL Query (Optional)</label>
+                                    <textarea id="jqlQuery" rows="4" placeholder="project = PROJ AND status != Done" class="w-full px-4 py-3 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-base resize-none"></textarea>
+                                    <p class="text-sm text-gray-500 mt-2">Leave empty to import all issues of current sprint</p>
                             </div>
-
-                            <!-- Test Connection -->
-                            <div class="flex space-x-4">
-                                <button onclick="testJiraConnection()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                                    Test Connection
-                                </button>
-                                <button onclick="fetchJiraIssues()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
-                                    Fetch Issues
-                                </button>
-                            </div>
-
-                            <!-- Jira Issues Preview -->
-                            <div id="jiraPreview" class="hidden">
-                                <h4 class="font-semibold text-gray-800 mb-3">Found Issues</h4>
-                                <div class="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
-                                    <div id="jiraIssuesList" class="space-y-2">
-                                        <!-- Issues will be populated here -->
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -927,6 +895,28 @@
                 // Show/hide content
                 document.getElementById('csvImportContent').classList.toggle('hidden', tab !== 'csv');
                 document.getElementById('jiraImportContent').classList.toggle('hidden', tab !== 'jira');
+                
+                // Update Import button style and state
+                updateImportButton();
+            }
+            
+            function updateImportButton() {
+                const importButton = document.getElementById('importButton');
+                
+                if (activeImportTab === 'jira') {
+                    // Jira tab - green button
+                    importButton.className = 'px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed';
+                    
+                    // Enable/disable based on project key
+                    const projectKey = document.getElementById('jiraProject').value.trim();
+                    importButton.disabled = !projectKey;
+                } else {
+                    // CSV tab - primary button
+                    importButton.className = 'px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed';
+                    
+                    // Enable/disable based on CSV data
+                    importButton.disabled = !csvData;
+                }
             }
 
             function resetImportForm() {
@@ -936,15 +926,58 @@
                 csvData = null;
                 
                 // Reset Jira form
-                document.getElementById('jiraUrl').value = '';
                 document.getElementById('jiraProject').value = '';
-                document.getElementById('jiraUsername').value = '';
-                document.getElementById('jiraToken').value = '';
                 document.getElementById('jqlQuery').value = '';
-                document.getElementById('jiraPreview').classList.add('hidden');
                 
                 // Reset import button
                 document.getElementById('importButton').disabled = true;
+            }
+
+            // Jira Import Function
+            async function fetchJiraIssues() {
+                if (!currentSprintId) {
+                    showToast('No active sprint found', 'error');
+                    return;
+                }
+
+                const projectKey = document.getElementById('jiraProject').value.trim();
+                const jqlQuery = document.getElementById('jqlQuery').value.trim();
+
+                if (!projectKey) {
+                    showToast('Please enter a Project Key', 'error');
+                    return;
+                }
+
+                console.log('Fetching Jira issues - Sprint:', currentSprintId, 'Project:', projectKey, 'JQL:', jqlQuery);
+
+                try {
+                    const response = await fetch('/api/tasks/import/jira', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sprintId: currentSprintId,
+                            projectKey: projectKey,
+                            jqlQuery: jqlQuery || null
+                        })
+                    });
+
+                    const data = await response.json();
+                    console.log('Jira import response:', data);
+
+                    if (data.success) {
+                        showToast('Successfully imported tasks', 'success');
+                        closeImportModal();
+                        // Reload tasks to show the new ones
+                        await loadTasks();
+                    } else {
+                        showToast('Failed to import from Jira: ' + (data.message || 'Unknown error'), 'error');
+                    }
+                } catch (error) {
+                    console.error('Failed to import from Jira:', error);
+                    showToast('Failed to import from Jira. Please check your connection and try again.', 'error');
+                }
             }
 
             // CSV Import Functions
@@ -1020,73 +1053,13 @@
             }
 
             // Jira Import Functions
-            function testJiraConnection() {
-                const url = document.getElementById('jiraUrl').value;
-                const username = document.getElementById('jiraUsername').value;
-                const token = document.getElementById('jiraToken').value;
-                
-                if (!url || !username || !token) {
-                    alert('Please fill in all Jira connection fields.');
-                    return;
-                }
-                
-                // Mock test connection
-                setTimeout(() => {
-                    alert('✅ Connection successful! Jira API is accessible.');
-                }, 1000);
-            }
-
-            function fetchJiraIssues() {
-                const url = document.getElementById('jiraUrl').value;
-                const project = document.getElementById('jiraProject').value;
-                const username = document.getElementById('jiraUsername').value;
-                const token = document.getElementById('jiraToken').value;
-                const jql = document.getElementById('jqlQuery').value;
-                
-                if (!url || !project || !username || !token) {
-                    alert('Please fill in all required Jira fields.');
-                    return;
-                }
-                
-                // Mock fetch issues
-                const mockIssues = [
-                    { key: 'PROJ-201', summary: 'Implement user authentication', storyPoints: 8, assignee: 'john.doe@company.com' },
-                    { key: 'PROJ-202', summary: 'Fix pagination bug', storyPoints: 3, assignee: 'jane.smith@company.com' },
-                    { key: 'PROJ-203', summary: 'Add search functionality', storyPoints: 5, assignee: null },
-                    { key: 'PROJ-204', summary: 'Update API documentation', storyPoints: 2, assignee: 'bob.wilson@company.com' },
-                    { key: 'PROJ-205', summary: 'Optimize database queries', storyPoints: 13, assignee: null }
-                ];
-                
-                setTimeout(() => {
-                    displayJiraIssues(mockIssues);
-                    document.getElementById('jiraPreview').classList.remove('hidden');
-                    document.getElementById('importButton').disabled = false;
-                }, 1500);
-            }
-
-            function displayJiraIssues(issues) {
-                const container = document.getElementById('jiraIssuesList');
-                container.innerHTML = issues.map(issue => `
-                    <div class="flex items-center justify-between p-3 bg-white rounded border">
-                        <div class="flex items-center space-x-3">
-                            <input type="checkbox" checked class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" data-issue-key="${issue.key}">
-                            <div>
-                                <p class="font-medium text-gray-900">${issue.key}: ${issue.summary}</p>
-                                <p class="text-sm text-gray-500">
-                                    ${issue.storyPoints || 0} points • ${issue.assignee || 'Unassigned'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
 
             // Import Tasks Function
             function importTasks() {
                 if (activeImportTab === 'csv' && csvData) {
                     importFromCSV();
                 } else if (activeImportTab === 'jira') {
-                    importFromJira();
+                    fetchJiraIssues();
                 }
             }
 
@@ -1139,50 +1112,6 @@
                 });
             }
 
-            function importFromJira() {
-                const selectedIssues = Array.from(document.querySelectorAll('#jiraIssuesList input[type="checkbox"]:checked'))
-                    .map(checkbox => checkbox.getAttribute('data-issue-key'));
-                
-                if (selectedIssues.length === 0) {
-                    alert('Please select at least one issue to import.');
-                    return;
-                }
-                
-                // Mock import
-                fetch('/api/tasks/import/jira', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        issueKeys: selectedIssues,
-                        sprintId: currentSprintId,
-                        jiraConfig: {
-                            url: document.getElementById('jiraUrl').value,
-                            username: document.getElementById('jiraUsername').value,
-                            token: document.getElementById('jiraToken').value
-                        }
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast(`Successfully imported ${selectedIssues.length} tasks from Jira!`, 'success');
-                        closeImportModal();
-                        // Reload tasks from API
-                        loadTasks();
-                    } else {
-                        showToast('Import failed: ' + data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    // Mock successful import for demo
-                    setTimeout(() => {
-                        showToast(`Successfully imported ${selectedIssues.length} tasks from Jira!`, 'success');
-                        closeImportModal();
-                        // Reload tasks from API
-                        loadTasks();
-                    }, 1000);
-                });
-            }
 
             // Drag and drop support for CSV files
             function setupDragAndDrop() {
