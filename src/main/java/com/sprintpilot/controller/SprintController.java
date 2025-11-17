@@ -4,7 +4,7 @@ import com.sprintpilot.dto.ApiResponse;
 import com.sprintpilot.dto.SprintDto;
 import com.sprintpilot.dto.SprintEventDto;
 import com.sprintpilot.dto.SprintMetricsDto;
-import com.sprintpilot.service.JiraClient;
+import com.sprintpilot.service.SprintMetricsService;
 import com.sprintpilot.service.SprintService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,7 +23,7 @@ public class SprintController {
     private SprintService sprintService;
 
     @Autowired
-    private JiraClient jiraClient;
+    private SprintMetricsService sprintMetricsService;
     
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<SprintDto>> createSprint(@RequestBody SprintDto sprintDto) {
@@ -233,8 +233,7 @@ public class SprintController {
         }
 
         try {
-            String sprintName = sprintService.getSprintName(sprintId);
-            SprintMetricsDto metrics = jiraClient.fetchSprintMetrics(projectName, sprintName);
+            SprintMetricsDto metrics = sprintMetricsService.getSprintMetrics(sprintId, projectName);
             return ResponseEntity.ok(ApiResponse.success("Sprint metrics fetched successfully", metrics));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

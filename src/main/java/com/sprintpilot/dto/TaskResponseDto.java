@@ -15,6 +15,7 @@ public record TaskResponseDto(
         String summary,
         String description,
         BigDecimal storyPoints,
+        BigDecimal originalEstimate,
         Task.TaskCategory category,
         Task.TaskPriority priority,
         Task.TaskStatus status,

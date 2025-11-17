@@ -210,6 +210,16 @@ public class TaskImportServiceImpl implements TaskImportService {
                     task.setPriority(parsePriority(jiraTask.priority()));
                     task.setStatus(parseStatus(jiraTask.status()));
                     
+                    // Set estimation and time tracking details
+                    BigDecimal originalEstimate = jiraTask.originalEstimate() != null 
+                            ? jiraTask.originalEstimate() 
+                            : (jiraTask.storyPoints() != null ? jiraTask.storyPoints() : BigDecimal.ZERO);
+                    BigDecimal importedTimeSpent = jiraTask.timeSpent() != null ? jiraTask.timeSpent() : BigDecimal.ZERO;
+                    task.setOriginalEstimate(originalEstimate);
+                    task.setTimeSpent(importedTimeSpent);
+                    log.debug("Task {} - Original Estimate: {}, Time Spent: {}", 
+                            jiraTask.taskKey(), originalEstimate, importedTimeSpent);
+                    
                     // Parse and set dates
                     if (jiraTask.startDate() != null && !jiraTask.startDate().isBlank()) {
                         try {
@@ -425,7 +435,9 @@ public class TaskImportServiceImpl implements TaskImportService {
                 config.projectKey(),
                 "Sample Project",
                 LocalDate.now().minusDays(5).toString(),  // start date
-                null  // end date (not completed)
+                null,  // end date (not completed)
+                new BigDecimal("8"),
+                BigDecimal.ZERO
             ),
             new JiraIssueDto(
                 projectKey + "-202",
@@ -446,7 +458,9 @@ public class TaskImportServiceImpl implements TaskImportService {
                 config.projectKey(),
                 "Sample Project",
                 LocalDate.now().minusDays(3).toString(),  // start date
-                null  // end date (in progress)
+                null,  // end date (in progress)
+                new BigDecimal("3"),
+                BigDecimal.ZERO
             ),
             new JiraIssueDto(
                 projectKey + "-203",
@@ -467,7 +481,9 @@ public class TaskImportServiceImpl implements TaskImportService {
                 config.projectKey(),
                 "Sample Project",
                 LocalDate.now().minusDays(2).toString(),  // start date
-                null  // end date (not started)
+                null,  // end date (not started)
+                new BigDecimal("5"),
+                BigDecimal.ZERO
             ),
             new JiraIssueDto(
                 projectKey + "-204",
@@ -488,7 +504,9 @@ public class TaskImportServiceImpl implements TaskImportService {
                 config.projectKey(),
                 "Sample Project",
                 LocalDate.now().minusDays(1).toString(),  // start date
-                null  // end date (not started)
+                null,  // end date (not started)
+                new BigDecimal("2"),
+                BigDecimal.ZERO
             ),
             new JiraIssueDto(
                 projectKey + "-205",
@@ -509,7 +527,9 @@ public class TaskImportServiceImpl implements TaskImportService {
                 config.projectKey(),
                 "Sample Project",
                 LocalDate.now().toString(),  // start date
-                null  // end date (not started)
+                null,  // end date (not started)
+                new BigDecimal("13"),
+                BigDecimal.ZERO
             )
         );
     }

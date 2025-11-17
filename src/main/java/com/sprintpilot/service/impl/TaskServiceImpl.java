@@ -111,6 +111,7 @@ public class TaskServiceImpl implements TaskService {
                 task.getSummary(),
                 task.getDescription(),
                 task.getStoryPoints(),
+                task.getOriginalEstimate(),
                 task.getCategory(),
                 task.getPriority(),
                 task.getStatus(),
@@ -168,9 +169,10 @@ public class TaskServiceImpl implements TaskService {
                 
                 // Calculate percent work completed based on time spent vs story points
                 double percentWorkCompleted = 0;
-                if (task.getStoryPoints() != null && task.getStoryPoints().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal workEstimate = getWorkEstimate(task);
+                if (workEstimate.compareTo(BigDecimal.ZERO) > 0) {
                     BigDecimal timeSpent = task.getTimeSpent() != null ? task.getTimeSpent() : BigDecimal.ZERO;
-                    percentWorkCompleted = timeSpent.divide(task.getStoryPoints(), 2, RoundingMode.HALF_UP)
+                    percentWorkCompleted = timeSpent.divide(workEstimate, 2, RoundingMode.HALF_UP)
                                                     .multiply(BigDecimal.valueOf(100))
                                                     .doubleValue();
                 }
@@ -194,11 +196,11 @@ public class TaskServiceImpl implements TaskService {
             if (daysUntilDue <= 2 && daysUntilDue >= 0) {
                 // Due in 2 days or less
                 BigDecimal timeSpent = task.getTimeSpent() != null ? task.getTimeSpent() : BigDecimal.ZERO;
-                BigDecimal storyPoints = task.getStoryPoints() != null ? task.getStoryPoints() : BigDecimal.ZERO;
+                BigDecimal workEstimate = getWorkEstimate(task);
                 
                 // If less than 50% complete and due soon, mark as AT_RISK
-                if (storyPoints.compareTo(BigDecimal.ZERO) > 0) {
-                    double percentComplete = timeSpent.divide(storyPoints, 2, RoundingMode.HALF_UP)
+                if (workEstimate.compareTo(BigDecimal.ZERO) > 0) {
+                    double percentComplete = timeSpent.divide(workEstimate, 2, RoundingMode.HALF_UP)
                                                      .multiply(BigDecimal.valueOf(100))
                                                      .doubleValue();
                     if (percentComplete < 50) {
@@ -223,6 +225,14 @@ public class TaskServiceImpl implements TaskService {
         
         // Default: ON_TRACK
         return Task.RiskFactor.ON_TRACK;
+    }
+    
+    private BigDecimal getWorkEstimate(Task task) {
+        BigDecimal originalEstimate = task.getOriginalEstimate() != null ? task.getOriginalEstimate() : BigDecimal.ZERO;
+        if (originalEstimate.compareTo(BigDecimal.ZERO) > 0) {
+            return originalEstimate;
+        }
+        return task.getStoryPoints() != null ? task.getStoryPoints() : BigDecimal.ZERO;
     }
 }
 

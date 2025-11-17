@@ -26,7 +26,9 @@ public record JiraIssueDto(
     String projectKey,
     String projectName,
     String start,
-    String end
+    String end,
+    BigDecimal originalEstimate,
+    BigDecimal timeSpent
 ) {
     
     /**
@@ -45,7 +47,9 @@ public record JiraIssueDto(
             assignee,             // assigneeEmail
             start,                // startDate
             end,                  // endDate
-            dueDate != null ? dueDate.toString() : null  // dueDate
+            dueDate != null ? dueDate.toString() : null,  // dueDate
+            originalEstimate != null ? originalEstimate : (storyPoints != null ? storyPoints : BigDecimal.ZERO),
+            timeSpent != null ? timeSpent : BigDecimal.ZERO
         );
     }
     

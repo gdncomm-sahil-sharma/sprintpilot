@@ -706,7 +706,7 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="font-bold text-gray-800">${task.taskKey}: ${task.summary}</p>
-                                <p class="text-sm text-gray-500">${task.category} • ${task.storyPoints} hours</p>
+                                <p class="text-sm text-gray-500">${task.category} • ${task.originalEstimate || task.storyPoints || 0} hours</p>
                             </div>
                             <div class="flex items-center space-x-2 text-sm font-semibold" title="${getRiskTooltip(riskLevel)}">
                                 <svg class="w-5 h-5 text-${risk.text}" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -71,8 +71,8 @@ public class MemberServiceImpl implements MemberService {
         Map<String, TeamMember> memberMap = new HashMap<>();
 
         for (Task task : tasks) {
-            log.debug("Processing task: {} ({}), StoryPoints: {}, TimeSpent: {}, Status: {}, Assignees: {}", 
-                    task.getTaskKey(), task.getSummary(), task.getStoryPoints(), task.getTimeSpent(), 
+            log.debug("Processing task: {} ({}), OriginalEstimate: {}, StoryPoints: {}, TimeSpent: {}, Status: {}, Assignees: {}", 
+                    task.getTaskKey(), task.getSummary(), task.getOriginalEstimate(), task.getStoryPoints(), task.getTimeSpent(), 
                     task.getStatus(), task.getAssignees() != null ? task.getAssignees().size() : 0);
             
             // Skip DONE tasks as they are completed
@@ -84,11 +84,14 @@ public class MemberServiceImpl implements MemberService {
             if (task.getAssignees() != null && !task.getAssignees().isEmpty()) {
                 // Calculate remaining estimate for this task
                 BigDecimal storyPoints = task.getStoryPoints() != null ? task.getStoryPoints() : BigDecimal.ZERO;
+                BigDecimal originalEstimate = task.getOriginalEstimate() != null && task.getOriginalEstimate().compareTo(BigDecimal.ZERO) > 0
+                        ? task.getOriginalEstimate()
+                        : storyPoints;
                 BigDecimal timeSpent = task.getTimeSpent() != null ? task.getTimeSpent() : BigDecimal.ZERO;
-                BigDecimal remainingEstimate = storyPoints.subtract(timeSpent);
+                BigDecimal remainingEstimate = originalEstimate.subtract(timeSpent);
                 
-                log.debug("Task {} - Remaining estimate: {} (StoryPoints: {} - TimeSpent: {})", 
-                        task.getTaskKey(), remainingEstimate, storyPoints, timeSpent);
+                log.debug("Task {} - Remaining estimate: {} (OriginalEstimate: {} - TimeSpent: {})", 
+                        task.getTaskKey(), remainingEstimate, originalEstimate, timeSpent);
                 
                 // Only consider positive remaining estimates (tasks not overdue on time)
                 if (remainingEstimate.compareTo(BigDecimal.ZERO) > 0) {

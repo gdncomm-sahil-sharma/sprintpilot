@@ -54,6 +54,9 @@ public class Task {
     
     @Column(name = "time_spent")
     private BigDecimal timeSpent = BigDecimal.ZERO;
+
+    @Column(name = "original_estimate")
+    private BigDecimal originalEstimate = BigDecimal.ZERO;
     
     @Column(name = "risk_factor")
     @Enumerated(EnumType.STRING)

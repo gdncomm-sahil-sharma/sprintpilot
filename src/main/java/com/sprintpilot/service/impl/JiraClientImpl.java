@@ -55,7 +55,7 @@ public class JiraClientImpl implements JiraClient {
             
             // Build JSON request body
             String requestBody = String.format(
-                "{\"jql\": \"%s\", \"maxResults\": 100, \"fields\": [\"summary\",\"description\",\"customfield_10016\",\"issuetype\",\"priority\",\"status\",\"assignee\",\"created\",\"duedate\",\"resolutiondate\"]}",
+                "{\"jql\": \"%s\", \"maxResults\": 100, \"fields\": [\"summary\",\"description\",\"customfield_10016\",\"issuetype\",\"priority\",\"status\",\"assignee\",\"created\",\"duedate\",\"resolutiondate\",\"timeoriginalestimate\",\"timespent\",\"timetracking\"]}",
                 jql.replace("\"", "\\\"")  // Escape quotes in JQL
             );
             
@@ -197,19 +197,23 @@ public class JiraClientImpl implements JiraClient {
                     .build();
         }
 
-        BigDecimal totalPoints = BigDecimal.ZERO;
-        BigDecimal completedPoints = BigDecimal.ZERO;
+        BigDecimal totalEstimate = BigDecimal.ZERO;
+        BigDecimal completedHours = BigDecimal.ZERO;
         int completedIssues = 0;
         Map<LocalDate, BigDecimal> completedByDate = new HashMap<>();
         LocalDate earliestStart = null;
         LocalDate latestEnd = null;
 
         for (TaskImportRequest.TaskImportDto task : tasks) {
-            BigDecimal storyPoints = task.storyPoints() != null ? task.storyPoints() : BigDecimal.ZERO;
-            totalPoints = totalPoints.add(storyPoints);
+            BigDecimal originalEstimate = task.originalEstimate() != null && task.originalEstimate().compareTo(BigDecimal.ZERO) > 0
+                    ? task.originalEstimate()
+                    : (task.storyPoints() != null ? task.storyPoints() : BigDecimal.ZERO);
+            BigDecimal timeSpent = task.timeSpent() != null ? task.timeSpent() : BigDecimal.ZERO;
+            totalEstimate = totalEstimate.add(originalEstimate);
 
             if (isCompletedStatus(task.status())) {
-                completedPoints = completedPoints.add(storyPoints);
+                BigDecimal completedForTask = timeSpent.compareTo(BigDecimal.ZERO) > 0 ? timeSpent : originalEstimate;
+                completedHours = completedHours.add(completedForTask);
                 completedIssues++;
 
                 LocalDate completionDate = parseDate(task.endDate());
@@ -217,7 +221,7 @@ public class JiraClientImpl implements JiraClient {
                     completionDate = parseDate(task.dueDate());
                 }
                 if (completionDate != null) {
-                    completedByDate.merge(completionDate, storyPoints, BigDecimal::add);
+                    completedByDate.merge(completionDate, completedForTask, BigDecimal::add);
                     if (latestEnd == null || completionDate.isAfter(latestEnd)) {
                         latestEnd = completionDate;
                     }
@@ -241,7 +245,7 @@ public class JiraClientImpl implements JiraClient {
             }
         }
 
-        BigDecimal remainingPoints = totalPoints.subtract(completedPoints);
+        BigDecimal remainingPoints = totalEstimate.subtract(completedHours);
         if (remainingPoints.compareTo(BigDecimal.ZERO) < 0) {
             remainingPoints = BigDecimal.ZERO;
         }
@@ -263,7 +267,7 @@ public class JiraClientImpl implements JiraClient {
         }
 
         List<SprintMetricsDto.BurndownPoint> burndownPoints = buildBurndownPoints(
-                totalPoints,
+                totalEstimate,
                 startDateLocal,
                 endDateLocal,
                 completedByDate
@@ -271,19 +275,19 @@ public class JiraClientImpl implements JiraClient {
 
         SprintMetricsDto.BurndownData burndownData = SprintMetricsDto.BurndownData.builder()
             .points(burndownPoints)
-            .totalStoryPoints(totalPoints)
-            .completedStoryPoints(completedPoints)
+            .totalStoryPoints(totalEstimate)
+            .completedStoryPoints(completedHours)
             .remainingStoryPoints(remainingPoints)
             .startDate(startDateLocal != null ? startDateLocal.toString() : null)
             .endDate(endDateLocal != null ? endDateLocal.toString() : null)
             .build();
 
         SprintMetricsDto.VelocityData velocityData = SprintMetricsDto.VelocityData.builder()
-            .currentSprintVelocity(completedPoints)
-            .averageVelocity(completedPoints)
+            .currentSprintVelocity(completedHours)
+            .averageVelocity(completedHours)
             .historicalVelocity(Collections.emptyList())
-            .committedPoints(totalPoints)
-            .completedPoints(completedPoints)
+            .committedPoints(totalEstimate)
+            .completedPoints(completedHours)
             .completedIssues(completedIssues)
             .totalIssues(tasks.size())
             .build();
@@ -348,6 +352,10 @@ public class JiraClientImpl implements JiraClient {
                             : null;
                     }
                     
+                    // Extract time tracking details (in hours)
+                    BigDecimal originalEstimateHours = resolveOriginalEstimateHours(fields);
+                    BigDecimal timeSpentHours = resolveTimeSpentHours(fields);
+                    
                     // Extract dates
                     // startDate: use created date (when issue was created)
                     String startDate = null;
@@ -379,7 +387,9 @@ public class JiraClientImpl implements JiraClient {
                             assigneeEmail,
                             startDate,
                             endDate,
-                            dueDate
+                            dueDate,
+                            originalEstimateHours,
+                            timeSpentHours
                     );
                     
                     tasks.add(task);
@@ -397,6 +407,57 @@ public class JiraClientImpl implements JiraClient {
             log.error("Error parsing Jira response", e);
             throw new RuntimeException("Failed to parse Jira response: " + e.getMessage(), e);
         }
+    }
+
+    private BigDecimal resolveOriginalEstimateHours(JsonNode fields) {
+        BigDecimal direct = extractSecondsField(fields, "timeoriginalestimate");
+        if (direct != null) {
+            return direct;
+        }
+        BigDecimal fromTracking = extractTimetrackingSeconds(fields, "originalEstimateSeconds");
+        if (fromTracking != null) {
+            return fromTracking;
+        }
+        return BigDecimal.ZERO;
+    }
+
+    private BigDecimal resolveTimeSpentHours(JsonNode fields) {
+        BigDecimal direct = extractSecondsField(fields, "timespent");
+        if (direct != null) {
+            return direct;
+        }
+        BigDecimal fromTracking = extractTimetrackingSeconds(fields, "timeSpentSeconds");
+        if (fromTracking != null) {
+            return fromTracking;
+        }
+        return BigDecimal.ZERO;
+    }
+
+    private BigDecimal extractSecondsField(JsonNode fields, String fieldName) {
+        if (fields.has(fieldName) && !fields.get(fieldName).isNull()) {
+            long seconds = fields.get(fieldName).asLong();
+            return convertSecondsToHours(seconds);
+        }
+        return null;
+    }
+
+    private BigDecimal extractTimetrackingSeconds(JsonNode fields, String nodeName) {
+        if (fields.has("timetracking") && !fields.get("timetracking").isNull()) {
+            JsonNode tracking = fields.get("timetracking");
+            if (tracking.has(nodeName) && !tracking.get(nodeName).isNull()) {
+                long seconds = tracking.get(nodeName).asLong();
+                return convertSecondsToHours(seconds);
+            }
+        }
+        return null;
+    }
+
+    private BigDecimal convertSecondsToHours(long seconds) {
+        if (seconds <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(seconds)
+                .divide(BigDecimal.valueOf(3600), 2, RoundingMode.HALF_UP);
     }
 
     private String extractDescription(JsonNode descriptionNode) {
