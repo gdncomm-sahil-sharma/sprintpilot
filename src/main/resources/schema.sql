@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS holiday (
     holiday_date DATE NOT NULL,
     holiday_type VARCHAR(50) DEFAULT 'PUBLIC', -- PUBLIC, COMPANY
     recurring BOOLEAN DEFAULT FALSE,
+    location JSONB, -- JSON array of locations: ["BANGALORE", "COIMBATORE"] or NULL for all locations
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -125,3 +126,4 @@ CREATE INDEX IF NOT EXISTS idx_task_sprint ON task(sprint_id);
 CREATE INDEX IF NOT EXISTS idx_task_category ON task(category);
 CREATE INDEX IF NOT EXISTS idx_leave_day_member ON leave_day(member_id);
 CREATE INDEX IF NOT EXISTS idx_holiday_date ON holiday(holiday_date);
+CREATE INDEX IF NOT EXISTS idx_holiday_location_gin ON holiday USING GIN (location);

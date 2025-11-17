@@ -13,169 +13,33 @@
             <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
                 <div>
                     <h2 class="text-3xl font-bold text-gray-800">Holiday Master</h2>
-                    <p class="text-gray-500 mt-1">Manage company-wide holidays and special dates.</p>
+                    <p class="text-gray-500 mt-1">Manage company-wide holidays and special dates by location.</p>
                 </div>
+                <div class="flex items-center gap-4">
+                    <!-- Location Filter -->
+                    <select id="locationFilter" onchange="filterByLocation()" class="px-4 py-2.5 rounded-lg border-gray-300 shadow-sm text-sm focus:ring-primary-500 focus:border-primary-500">
+                        <option value="">All Locations</option>
+                        <option value="BANGALORE">Bangalore</option>
+                        <option value="COIMBATORE">Coimbatore</option>
+                        <option value="JAKARTA">Jakarta</option>
+                        <option value="GLOBAL">Global (All Locations)</option>
+                    </select>
                 <button onclick="openAddHolidayModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     <span>Add Holiday</span>
                 </button>
+                </div>
             </div>
 
             <!-- Holidays Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                
-                <!-- Holiday Card 1 -->
-                <div class="p-4 border border-gray-200 rounded-lg hover:border-primary-400 hover:shadow-md transition-all duration-200">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-semibold text-gray-800">New Year's Day</h3>
-                            <p class="text-sm text-gray-500">January 1, 2024</p>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="editHoliday('new-year')" class="p-1 text-primary-600 hover:text-primary-800 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                            </button>
-                            <button onclick="deleteHoliday('new-year')" class="p-1 text-danger hover:text-red-700 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full inline-block">
-                        Federal Holiday
+            <div id="holidaysGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="col-span-full text-center py-8 text-gray-500">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading holidays...</span>
                     </div>
                 </div>
-
-                <!-- Holiday Card 2 -->
-                <div class="p-4 border border-gray-200 rounded-lg hover:border-primary-400 hover:shadow-md transition-all duration-200">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Martin Luther King Jr. Day</h3>
-                            <p class="text-sm text-gray-500">January 15, 2024</p>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="editHoliday('mlk-day')" class="p-1 text-primary-600 hover:text-primary-800 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                            </button>
-                            <button onclick="deleteHoliday('mlk-day')" class="p-1 text-danger hover:text-red-700 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full inline-block">
-                        Federal Holiday
-                    </div>
-                </div>
-
-                <!-- Holiday Card 3 -->
-                <div class="p-4 border border-gray-200 rounded-lg hover:border-primary-400 hover:shadow-md transition-all duration-200">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Presidents' Day</h3>
-                            <p class="text-sm text-gray-500">February 19, 2024</p>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="editHoliday('presidents-day')" class="p-1 text-primary-600 hover:text-primary-800 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                            </button>
-                            <button onclick="deleteHoliday('presidents-day')" class="p-1 text-danger hover:text-red-700 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full inline-block">
-                        Federal Holiday
-                    </div>
-                </div>
-
-                <!-- Holiday Card 4 -->
-                <div class="p-4 border border-gray-200 rounded-lg hover:border-primary-400 hover:shadow-md transition-all duration-200">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Memorial Day</h3>
-                            <p class="text-sm text-gray-500">May 27, 2024</p>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="editHoliday('memorial-day')" class="p-1 text-primary-600 hover:text-primary-800 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                            </button>
-                            <button onclick="deleteHoliday('memorial-day')" class="p-1 text-danger hover:text-red-700 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full inline-block">
-                        Federal Holiday
-                    </div>
-                </div>
-
-                <!-- Holiday Card 5 -->
-                <div class="p-4 border border-gray-200 rounded-lg hover:border-primary-400 hover:shadow-md transition-all duration-200">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Independence Day</h3>
-                            <p class="text-sm text-gray-500">July 4, 2024</p>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="editHoliday('independence-day')" class="p-1 text-primary-600 hover:text-primary-800 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                            </button>
-                            <button onclick="deleteHoliday('independence-day')" class="p-1 text-danger hover:text-red-700 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full inline-block">
-                        Federal Holiday
-                    </div>
-                </div>
-
-                <!-- Holiday Card 6 -->
-                <div class="p-4 border border-gray-200 rounded-lg hover:border-primary-400 hover:shadow-md transition-all duration-200">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <h3 class="font-semibold text-gray-800">Company Retreat</h3>
-                            <p class="text-sm text-gray-500">September 15, 2024</p>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            <button onclick="editHoliday('company-retreat')" class="p-1 text-primary-600 hover:text-primary-800 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                            </button>
-                            <button onclick="deleteHoliday('company-retreat')" class="p-1 text-danger hover:text-red-700 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full inline-block">
-                        Company Event
-                    </div>
-                </div>
-
             </div>
 
             <!-- Add/Edit Holiday Modal -->
@@ -199,18 +63,50 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
                             <select id="holidayType" name="type" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500">
-                                <option value="federal">Federal Holiday</option>
-                                <option value="company">Company Event</option>
-                                <option value="religious">Religious Holiday</option>
-                                <option value="cultural">Cultural Holiday</option>
+                                <option value="PUBLIC">Public Holiday</option>
+                                <option value="COMPANY">Company Event</option>
                             </select>
+                        </div>
+                        
+                        <!-- Location Field - Multi-select -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Locations</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="locationAll" name="locationAll" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" onchange="toggleAllLocations()" />
+                                    <span class="text-sm font-medium text-gray-700">All Locations (Global Holiday)</span>
+                                </label>
+                                <div class="ml-6 space-y-2">
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" id="locationBangalore" name="location" value="BANGALORE" class="location-checkbox rounded border-gray-300 text-primary-600 focus:ring-primary-500" onchange="updateLocationAllCheckbox()" />
+                                        <span class="text-sm text-gray-700">Bangalore</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" id="locationCoimbatore" name="location" value="COIMBATORE" class="location-checkbox rounded border-gray-300 text-primary-600 focus:ring-primary-500" onchange="updateLocationAllCheckbox()" />
+                                        <span class="text-sm text-gray-700">Coimbatore</span>
+                                    </label>
+                                    <label class="flex items-center space-x-2">
+                                        <input type="checkbox" id="locationJakarta" name="location" value="JAKARTA" class="location-checkbox rounded border-gray-300 text-primary-600 focus:ring-primary-500" onchange="updateLocationAllCheckbox()" />
+                                        <span class="text-sm text-gray-700">Jakarta</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Select one or more locations, or check "All Locations" for global holidays</p>
+                        </div>
+                        
+                        <!-- Recurring Field -->
+                        <div>
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="holidayRecurring" name="recurring" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                <span class="text-sm font-medium text-gray-700">Recurring Holiday (repeats every year)</span>
+                            </label>
                         </div>
                     </form>
                     <div class="mt-8 flex justify-end space-x-3">
-                        <button onclick="closeHolidayModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
+                        <button id="cancelHolidayBtn" onclick="closeHolidayModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
                             Cancel
                         </button>
-                        <button onclick="saveHoliday()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
+                        <button id="saveHolidayBtn" onclick="saveHoliday()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
                             Save
                         </button>
                     </div>
@@ -220,41 +116,261 @@
 
         <script>
             let currentHoliday = null;
+            let holidays = [];
+
+            // Get ApiService - try direct access first, then wait if needed
+            function getApiService() {
+                // Try direct access first (script should be loaded before content)
+                if (window.ApiService && typeof window.ApiService.getAllHolidays === 'function') {
+                    return Promise.resolve(window.ApiService);
+                }
+                
+                // If not available, wait for it
+                return new Promise((resolve) => {
+                    const checkApiService = () => {
+                        if (window.ApiService) {
+                            if (typeof window.ApiService.getAllHolidays === 'function') {
+                                console.log('ApiService is ready with getAllHolidays method');
+                                resolve(window.ApiService);
+                                return true;
+                            } else {
+                                console.warn('ApiService exists but getAllHolidays is not a function');
+                                console.log('ApiService keys:', Object.keys(window.ApiService));
+                            }
+                        }
+                        return false;
+                    };
+
+                    if (checkApiService()) {
+                        return;
+                    }
+
+                    let attempts = 0;
+                    const maxAttempts = 50; // 5 seconds at 100ms intervals
+                    const checkInterval = setInterval(() => {
+                        attempts++;
+                        if (checkApiService()) {
+                            clearInterval(checkInterval);
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(checkInterval);
+                            console.error('ApiService not ready after 5 seconds');
+                            console.log('window.ApiService:', window.ApiService);
+                            if (window.ApiService) {
+                                console.log('Available methods:', Object.keys(window.ApiService));
+                                console.log('getAllHolidays type:', typeof window.ApiService.getAllHolidays);
+                            }
+                            resolve(null);
+                        }
+                    }, 100);
+                });
+            }
+
+            // Load holidays from API
+            async function loadHolidays() {
+                const apiService = await getApiService();
+                if (!apiService) {
+                    console.error('ApiService is not available');
+                    showError('API service is not loaded. Please refresh the page.');
+                    return;
+                }
+
+                // Verify the method exists
+                if (typeof apiService.getAllHolidays !== 'function') {
+                    console.error('getAllHolidays is not a function on ApiService');
+                    console.log('ApiService object:', apiService);
+                    console.log('Available methods:', Object.keys(apiService));
+                    showError('API method not available. Please refresh the page.');
+                    return;
+                }
+
+                try {
+                    console.log('Calling apiService.getAllHolidays()');
+                    console.log('apiService:', apiService);
+                    console.log('apiService type:', typeof apiService);
+                    console.log('getAllHolidays exists:', 'getAllHolidays' in apiService);
+                    console.log('getAllHolidays type:', typeof apiService.getAllHolidays);
+                    console.log('All ApiService methods:', Object.getOwnPropertyNames(apiService));
+                    
+                    // Call the method - using .call() to ensure correct 'this' context
+                    const response = await apiService.getAllHolidays();
+                    if (response.success && response.data) {
+                        allHolidays = response.data;
+                        holidays = allHolidays;
+                        renderHolidays();
+                    } else {
+                        console.error('Failed to load holidays:', response.error);
+                        showError('Failed to load holidays: ' + (response.error || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error loading holidays:', error);
+                    showError('Error loading holidays: ' + error.message);
+                }
+            }
+
+            // Render holidays in the grid
+            function renderHolidays() {
+                const grid = document.getElementById('holidaysGrid');
+                if (holidays.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-center py-8 text-gray-500">No holidays found. Click "Add Holiday" to create one.</div>';
+                    return;
+                }
+
+                grid.innerHTML = holidays.map(holiday => {
+                    const date = new Date(holiday.holidayDate);
+                    const formattedDate = date.toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    });
+                    const typeClass = holiday.holidayType === 'PUBLIC' 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-green-100 text-green-800';
+                    const typeLabel = holiday.holidayType === 'PUBLIC' 
+                        ? 'Public Holiday' 
+                        : 'Company Event';
+                    const recurringBadge = holiday.recurring 
+                        ? '<span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full ml-2">Recurring</span>' 
+                        : '';
+                    const locationBadge = holiday.location && holiday.location.length > 0
+                        ? holiday.location.map(loc => `<span class="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full mr-1">${loc}</span>`).join('')
+                        : '<span class="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full">Global</span>';
+
+                    return `
+                        <div class="p-4 border border-gray-200 rounded-lg hover:border-primary-400 hover:shadow-md transition-all duration-200">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">${holiday.name}${recurringBadge}</h3>
+                                    <p class="text-sm text-gray-500">${formattedDate}</p>
+                                    <div class="mt-1">${locationBadge}</div>
+                                </div>
+                                <div class="flex items-center space-x-1">
+                                    <button onclick="editHoliday('${holiday.id}')" class="p-1 text-primary-600 hover:text-primary-800 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                    <button onclick="deleteHoliday('${holiday.id}')" class="p-1 text-danger hover:text-red-700 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="text-xs ${typeClass} px-2 py-1 rounded-full inline-block">
+                                ${typeLabel}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
 
             function openAddHolidayModal() {
                 currentHoliday = null;
                 document.getElementById('modalTitle').textContent = 'Add Holiday';
                 document.getElementById('holidayName').value = '';
                 document.getElementById('holidayDate').value = '';
-                document.getElementById('holidayType').value = 'federal';
+                document.getElementById('holidayType').value = 'PUBLIC';
+                document.getElementById('locationAll').checked = true;
+                document.getElementById('locationBangalore').checked = false;
+                document.getElementById('locationCoimbatore').checked = false;
+                document.getElementById('locationJakarta').checked = false;
+                document.getElementById('holidayRecurring').checked = false;
                 document.getElementById('holidayModal').classList.remove('hidden');
             }
 
-            function editHoliday(holidayId) {
-                currentHoliday = holidayId;
+            function toggleAllLocations() {
+                const allChecked = document.getElementById('locationAll').checked;
+                document.getElementById('locationBangalore').checked = false;
+                document.getElementById('locationCoimbatore').checked = false;
+                document.getElementById('locationJakarta').checked = false;
+                document.getElementById('locationBangalore').disabled = allChecked;
+                document.getElementById('locationCoimbatore').disabled = allChecked;
+                document.getElementById('locationJakarta').disabled = allChecked;
+            }
+            
+            function updateLocationAllCheckbox() {
+                const bangalore = document.getElementById('locationBangalore').checked;
+                const coimbatore = document.getElementById('locationCoimbatore').checked;
+                const jakarta = document.getElementById('locationJakarta').checked;
+                const anySelected = bangalore || coimbatore || jakarta;
+                document.getElementById('locationAll').checked = !anySelected;
+                if (anySelected) {
+                    document.getElementById('locationBangalore').disabled = false;
+                    document.getElementById('locationCoimbatore').disabled = false;
+                    document.getElementById('locationJakarta').disabled = false;
+                }
+            }
+
+            async function editHoliday(holidayId) {
+                const apiService = await getApiService();
+                if (!apiService) {
+                    showError('API service is not loaded. Please refresh the page.');
+                    return;
+                }
+
+                try {
+                    const response = await apiService.getHolidayById.call(apiService, holidayId);
+                    if (response.success && response.data) {
+                        const holiday = response.data;
+                        currentHoliday = holiday;
                 document.getElementById('modalTitle').textContent = 'Edit Holiday';
-                
-                // Mock data for editing (in real app, this would load from server)
-                const holidayData = {
-                    'new-year': { name: 'New Year\'s Day', date: '2024-01-01', type: 'federal' },
-                    'mlk-day': { name: 'Martin Luther King Jr. Day', date: '2024-01-15', type: 'federal' },
-                    'presidents-day': { name: 'Presidents\' Day', date: '2024-02-19', type: 'federal' },
-                    'memorial-day': { name: 'Memorial Day', date: '2024-05-27', type: 'federal' },
-                    'independence-day': { name: 'Independence Day', date: '2024-07-04', type: 'federal' },
-                    'company-retreat': { name: 'Company Retreat', date: '2024-09-15', type: 'company' }
-                };
-                
-                const holiday = holidayData[holidayId];
                 document.getElementById('holidayName').value = holiday.name;
-                document.getElementById('holidayDate').value = holiday.date;
-                document.getElementById('holidayType').value = holiday.type;
+                document.getElementById('holidayDate').value = holiday.holidayDate;
+                document.getElementById('holidayType').value = holiday.holidayType || 'PUBLIC';
                 
+                // Set location checkboxes
+                const locations = holiday.location || [];
+                if (locations.length === 0) {
+                    document.getElementById('locationAll').checked = true;
+                    document.getElementById('locationBangalore').checked = false;
+                    document.getElementById('locationCoimbatore').checked = false;
+                    document.getElementById('locationJakarta').checked = false;
+                    document.getElementById('locationBangalore').disabled = true;
+                    document.getElementById('locationCoimbatore').disabled = true;
+                    document.getElementById('locationJakarta').disabled = true;
+                } else {
+                    document.getElementById('locationAll').checked = false;
+                    document.getElementById('locationBangalore').checked = locations.includes('BANGALORE');
+                    document.getElementById('locationCoimbatore').checked = locations.includes('COIMBATORE');
+                    document.getElementById('locationJakarta').checked = locations.includes('JAKARTA');
+                    document.getElementById('locationBangalore').disabled = false;
+                    document.getElementById('locationCoimbatore').disabled = false;
+                    document.getElementById('locationJakarta').disabled = false;
+                }
+                
+                document.getElementById('holidayRecurring').checked = holiday.recurring || false;
                 document.getElementById('holidayModal').classList.remove('hidden');
+                    } else {
+                        showError('Failed to load holiday: ' + (response.error || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error loading holiday:', error);
+                    showError('Error loading holiday: ' + error.message);
+                }
             }
 
-            function deleteHoliday(holidayId) {
-                if (confirm('Are you sure you want to delete this holiday?')) {
-                    alert('Holiday deleted (mock functionality)');
+            async function deleteHoliday(holidayId) {
+                if (!confirm('Are you sure you want to delete this holiday?')) {
+                    return;
+                }
+
+                const apiService = await getApiService();
+                if (!apiService) {
+                    showError('API service is not loaded. Please refresh the page.');
+                    return;
+                }
+
+                try {
+                    const response = await apiService.deleteHoliday.call(apiService, holidayId);
+                    if (response.success) {
+                        showSuccess('Holiday deleted successfully');
+                        await loadHolidays();
+                    } else {
+                        showError('Failed to delete holiday: ' + (response.error || 'Unknown error'));
+                    }
+                } catch (error) {
+                    console.error('Error deleting holiday:', error);
+                    showError('Error deleting holiday: ' + error.message);
                 }
             }
 
@@ -262,19 +378,120 @@
                 document.getElementById('holidayModal').classList.add('hidden');
             }
 
-            function saveHoliday() {
-                const name = document.getElementById('holidayName').value;
+            async function saveHoliday() {
+                const saveBtn = document.getElementById('saveHolidayBtn');
+                const cancelBtn = document.getElementById('cancelHolidayBtn');
+                const name = document.getElementById('holidayName').value.trim();
                 const date = document.getElementById('holidayDate').value;
                 const type = document.getElementById('holidayType').value;
                 
-                if (!name.trim() || !date) {
+                // Get selected locations
+                let location = null;
+                if (!document.getElementById('locationAll').checked) {
+                    location = [];
+                    if (document.getElementById('locationBangalore').checked) {
+                        location.push('BANGALORE');
+                    }
+                    if (document.getElementById('locationCoimbatore').checked) {
+                        location.push('COIMBATORE');
+                    }
+                    if (document.getElementById('locationJakarta').checked) {
+                        location.push('JAKARTA');
+                    }
+                    // If no locations selected, treat as global (null)
+                    if (location.length === 0) {
+                        location = null;
+                    }
+                }
+                
+                const recurring = document.getElementById('holidayRecurring').checked;
+                
+                if (!name || !date) {
                     alert('Please fill in all required fields');
                     return;
                 }
                 
-                // Mock save functionality
-                alert(`Holiday ${currentHoliday ? 'updated' : 'added'} successfully (mock functionality)`);
+                // Disable buttons and show loading state
+                saveBtn.disabled = true;
+                cancelBtn.disabled = true;
+                const originalText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '⏳ Saving...';
+                saveBtn.style.opacity = '0.7';
+                saveBtn.style.cursor = 'not-allowed';
+
+                // Prepare holiday data
+                const holidayData = {
+                    name: name,
+                    holidayDate: date,
+                    holidayType: type,
+                    location: location,
+                    recurring: recurring
+                };
+
+                const apiService = await getApiService();
+                if (!apiService) {
+                    showError('API service is not loaded. Please refresh the page.');
+                    // Re-enable buttons
+                    saveBtn.disabled = false;
+                    cancelBtn.disabled = false;
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.style.opacity = '1';
+                    saveBtn.style.cursor = 'pointer';
+                    return;
+                }
+
+                try {
+                    let response;
+                    if (currentHoliday && currentHoliday.id) {
+                        // Update existing holiday
+                        console.log('Updating holiday:', currentHoliday.id, holidayData);
+                        response = await apiService.updateHoliday.call(apiService, currentHoliday.id, holidayData);
+                    } else {
+                        // Create new holiday - don't include id field
+                        console.log('Creating holiday:', holidayData);
+                        response = await apiService.createHoliday.call(apiService, holidayData);
+                    }
+
+                    console.log('API Response:', response);
+
+                    if (response && response.success) {
+                        showSuccess(`Holiday ${currentHoliday ? 'updated' : 'created'} successfully`);
                 closeHolidayModal();
+                        await loadHolidays();
+                        // Re-apply location filter if active
+                        filterByLocation();
+                    } else {
+                        const errorMsg = response?.error || response?.message || 'Unknown error';
+                        console.error('Save failed:', errorMsg);
+                        showError('Failed to save holiday: ' + errorMsg);
+                    }
+                } catch (error) {
+                    console.error('Error saving holiday:', error);
+                    showError('Error saving holiday: ' + (error.message || 'Network error. Please check console for details.'));
+                } finally {
+                    // Re-enable buttons and restore text
+                    saveBtn.disabled = false;
+                    cancelBtn.disabled = false;
+                    saveBtn.innerHTML = originalText;
+                    saveBtn.style.opacity = '1';
+                    saveBtn.style.cursor = 'pointer';
+                }
+            }
+
+            function showSuccess(message) {
+                if (window.UIUtils && window.UIUtils.showAlert) {
+                    UIUtils.showAlert(message, 'success');
+                } else {
+                    alert(message);
+                }
+            }
+
+            function showError(message) {
+                if (window.UIUtils && window.UIUtils.showAlert) {
+                    UIUtils.showAlert(message, 'danger');
+                } else {
+                    alert(message);
+                }
             }
 
             // Close modal when clicking outside
@@ -282,6 +499,30 @@
                 if (e.target === this) {
                     closeHolidayModal();
                 }
+            });
+
+            // Filter holidays by location
+            function filterByLocation() {
+                const locationFilter = document.getElementById('locationFilter').value;
+                
+                if (!locationFilter || locationFilter === '') {
+                    holidays = allHolidays;
+                } else if (locationFilter === 'GLOBAL') {
+                    holidays = allHolidays.filter(h => !h.location || h.location.length === 0);
+                } else {
+                    holidays = allHolidays.filter(h => {
+                        // Include global holidays (no location) or holidays that contain the selected location
+                        return !h.location || h.location.length === 0 || h.location.includes(locationFilter);
+                    });
+                }
+                
+                renderHolidays();
+            }
+
+            // Load holidays when page loads
+            document.addEventListener('DOMContentLoaded', async function() {
+                // Wait for ApiService to be ready, then load holidays
+                await loadHolidays();
             });
         </script>
     </main>

@@ -74,14 +74,61 @@ const ApiService = {
         return this.post('/ai/teams-message', data);
     },
     
+    // Holiday Management
+    getAllHolidays: async function() {
+        return this.get('/holidays');
+    },
+    
+    getHolidayById: async function(id) {
+        return this.get(`/holidays/${id}`);
+    },
+    
+    createHoliday: async function(holidayData) {
+        return this.post('/holidays', holidayData);
+    },
+    
+    updateHoliday: async function(id, holidayData) {
+        return this.put(`/holidays/${id}`, holidayData);
+    },
+    
+    deleteHoliday: async function(id) {
+        return this.delete(`/holidays/${id}`);
+    },
+    
+    getHolidaysByDateRange: async function(startDate, endDate) {
+        return this.get(`/holidays/range?startDate=${startDate}&endDate=${endDate}`);
+    },
+    
+    getHolidaysByYear: async function(year) {
+        return this.get(`/holidays/year/${year}`);
+    },
+    
+    getRecurringHolidays: async function() {
+        return this.get('/holidays/recurring');
+    },
+    
+    getHolidayDatesForSprint: async function(startDate, endDate) {
+        return this.get(`/holidays/sprint?startDate=${startDate}&endDate=${endDate}`);
+    },
+    
+    isHoliday: async function(date) {
+        return this.get(`/holidays/check?date=${date}`);
+    },
+    
     // HTTP Methods
     get: async function(endpoint) {
         try {
             const response = await fetch(this.baseUrl + endpoint);
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                return { success: false, error: errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}` };
+            }
+            
             return await response.json();
         } catch (error) {
             console.error('GET request failed:', error);
-            throw error;
+            return { success: false, error: error.message || 'Network error occurred' };
         }
     },
     
@@ -94,10 +141,16 @@ const ApiService = {
                 },
                 body: JSON.stringify(data)
             });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                return { success: false, error: errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}` };
+            }
+            
             return await response.json();
         } catch (error) {
             console.error('POST request failed:', error);
-            throw error;
+            return { success: false, error: error.message || 'Network error occurred' };
         }
     },
     
@@ -110,10 +163,16 @@ const ApiService = {
                 },
                 body: JSON.stringify(data)
             });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                return { success: false, error: errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}` };
+            }
+            
             return await response.json();
         } catch (error) {
             console.error('PUT request failed:', error);
-            throw error;
+            return { success: false, error: error.message || 'Network error occurred' };
         }
     },
     
@@ -122,10 +181,16 @@ const ApiService = {
             const response = await fetch(this.baseUrl + endpoint, {
                 method: 'DELETE'
             });
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }));
+                return { success: false, error: errorData.error || errorData.message || `HTTP ${response.status}: ${response.statusText}` };
+            }
+            
             return await response.json();
         } catch (error) {
             console.error('DELETE request failed:', error);
-            throw error;
+            return { success: false, error: error.message || 'Network error occurred' };
         }
     }
 };

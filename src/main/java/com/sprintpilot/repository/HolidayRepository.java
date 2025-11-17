@@ -23,6 +23,9 @@ public interface HolidayRepository extends JpaRepository<Holiday, String> {
     @Query("SELECT h FROM Holiday h WHERE h.recurring = true")
     List<Holiday> findRecurringHolidays();
     
+    @Query("SELECT h FROM Holiday h WHERE h.location IS NULL ORDER BY h.holidayDate")
+    List<Holiday> findGlobalHolidays();
+    
     @Query("SELECT COUNT(h) FROM Holiday h WHERE h.holidayDate BETWEEN :startDate AND :endDate")
     long countHolidaysInRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }
