@@ -136,7 +136,7 @@ public class SprintServiceImpl implements SprintService {
             new BigDecimal("6"),
             "alice@company.com",
             true,
-            List.of()
+            List.of(), false
         ));
         
         members.add(new TeamMemberDto(
@@ -146,7 +146,7 @@ public class SprintServiceImpl implements SprintService {
             new BigDecimal("7"),
             "bob@company.com",
             true,
-            List.of()
+            List.of(), false
         ));
         
         members.add(new TeamMemberDto(
@@ -156,7 +156,7 @@ public class SprintServiceImpl implements SprintService {
             new BigDecimal("5"),
             "charlie@company.com",
             true,
-            List.of()
+            List.of(), false
         ));
         
         members.add(new TeamMemberDto(
@@ -166,7 +166,7 @@ public class SprintServiceImpl implements SprintService {
             new BigDecimal("7"),
             "david@company.com",
             true,
-            List.of()
+            List.of(), false
         ));
         
         return members;
@@ -262,7 +262,16 @@ public class SprintServiceImpl implements SprintService {
             sprintDto.teamMembers() != null ? sprintDto.teamMembers() : List.of(),
             sprintDto.tasks() != null ? sprintDto.tasks() : List.of()
         );
-        mockSprints.add(newSprint);
+        Sprint sprint = Sprint.builder()
+            .id(newId)
+            .sprintName("SCRUM Sprint 1")
+            .startDate(sprintDto.startDate())
+            .endDate(sprintDto.endDate())
+            .freezeDate(sprintDto.freezeDate())
+            .duration(sprintDto.duration())
+            .status(sprintDto.status())
+            .build();
+        sprintRepository.save(sprint);
         return newSprint;
     }
     

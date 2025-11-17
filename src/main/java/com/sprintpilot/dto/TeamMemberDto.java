@@ -11,7 +11,8 @@ public record TeamMemberDto(
         BigDecimal dailyCapacity,
         String email,
         Boolean active,
-        List<String> leaveDays
+        List<String> leaveDays,
+        Boolean assignedToCurrentSprint
 ) {
     public TeamMemberDto {
         if (name == null || name.isBlank()) {

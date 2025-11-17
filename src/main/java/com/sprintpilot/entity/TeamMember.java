@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "team_member")
@@ -32,6 +33,9 @@ public class TeamMember {
     @Column(name = "active")
     private Boolean active = true;
     
+    @Column(name = "deleted")
+    private Boolean deleted = false;
+    
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
@@ -51,7 +55,7 @@ public class TeamMember {
     protected void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
         if (updatedAt == null) updatedAt = LocalDateTime.now();
-        if (id == null) id = "member-" + System.currentTimeMillis();
+        if (id == null) id = "member-" + UUID.randomUUID().toString();
     }
     
     @PreUpdate

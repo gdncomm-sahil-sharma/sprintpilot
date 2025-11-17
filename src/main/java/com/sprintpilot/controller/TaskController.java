@@ -188,7 +188,11 @@ public class TaskController {
                     category,
                     priority,
                     "TODO",
-                    assignee
+                    assignee,  // assignee name
+                    null,      // assigneeEmail (not available in CSV)
+                    null,      // startDate
+                    null,      // endDate
+                    null       // dueDate
                 );
                 
                 tasks.add(task);

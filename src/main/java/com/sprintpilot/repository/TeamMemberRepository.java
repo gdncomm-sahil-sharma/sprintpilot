@@ -11,6 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface TeamMemberRepository extends JpaRepository<TeamMember, String> {
+
+    Optional<TeamMember> findById(String id);
     
     @Query("SELECT t FROM TeamMember t WHERE t.active = true ORDER BY t.name")
     List<TeamMember> findActiveMembers();

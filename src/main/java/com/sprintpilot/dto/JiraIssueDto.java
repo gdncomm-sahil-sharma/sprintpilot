@@ -24,7 +24,9 @@ public record JiraIssueDto(
     List<String> labels,
     List<String> components,
     String projectKey,
-    String projectName
+    String projectName,
+    String start,
+    String end
 ) {
     
     /**
@@ -39,7 +41,11 @@ public record JiraIssueDto(
             mapIssueTypeToCategory(issueType),
             mapJiraPriorityToTaskPriority(priority),
             "TODO", // Default status for new imports
-            assignee
+            assigneeDisplayName,  // assignee
+            assignee,             // assigneeEmail
+            start,                // startDate
+            end,                  // endDate
+            dueDate != null ? dueDate.toString() : null  // dueDate
         );
     }
     
