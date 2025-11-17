@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Screen, TeamMember, SprintSettings, JiraTask, Role, CapacitySummary, SprintDeployment, SprintData, MasterHoliday, TaskRisk, MeetingType, SprintMeeting } from './types';
 import { generateSprintSummary, generateConfluencePage, generateTeamsMessage, generateOutlookInvite, generateRiskSummary, generatePerformanceInsights, generateMeetingInvite } from './services/geminiService';
+import * as holidayService from './services/holidayService';
 import { EditIcon, DeleteIcon, CalendarIcon, CopyIcon, CheckIcon, UsersIcon, CalendarDaysIcon, DocumentArrowUpIcon, ChartPieIcon, SparklesIcon, PaperAirplaneIcon, FlagIcon, PlusIcon, PlayIcon, ClockIcon, ArchiveBoxArrowDownIcon, GlobeAltIcon, BuildingLibraryIcon, JiraIcon, ShieldExclamationIcon, InformationCircleIcon, ChartBarIcon, EyeIcon } from './components/icons';
 
 // --- Helper & Mock Data ---
@@ -446,13 +447,34 @@ const SprintSetupScreen: React.FC<{
     const [newDeployment, setNewDeployment] = useState({name: '', date: ''});
     
     useEffect(() => {
-        if(settings.startDate && settings.duration > 0) {
-            const start = new Date(settings.startDate);
-            const allHolidayDates = Array.from(new Set([...settings.publicHolidays, ...masterHolidays.map(h => h.date)]));
-            // addWorkingDays' second param is the number of working days to add, so duration-1 for the end date.
-            const end = addWorkingDays(start, settings.duration - 1, allHolidayDates);
-            setSettings(s => ({...s, endDate: end.toISOString().split('T')[0]}));
-        }
+        const calculateEndDate = async () => {
+            if(settings.startDate && settings.duration > 0) {
+                try {
+                    const start = new Date(settings.startDate);
+                    const estimatedEnd = new Date(start);
+                    estimatedEnd.setDate(start.getDate() + settings.duration * 2);
+                    
+                    // Fetch holidays from API for the date range
+                    const holidayDates = await holidayService.getHolidayDatesForSprint(
+                        settings.startDate,
+                        estimatedEnd.toISOString().split('T')[0]
+                    );
+                    
+                    const allHolidayDates = Array.from(new Set([...settings.publicHolidays, ...holidayDates]));
+                    // addWorkingDays' second param is the number of working days to add, so duration-1 for the end date.
+                    const end = addWorkingDays(start, settings.duration - 1, allHolidayDates);
+                    setSettings(s => ({...s, endDate: end.toISOString().split('T')[0]}));
+                } catch (error) {
+                    console.error('Error calculating end date with holidays:', error);
+                    // Fallback to simple calculation
+                    const start = new Date(settings.startDate);
+                    const allHolidayDates = Array.from(new Set([...settings.publicHolidays, ...masterHolidays.map(h => h.date)]));
+                    const end = addWorkingDays(start, settings.duration - 1, allHolidayDates);
+                    setSettings(s => ({...s, endDate: end.toISOString().split('T')[0]}));
+                }
+            }
+        };
+        calculateEndDate();
     }, [settings.startDate, settings.duration, settings.publicHolidays, masterHolidays]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => { const { name, value } = e.target; setSettings(prev => ({ ...prev, [name]: name === 'duration' ? Number(value) : value })); };
@@ -547,14 +569,39 @@ const SprintSetupScreen: React.FC<{
     };
 
     const HolidayManager = () => {
+        const [apiHolidays, setApiHolidays] = useState<MasterHoliday[]>([]);
+        const [isLoadingHolidays, setIsLoadingHolidays] = useState(false);
+
+        useEffect(() => {
+            const loadHolidays = async () => {
+                if (!settings.startDate || !settings.endDate) return;
+                
+                setIsLoadingHolidays(true);
+                try {
+                    const holidays = await holidayService.getHolidaysByDateRange(settings.startDate, settings.endDate);
+                    const masterHolidays: MasterHoliday[] = holidays.map(h => ({
+                        id: h.id || '',
+                        name: h.name,
+                        date: h.holidayDate
+                    }));
+                    setApiHolidays(masterHolidays);
+                } catch (error) {
+                    console.error('Error loading holidays:', error);
+                } finally {
+                    setIsLoadingHolidays(false);
+                }
+            };
+            loadHolidays();
+        }, [settings.startDate, settings.endDate]);
+
         const sprintHolidaysInScope = useMemo(() => {
-            const masterHolidayMap = new Map(masterHolidays.map(h => [h.date, h]));
-            const holidaysInSprint = [];
+            const allHolidays = [...apiHolidays, ...masterHolidays];
             const start = new Date(settings.startDate);
             const end = new Date(settings.endDate);
+            const holidaysInSprint = [];
 
             if (settings.startDate && settings.endDate) {
-                for (const holiday of masterHolidays) {
+                for (const holiday of allHolidays) {
                     const hDate = new Date(holiday.date);
                     if (hDate >= start && hDate <= end) {
                         holidaysInSprint.push(holiday);
@@ -562,7 +609,7 @@ const SprintSetupScreen: React.FC<{
                 }
             }
             return holidaysInSprint.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        }, [settings.startDate, settings.endDate, masterHolidays]);
+        }, [settings.startDate, settings.endDate, apiHolidays, masterHolidays]);
 
         return (
             <Card>
@@ -570,6 +617,7 @@ const SprintSetupScreen: React.FC<{
                 <p className="text-xs text-gray-500 mb-4">Add one-off holidays for this sprint. Master holidays are included automatically.</p>
                 <div className="flex items-center space-x-2"><input type="date" value={newHoliday} onChange={e => setNewHoliday(e.target.value)} className={inputClasses}/><Button onClick={() => handleAddSprintHoliday()} variant="secondary"><PlusIcon className="w-4 h-4"/></Button></div>
                 <div className="mt-4 space-y-2 max-h-40 overflow-y-auto pr-2">
+                    {isLoadingHolidays && <p className="text-sm text-gray-500">Loading holidays...</p>}
                     {sprintHolidaysInScope.map(holiday => (
                          <div key={holiday.id} className="flex justify-between items-center bg-blue-50 p-2 rounded-md">
                             <div>
@@ -776,19 +824,79 @@ const HolidayMasterScreen: React.FC<{
     holidays: MasterHoliday[];
     onUpdate: (holidays: MasterHoliday[]) => void;
 }> = ({ holidays, onUpdate }) => {
-    const [newHoliday, setNewHoliday] = useState({ name: '', date: '' });
+    const [newHoliday, setNewHoliday] = useState({ name: '', date: '', type: 'PUBLIC' as 'PUBLIC' | 'COMPANY', recurring: false });
+    const [isLoading, setIsLoading] = useState(false);
     const inputClasses = "block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500";
 
-    const handleAddHoliday = () => {
-        if (newHoliday.name && newHoliday.date) {
-            onUpdate([...holidays, { ...newHoliday, id: `mh-${Date.now()}` }].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
-            setNewHoliday({ name: '', date: '' });
+    useEffect(() => {
+        loadHolidays();
+    }, []);
+
+    const loadHolidays = async () => {
+        setIsLoading(true);
+        try {
+            const apiHolidays = await holidayService.getAllHolidays();
+            const masterHolidays: MasterHoliday[] = apiHolidays.map(h => ({
+                id: h.id || '',
+                name: h.name,
+                date: h.holidayDate
+            }));
+            onUpdate(masterHolidays);
+        } catch (error) {
+            console.error('Error loading holidays:', error);
+            alert('Failed to load holidays');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const handleDeleteHoliday = (id: string) => {
-        if (window.confirm('Are you sure you want to delete this holiday from the master list?')) {
-            onUpdate(holidays.filter(h => h.id !== id));
+    const handleAddHoliday = async () => {
+        if (!newHoliday.name || !newHoliday.date) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const created = await holidayService.createHoliday({
+                name: newHoliday.name,
+                holidayDate: newHoliday.date,
+                holidayType: newHoliday.type,
+                recurring: newHoliday.recurring
+            });
+
+            if (created) {
+                await loadHolidays();
+                setNewHoliday({ name: '', date: '', type: 'PUBLIC', recurring: false });
+            } else {
+                alert('Failed to create holiday');
+            }
+        } catch (error) {
+            console.error('Error creating holiday:', error);
+            alert('Error creating holiday');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDeleteHoliday = async (id: string) => {
+        if (!window.confirm('Are you sure you want to delete this holiday from the master list?')) {
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const success = await holidayService.deleteHoliday(id);
+            if (success) {
+                await loadHolidays();
+            } else {
+                alert('Failed to delete holiday');
+            }
+        } catch (error) {
+            console.error('Error deleting holiday:', error);
+            alert('Error deleting holiday');
+        } finally {
+            setIsLoading(false);
         }
     };
     
@@ -809,7 +917,20 @@ const HolidayMasterScreen: React.FC<{
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                                 <input type="date" value={newHoliday.date} onChange={e => setNewHoliday(p => ({...p, date: e.target.value}))} className={inputClasses} />
                             </div>
-                            <Button onClick={() => handleAddHoliday()}><PlusIcon className="w-4 h-4"/> Add Holiday</Button>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                                <select value={newHoliday.type} onChange={e => setNewHoliday(p => ({...p, type: e.target.value as 'PUBLIC' | 'COMPANY'}))} className={inputClasses}>
+                                    <option value="PUBLIC">Public Holiday</option>
+                                    <option value="COMPANY">Company Event</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="flex items-center space-x-2">
+                                    <input type="checkbox" checked={newHoliday.recurring} onChange={e => setNewHoliday(p => ({...p, recurring: e.target.checked}))} className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                    <span className="text-sm font-medium text-gray-700">Recurring Holiday</span>
+                                </label>
+                            </div>
+                            <Button onClick={() => handleAddHoliday()} disabled={isLoading}><PlusIcon className="w-4 h-4"/> {isLoading ? 'Adding...' : 'Add Holiday'}</Button>
                         </div>
                     </Card>
                 </div>
@@ -817,14 +938,15 @@ const HolidayMasterScreen: React.FC<{
                     <Card>
                         <h3 className="text-xl font-bold text-gray-700 mb-4">Master Holiday List (2024)</h3>
                         <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                        {holidays.length === 0 && <p className="text-gray-500 text-center py-4">No master holidays defined.</p>}
+                        {isLoading && holidays.length === 0 && <p className="text-gray-500 text-center py-4">Loading holidays...</p>}
+                        {!isLoading && holidays.length === 0 && <p className="text-gray-500 text-center py-4">No master holidays defined.</p>}
                         {holidays.map(holiday => (
                             <div key={holiday.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-md">
                                 <div>
                                     <p className="font-semibold text-gray-800">{holiday.name}</p>
                                     <p className="text-sm text-gray-500">{holiday.date}</p>
                                 </div>
-                                <Button onClick={() => handleDeleteHoliday(holiday.id)} variant="danger"><DeleteIcon/></Button>
+                                <Button onClick={() => handleDeleteHoliday(holiday.id)} variant="danger" disabled={isLoading}><DeleteIcon/></Button>
                             </div>
                         ))}
                         </div>

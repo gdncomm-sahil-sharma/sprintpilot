@@ -2,13 +2,15 @@ package com.sprintpilot.dto;
 
 import com.sprintpilot.entity.Holiday;
 import java.time.LocalDate;
+import java.util.List;
 
 public record HolidayDto(
         String id,
         String name,
         LocalDate holidayDate,
         Holiday.HolidayType holidayType,
-        Boolean recurring
+        Boolean recurring,
+        List<String> location
 ) {
     public HolidayDto {
         if (name == null || name.isBlank()) {
@@ -22,6 +24,11 @@ public record HolidayDto(
         }
         if (recurring == null) {
             recurring = false;
+        }
+        // location can be null (applies to all locations) or a list of: BANGALORE, COIMBATORE, JAKARTA
+        // Empty list is treated as null (global holiday)
+        if (location != null && location.isEmpty()) {
+            location = null;
         }
     }
 }

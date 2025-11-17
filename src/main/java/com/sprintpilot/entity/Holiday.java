@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "holiday")
@@ -26,6 +27,10 @@ public class Holiday {
     
     @Column(name = "recurring")
     private Boolean recurring = false;
+    
+    @Column(name = "location", columnDefinition = "jsonb")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    private List<String> location;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
