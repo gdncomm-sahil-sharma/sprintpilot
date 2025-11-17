@@ -51,14 +51,6 @@
                     Assign Members to Sprint
                 </h3>
                 
-                <!-- Sprint Selection -->
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Select Sprint</label>
-                    <select id="sprintSelect" class="block w-full border border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
-                        <option value="">Loading sprints...</option>
-                    </select>
-                </div>
-                
                 <!-- Members Selection -->
                 <div class="mb-6">
                     <div class="flex items-center justify-between mb-3">
@@ -206,8 +198,16 @@
             </div>
             
             <!-- Header Section - Exact React Match -->
-            <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
+            <div class="flex flex-col md:flex-row justify-between md:items-start mb-6 gap-4">
+                <div class="flex-1">
                 <h2 class="text-3xl font-bold text-gray-800">Team Configuration</h2>
+                    <div class="mt-3 inline-flex items-center gap-2 bg-primary-50 border border-primary-200 rounded-lg px-3 py-2">
+                        <svg class="w-4 h-4 text-primary-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span class="text-sm font-medium text-primary-800">Members with a blue highlight are assigned to the current sprint</span>
+                    </div>
+                </div>
                 <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     <!-- Sprint Filter Toggle - Beautiful Version -->
                     <div id="sprintFilterContainer" class="hidden">
@@ -274,8 +274,24 @@
             const API_BASE_URL = '/api/team-members';
             const SPRINT_API_BASE_URL = '/api/sprints';
             
+            // Get sprintId from cookie
+            function getSprintIdFromCookie() {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    const [name, value] = cookie.trim().split('=');
+                    if (name === 'currentSprintId') {
+                        return value;
+                    }
+                }
+                return null;
+            }
+            
             // Load team members on page load
             document.addEventListener('DOMContentLoaded', function() {
+                // Initialize currentSprintId from cookie
+                currentSprintId = getSprintIdFromCookie();
+                console.log('Sprint ID from cookie:', currentSprintId);
+                
                 loadCurrentSprintAndMembers();
                 
                 // Close modal when clicking outside
@@ -290,26 +306,16 @@
             
             // Fetch current sprint and then load team members
             async function loadCurrentSprintAndMembers() {
-                try {
-                    // Try to get the active sprint
-                    const sprintResponse = await fetch(`${SPRINT_API_BASE_URL}/active`);
-                    const sprintData = await sprintResponse.json();
-                    
-                    if (sprintData.success && sprintData.data && sprintData.data.length > 0) {
-                        // Use the first active sprint
-                        currentSprintId = sprintData.data[0].id;
+                // Refresh sprintId from cookie in case it changed
+                currentSprintId = getSprintIdFromCookie();
+                
+                if (currentSprintId) {
                         console.log('Current sprint ID:', currentSprintId);
                         // Show the filter toggle since we have an active sprint
                         document.getElementById('sprintFilterContainer').classList.remove('hidden');
                     } else {
-                        console.log('No active sprint found');
-                        currentSprintId = null;
+                    console.log('No active sprint found in cookie');
                         // Hide the filter toggle since there's no active sprint
-                        document.getElementById('sprintFilterContainer').classList.add('hidden');
-                    }
-                } catch (error) {
-                    console.warn('Could not fetch current sprint:', error);
-                    currentSprintId = null;
                     document.getElementById('sprintFilterContainer').classList.add('hidden');
                 }
                 
@@ -403,25 +409,24 @@
                         </div>`
                         : '';
                     
-                    // Sprint assignment badge
-                    const sprintBadge = currentSprintId && member.assignedToCurrentSprint
-                        ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800 border border-primary-200">
-                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                        </svg>
-                             In Current Sprint
-                           </span>`
+                    // Highlight row if member is in current sprint
+                    // Debug logging
+                    console.log('Member:', member.name, 'assignedToCurrentSprint:', member.assignedToCurrentSprint, 'currentSprintId:', currentSprintId);
+                    
+                    const rowHighlight = currentSprintId && member.assignedToCurrentSprint
+                        ? 'bg-primary-50 border-l-4 border-primary-500'
                         : '';
                     
+                    console.log('Member:', member.name, 'rowHighlight:', rowHighlight);
+                    
                     return `
-                        <tr>
+                        <tr class="${rowHighlight}">
                             <td class="py-3 px-4">
                                 <div class="flex items-center gap-2">
                                     <div>
                                         <div class="font-medium text-gray-900">${escapeHtml(member.name)}</div>
                                         ${member.location ? `<div class="text-xs text-gray-500 mt-0.5">${escapeHtml(member.location)}</div>` : ''}
                                     </div>
-                                    ${sprintBadge}
                                 </div>
                             </td>
                             <td class="py-3 px-4 text-gray-600">${escapeHtml(member.email || '-')}</td>
@@ -844,10 +849,13 @@
             
             // Assign to Sprint Modal Functions
             async function openAssignToSprintModal() {
-                selectedMemberIds = [];
+                // Check if we have a current sprint
+                if (!currentSprintId) {
+                    showError('No active sprint found. Please select a sprint first.');
+                    return;
+                }
                 
-                // Load sprints
-                await loadSprintsForAssignment();
+                selectedMemberIds = [];
                 
                 // Render member list
                 renderMemberSelectionList();
@@ -861,22 +869,6 @@
                 document.getElementById('assignSprintModal').classList.add('hidden');
             }
             
-            async function loadSprintsForAssignment() {
-                try {
-                    // TODO: Replace with actual API call
-                    // For now, show mock data
-                    const sprintSelect = document.getElementById('sprintSelect');
-                    sprintSelect.innerHTML = `
-                        <option value="">-- Select a Sprint --</option>
-                        <option value="sprint-1">Sprint 1 (Dec 2024)</option>
-                        <option value="sprint-2">Sprint 2 (Jan 2025)</option>
-                    `;
-                } catch (error) {
-                    console.error('Error loading sprints:', error);
-                    showError('Failed to load sprints');
-                }
-            }
-            
             function renderMemberSelectionList() {
                 const container = document.getElementById('memberSelectionList');
                 
@@ -884,6 +876,11 @@
                     container.innerHTML = '<p class="text-gray-500 text-sm">No team members available</p>';
                     return;
                 }
+                
+                // Pre-select members already assigned to the current sprint
+                selectedMemberIds = teamMembers
+                    .filter(member => member.assignedToCurrentSprint)
+                    .map(member => member.id);
                 
                 container.innerHTML = teamMembers.map(member => {
                     const roleColors = {
@@ -896,10 +893,15 @@
                     };
                     const roleColor = roleColors[member.role] || 'bg-gray-100 text-gray-800';
                     
+                    // Check if member is already assigned to current sprint
+                    const isAssigned = member.assignedToCurrentSprint;
+                    const checkedAttr = isAssigned ? 'checked' : '';
+                    
                     return `
                         <label class="flex items-center p-3 hover:bg-white rounded-lg cursor-pointer transition-colors group">
                             <input type="checkbox" 
                                    value="${member.id}" 
+                                   ${checkedAttr}
                                    onchange="toggleMemberSelection('${member.id}')"
                                    class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
                             <div class="ml-3 flex-1">
@@ -947,10 +949,8 @@
             }
             
             async function assignMembersToSprint() {
-                const sprintId = document.getElementById('sprintSelect').value;
-                
-                if (!sprintId) {
-                    showError('Please select a sprint');
+                if (!currentSprintId) {
+                    showError('No active sprint found');
                     return;
                 }
                 
@@ -966,7 +966,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            sprintId: sprintId,
+                            sprintId: currentSprintId,
                             memberIds: selectedMemberIds
                         })
                     });
@@ -977,7 +977,7 @@
                         showSuccess(`Successfully assigned ${selectedMemberIds.length} member(s) to sprint`);
                         closeAssignSprintModal();
                         // Reload the team list to show updated sprint assignments
-                        loadTeamMembers();
+                        await loadCurrentSprintAndMembers();
                     } else {
                         showError(data.message || 'Failed to assign members to sprint');
                     }

@@ -173,6 +173,14 @@ public class TeamServiceImpl implements TeamService {
     
     @Override
     @Transactional(readOnly = true)
+    public TeamMemberDto getTeamMemberById(String id, String sprintId) {
+        TeamMember member = teamMemberRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Team member not found: " + id));
+        return convertToDto(member, getMemberIdsForSprint(sprintId));
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
     public List<TeamMemberDto> getAllTeamMembers() {
         return getAllTeamMembers(null);
     }

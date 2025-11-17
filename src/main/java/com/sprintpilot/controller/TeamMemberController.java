@@ -7,6 +7,8 @@ import com.sprintpilot.entity.TeamMember;
 import com.sprintpilot.service.TeamService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -102,12 +104,16 @@ public class TeamMemberController {
     /**
      * Get all team members
      * GET /api/team-members
+     * Reads current sprint ID from cookie 'currentSprintId'
      */
     @GetMapping
     public ResponseEntity<ApiResponse<List<TeamMemberDto>>> getAllTeamMembers(
             @RequestParam(value = "active", required = false) Boolean active,
-            @RequestParam(value = "currentSprint", required = false) String currentSprint) {
+            HttpServletRequest request) {
         try {
+            // Get sprintId from cookie
+            String currentSprint = getSprintIdFromCookie(request);
+            
             List<TeamMemberDto> members;
             if (active != null && active) {
                 members = teamService.getActiveTeamMembers(currentSprint);
@@ -125,13 +131,18 @@ public class TeamMemberController {
     /**
      * Get a specific team member by ID
      * GET /api/team-members/{id}
+     * Reads current sprint ID from cookie 'currentSprintId' to determine sprint assignment status
      */
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<TeamMemberDto>> getTeamMemberById(
             @Parameter(description = "Team member ID", required = true)
-            @PathVariable String id) {
+            @PathVariable String id,
+            HttpServletRequest request) {
         try {
-            TeamMemberDto member = teamService.getTeamMemberById(id);
+            // Get sprintId from cookie
+            String currentSprint = getSprintIdFromCookie(request);
+            
+            TeamMemberDto member = teamService.getTeamMemberById(id, currentSprint);
             return ResponseEntity.ok(ApiResponse.success(member));
         } catch (RuntimeException e) {
             if (e.getMessage().contains("not found")) {
@@ -265,6 +276,21 @@ public class TeamMemberController {
                 throw new IllegalArgumentException("Leave date cannot be null or blank");
             }
         }
+    }
+    
+    /**
+     * Helper method to extract sprint ID from cookie
+     */
+    private String getSprintIdFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("currentSprintId".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }
 
