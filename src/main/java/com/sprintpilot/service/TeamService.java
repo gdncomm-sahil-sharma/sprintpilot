@@ -13,6 +13,8 @@ public interface TeamService {
     
     TeamMemberDto getTeamMemberById(String id);
     
+    TeamMemberDto getTeamMemberById(String id, String sprintId);
+    
     List<TeamMemberDto> getAllTeamMembers();
     
     List<TeamMemberDto> getAllTeamMembers(String sprintId);
