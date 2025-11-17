@@ -3,11 +3,14 @@ package com.sprintpilot.controller;
 import com.sprintpilot.dto.ApiResponse;
 import com.sprintpilot.dto.SprintDto;
 import com.sprintpilot.dto.SprintEventDto;
+import com.sprintpilot.dto.SprintMetricsDto;
+import com.sprintpilot.service.JiraClient;
 import com.sprintpilot.service.SprintService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +21,9 @@ public class SprintController {
     
     @Autowired
     private SprintService sprintService;
+
+    @Autowired
+    private JiraClient jiraClient;
     
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<SprintDto>> createSprint(@RequestBody SprintDto sprintDto) {
@@ -207,6 +213,32 @@ public class SprintController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("Failed to clone sprint", e.getMessage()));
+        }
+    }
+
+    /**
+     * Fetch sprint burndown and velocity metrics from Jira
+     *
+     * @param request Map containing projectName and sprintId
+     * @return Sprint metrics including burndown and velocity data
+     */
+    @PostMapping("/metrics/burndown-velocity")
+    public ResponseEntity<ApiResponse<SprintMetricsDto>> getSprintMetrics(@RequestBody Map<String, String> request) {
+        String sprintId = request.get("sprintId");
+        String projectName = request.get("projectName");
+
+        if (!StringUtils.hasText(sprintId) || !StringUtils.hasText(projectName)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Both sprintId and projectName are required", null));
+        }
+
+        try {
+            String sprintName = sprintService.getSprintName(sprintId);
+            SprintMetricsDto metrics = jiraClient.fetchSprintMetrics(projectName, sprintName);
+            return ResponseEntity.ok(ApiResponse.success("Sprint metrics fetched successfully", metrics));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Failed to fetch sprint metrics", e.getMessage()));
         }
     }
 }

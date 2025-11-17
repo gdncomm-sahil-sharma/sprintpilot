@@ -1,5 +1,6 @@
 package com.sprintpilot.service;
 
+import com.sprintpilot.dto.SprintMetricsDto;
 import com.sprintpilot.dto.TaskImportRequest;
 import java.util.List;
 
@@ -14,5 +15,13 @@ public interface JiraClient {
      */
     List<TaskImportRequest.TaskImportDto> fetchTasks(String projectKey, String jqlQuery);
     
+    /**
+     * Fetch sprint burndown and velocity metrics from Jira
+     *
+     * @param projectKey Jira project key
+     * @param sprintName Exact sprint name in Jira
+     * @return sprint metrics including burndown and velocity
+     */
+    SprintMetricsDto fetchSprintMetrics(String projectKey, String sprintName);
 }
 

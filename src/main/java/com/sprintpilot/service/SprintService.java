@@ -40,4 +40,6 @@ public interface SprintService {
     SprintDto calculateSprintDates(LocalDate startDate, Integer duration, List<String> holidays);
     
     SprintDto cloneSprint(String sourceSprintId);
+
+    String getSprintName(String sprintId);
 }
