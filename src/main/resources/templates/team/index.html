@@ -6,6 +6,39 @@
 </head>
 <body>
     <main>
+        <!-- Toast Container -->
+        <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-3 pointer-events-none">
+            <!-- Toasts will be dynamically inserted here -->
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteConfirmModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Delete Team Member</h3>
+                        <p class="text-sm text-gray-600 mt-1">This action cannot be undone</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 mb-6">
+                    Are you sure you want to delete <strong id="deleteMemberName"></strong>? This will permanently remove them from the team.
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeDeleteConfirm()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
+                        Cancel
+                    </button>
+                    <button onclick="confirmDelete()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-red-600 hover:bg-red-700 text-white focus:ring-red-500">
+                        Delete Member
+                    </button>
+                </div>
+            </div>
+        </div>
+        
         <!-- Exact React Card Component -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
             <!-- Modal Overlay (hidden by default) -->
@@ -19,15 +52,22 @@
                             <input type="text" id="memberName" name="name" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" required />
                         </div>
                         
+                        <!-- Email Field -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="memberEmail" name="email" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" required />
+                        </div>
+                        
                         <!-- Role Field -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
                             <select id="memberRole" name="role" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500">
-                                <option value="Frontend">Frontend</option>
-                                <option value="Backend" selected>Backend</option>
+                                <option value="FRONTEND">Frontend</option>
+                                <option value="BACKEND" selected>Backend</option>
                                 <option value="QA">QA</option>
-                                <option value="DevOps">DevOps</option>
-                                <option value="Designer">Designer</option>
+                                <option value="DEVOPS">DevOps</option>
+                                <option value="DESIGNER">Designer</option>
+                                <option value="MANAGER">Manager</option>
                             </select>
                         </div>
                         
@@ -37,16 +77,41 @@
                             <input type="number" id="memberCapacity" name="capacity" min="1" max="12" value="6" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
                         </div>
                         
-                        <!-- Leave Days Field -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Leave Days</label>
-                            <div class="flex items-center space-x-2">
-                                <input type="date" id="leaveDate" class="block w-full border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500" />
-                                <button type="button" onclick="addLeaveDay()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
+                        <!-- Leave Days Field (Only for Edit) -->
+                        <div id="leaveDaysSection" class="hidden">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Leave Days</label>
+                            <div class="space-y-3">
+                                <div class="flex flex-col sm:flex-row items-stretch sm:items-end gap-2">
+                                    <div class="flex-1">
+                                        <label class="block text-xs text-gray-600 mb-1">From Date <span class="text-gray-400">(required)</span></label>
+                                        <input type="date" id="leaveStartDate" 
+                                               class="block w-full border border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500 bg-white" />
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-xs text-gray-600 mb-1">To Date <span class="text-gray-400">(optional)</span></label>
+                                        <input type="date" id="leaveEndDate" 
+                                               class="block w-full border border-gray-300 rounded-lg shadow-sm p-2.5 text-sm focus:ring-primary-500 focus:border-primary-500 bg-white" 
+                                               placeholder="Same as From Date" />
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button type="button" onclick="addLeaveDateRange()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500 whitespace-nowrap">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                            </svg>
                                     Add
                                 </button>
+                                        <button type="button" onclick="clearLeaveDateInputs()" class="px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-gray-700 focus:ring-gray-400" title="Clear dates">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-gray-500 italic">
+                                    💡 Tip: Leave "To Date" empty for single day, or select a range for multiple days. Weekends (Sat/Sun) are automatically excluded.
+                                </p>
                             </div>
-                            <div id="leaveDaysContainer" class="mt-3 flex flex-wrap gap-2">
+                            <div id="leaveDaysContainer" class="mt-4 flex flex-wrap gap-2">
                                 <!-- Leave days will be added here dynamically -->
                             </div>
                         </div>
@@ -65,12 +130,28 @@
             <!-- Header Section - Exact React Match -->
             <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-4">
                 <h2 class="text-3xl font-bold text-gray-800">Team Configuration</h2>
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                    <!-- Sprint Filter Toggle - Beautiful Version -->
+                    <div id="sprintFilterContainer" class="hidden">
+                        <label class="relative inline-flex items-center cursor-pointer group">
+                            <input type="checkbox" id="filterCurrentSprint" 
+                                   class="sr-only peer"
+                                   onchange="toggleSprintFilter()">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
+                            <span class="ml-3 text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                                Current Sprint Only
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <!-- Add Member Button -->
                 <button onclick="openAddModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     <span>Add Member</span>
                 </button>
+                </div>
             </div>
             
             <!-- Team Table - Exact React Implementation -->
@@ -79,135 +160,207 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+                            <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Email</th>
                             <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Role</th>
                             <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Capacity (hrs/day)</th>
                             <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Leave Days</th>
                             <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
-                        <!-- Alice Johnson -->
-                        <tr>
-                            <td class="py-3 px-4 font-medium text-gray-900">Alice Johnson</td>
-                            <td class="py-3 px-4 text-gray-600">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    Frontend
-                                </span>
-                            </td>
-                            <td class="py-3 px-4 text-gray-600">6</td>
-                            <td class="py-3 px-4 text-gray-600">2</td>
-                            <td class="py-3 px-4">
-                                <div class="flex space-x-3">
-                                    <button type="button" onclick="editMember('alice')" class="text-primary-600 hover:text-primary-800 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                    </button>
-                                    <button type="button" onclick="deleteMember('alice')" class="text-danger hover:text-red-700 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        
-                        <!-- Bob Smith -->
-                        <tr>
-                            <td class="py-3 px-4 font-medium text-gray-900">Bob Smith</td>
-                            <td class="py-3 px-4 text-gray-600">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Backend
-                                </span>
-                            </td>
-                            <td class="py-3 px-4 text-gray-600">7</td>
-                            <td class="py-3 px-4 text-gray-600">0</td>
-                            <td class="py-3 px-4">
-                                <div class="flex space-x-3">
-                                    <button type="button" onclick="editMember('bob')" class="text-primary-600 hover:text-primary-800 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                    </button>
-                                    <button type="button" onclick="deleteMember('bob')" class="text-danger hover:text-red-700 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        
-                        <!-- Charlie Davis -->
-                        <tr>
-                            <td class="py-3 px-4 font-medium text-gray-900">Charlie Davis</td>
-                            <td class="py-3 px-4 text-gray-600">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                    QA
-                                </span>
-                            </td>
-                            <td class="py-3 px-4 text-gray-600">5</td>
-                            <td class="py-3 px-4 text-gray-600">1</td>
-                            <td class="py-3 px-4">
-                                <div class="flex space-x-3">
-                                    <button type="button" onclick="editMember('charlie')" class="text-primary-600 hover:text-primary-800 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                    </button>
-                                    <button type="button" onclick="deleteMember('charlie')" class="text-danger hover:text-red-700 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        
-                        <!-- David Wilson -->
-                        <tr>
-                            <td class="py-3 px-4 font-medium text-gray-900">David Wilson</td>
-                            <td class="py-3 px-4 text-gray-600">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Backend
-                                </span>
-                            </td>
-                            <td class="py-3 px-4 text-gray-600">7</td>
-                            <td class="py-3 px-4 text-gray-600">0</td>
-                            <td class="py-3 px-4">
-                                <div class="flex space-x-3">
-                                    <button type="button" onclick="editMember('david')" class="text-primary-600 hover:text-primary-800 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                    </button>
-                                    <button type="button" onclick="deleteMember('david')" class="text-danger hover:text-red-700 transition-colors">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                    <tbody id="teamTableBody" class="divide-y divide-gray-200">
+                        <!-- Team members will be loaded dynamically -->
                     </tbody>
                 </table>
             </div>
         </div>
         
         <script>
-            let currentMember = null;
+            let currentMemberId = null;
             let leaveDays = [];
+            let teamMembers = [];
+            let currentSprintId = null;
+            let showOnlyCurrentSprint = false;
+            let memberToDelete = null;
+            
+            // API Base URL
+            const API_BASE_URL = '/api/team-members';
+            const SPRINT_API_BASE_URL = '/api/sprints';
+            
+            // Load team members on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                loadCurrentSprintAndMembers();
+                
+                // Close modal when clicking outside
+                document.getElementById('memberModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeModal();
+                    }
+                });
+            });
+            
+            // No initialization needed for native date inputs
+            
+            // Fetch current sprint and then load team members
+            async function loadCurrentSprintAndMembers() {
+                try {
+                    // Try to get the active sprint
+                    const sprintResponse = await fetch(`${SPRINT_API_BASE_URL}/active`);
+                    const sprintData = await sprintResponse.json();
+                    
+                    if (sprintData.success && sprintData.data && sprintData.data.length > 0) {
+                        // Use the first active sprint
+                        currentSprintId = sprintData.data[0].id;
+                        console.log('Current sprint ID:', currentSprintId);
+                        // Show the filter toggle since we have an active sprint
+                        document.getElementById('sprintFilterContainer').classList.remove('hidden');
+                    } else {
+                        console.log('No active sprint found');
+                        currentSprintId = null;
+                        // Hide the filter toggle since there's no active sprint
+                        document.getElementById('sprintFilterContainer').classList.add('hidden');
+                    }
+                } catch (error) {
+                    console.warn('Could not fetch current sprint:', error);
+                    currentSprintId = null;
+                    document.getElementById('sprintFilterContainer').classList.add('hidden');
+                }
+                
+                // Load team members (with or without sprint context)
+                await loadTeamMembers();
+            }
+            
+            // Fetch and display team members
+            async function loadTeamMembers() {
+                try {
+                    // Build URL with optional sprint parameter
+                    let url = `${API_BASE_URL}?active=true`;
+                    if (currentSprintId) {
+                        url += `&currentSprint=${currentSprintId}`;
+                    }
+                    
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (data.success && data.data) {
+                        teamMembers = data.data;
+                        renderTeamTable();
+                    } else {
+                        console.error('Failed to load team members:', data.message);
+                        showError('Failed to load team members');
+                    }
+                } catch (error) {
+                    console.error('Error loading team members:', error);
+                    showError('Error loading team members. Please refresh the page.');
+                }
+            }
+            
+            // Toggle sprint filter
+            function toggleSprintFilter() {
+                showOnlyCurrentSprint = document.getElementById('filterCurrentSprint').checked;
+                renderTeamTable();
+            }
+            
+            // Render team members table
+            function renderTeamTable() {
+                const tbody = document.getElementById('teamTableBody');
+                
+                // Apply filter if enabled
+                let filteredMembers = teamMembers;
+                if (showOnlyCurrentSprint && currentSprintId) {
+                    filteredMembers = teamMembers.filter(member => member.assignedToCurrentSprint);
+                }
+                
+                if (filteredMembers.length === 0) {
+                    const message = showOnlyCurrentSprint 
+                        ? 'No team members found in the current sprint.'
+                        : 'No team members found. Click "Add Member" to create one.';
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="py-8 px-4 text-center text-gray-500">
+                                ${message}
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = filteredMembers.map(member => {
+                    const roleColors = {
+                        'FRONTEND': 'bg-blue-100 text-blue-800',
+                        'BACKEND': 'bg-green-100 text-green-800',
+                        'QA': 'bg-yellow-100 text-yellow-800',
+                        'DEVOPS': 'bg-purple-100 text-purple-800',
+                        'DESIGNER': 'bg-pink-100 text-pink-800',
+                        'MANAGER': 'bg-gray-100 text-gray-800'
+                    };
+                    
+                    const roleColor = roleColors[member.role] || 'bg-gray-100 text-gray-800';
+                    const leaveDaysCount = member.leaveDays ? member.leaveDays.length : 0;
+                    
+                    // Sprint assignment badge
+                    const sprintBadge = currentSprintId && member.assignedToCurrentSprint
+                        ? `<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary-100 text-primary-800 border border-primary-200">
+                             <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                             In Current Sprint
+                           </span>`
+                        : '';
+                    
+                    return `
+                        <tr>
+                            <td class="py-3 px-4">
+                                <div class="flex items-center">
+                                    <span class="font-medium text-gray-900">${escapeHtml(member.name)}</span>
+                                    ${sprintBadge}
+                                </div>
+                            </td>
+                            <td class="py-3 px-4 text-gray-600">${escapeHtml(member.email || '-')}</td>
+                            <td class="py-3 px-4 text-gray-600">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${roleColor}">
+                                    ${member.role}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-gray-600">${member.dailyCapacity}</td>
+                            <td class="py-3 px-4 text-gray-600">${leaveDaysCount}</td>
+                            <td class="py-3 px-4">
+                                <div class="flex space-x-3">
+                                    <button type="button" onclick="editMember('${member.id}')" class="text-primary-600 hover:text-primary-800 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                    <button type="button" onclick="deleteMember('${member.id}')" class="text-danger hover:text-red-700 transition-colors">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
             
             // Modal Functions
             function openAddModal() {
-                currentMember = null;
+                currentMemberId = null;
                 leaveDays = [];
                 document.getElementById('modalTitle').textContent = 'Add Member';
                 document.getElementById('memberName').value = '';
-                document.getElementById('memberRole').value = 'Backend';
+                document.getElementById('memberEmail').value = '';
+                document.getElementById('memberRole').value = 'BACKEND';
                 document.getElementById('memberCapacity').value = '6';
-                document.getElementById('leaveDate').value = '';
+                document.getElementById('leaveStartDate').value = '';
+                document.getElementById('leaveEndDate').value = '';
                 updateLeaveDaysDisplay();
+                // Hide leave days section for new members
+                document.getElementById('leaveDaysSection').classList.add('hidden');
+                // Make name and email editable for new members
+                document.getElementById('memberName').removeAttribute('readonly');
+                document.getElementById('memberEmail').removeAttribute('readonly');
+                document.getElementById('memberName').classList.remove('bg-gray-100', 'cursor-not-allowed');
+                document.getElementById('memberEmail').classList.remove('bg-gray-100', 'cursor-not-allowed');
                 document.getElementById('memberModal').classList.remove('hidden');
             }
             
@@ -215,44 +368,163 @@
                 document.getElementById('memberModal').classList.add('hidden');
             }
             
-            function editMember(memberId) {
-                currentMember = memberId;
-                document.getElementById('modalTitle').textContent = 'Edit Member';
-                
-                // Mock data for editing (in real app, this would load from server)
-                const memberData = {
-                    'alice': { name: 'Alice Johnson', role: 'Frontend', capacity: 6, leaveDays: ['2024-12-01', '2024-12-02'] },
-                    'bob': { name: 'Bob Smith', role: 'Backend', capacity: 7, leaveDays: [] },
-                    'charlie': { name: 'Charlie Davis', role: 'QA', capacity: 5, leaveDays: ['2024-11-25'] },
-                    'david': { name: 'David Wilson', role: 'Backend', capacity: 7, leaveDays: [] }
-                };
-                
-                const member = memberData[memberId];
+            async function editMember(memberId) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/${memberId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.data) {
+                        const member = data.data;
+                        currentMemberId = member.id;
+                        
+                        document.getElementById('modalTitle').textContent = 'Edit Member';
                 document.getElementById('memberName').value = member.name;
+                        document.getElementById('memberEmail').value = member.email || '';
                 document.getElementById('memberRole').value = member.role;
-                document.getElementById('memberCapacity').value = member.capacity;
-                leaveDays = [...member.leaveDays];
+                        document.getElementById('memberCapacity').value = member.dailyCapacity;
+                        leaveDays = member.leaveDays || [];
                 updateLeaveDaysDisplay();
+                        // Show leave days section for editing
+                        document.getElementById('leaveDaysSection').classList.remove('hidden');
+                        
+                        // Clear date input fields (they should start empty for adding new ranges)
+                        document.getElementById('leaveStartDate').value = '';
+                        document.getElementById('leaveEndDate').value = '';
+                        
+                        // Make name and email read-only for editing
+                        document.getElementById('memberName').setAttribute('readonly', 'readonly');
+                        document.getElementById('memberEmail').setAttribute('readonly', 'readonly');
+                        document.getElementById('memberName').classList.add('bg-gray-100', 'cursor-not-allowed');
+                        document.getElementById('memberEmail').classList.add('bg-gray-100', 'cursor-not-allowed');
                 
                 document.getElementById('memberModal').classList.remove('hidden');
+                    } else {
+                        showError('Failed to load member details');
+                    }
+                } catch (error) {
+                    console.error('Error loading member:', error);
+                    showError('Error loading member details');
+                }
             }
             
             function deleteMember(memberId) {
-                if (confirm('Are you sure you want to delete this team member?')) {
-                    alert('Member deleted (mock functionality)');
+                // Find member name to show in confirmation
+                const member = teamMembers.find(m => m.id === memberId);
+                const memberName = member ? member.name : 'this team member';
+                
+                // Store member info and show confirmation modal
+                memberToDelete = memberId;
+                document.getElementById('deleteMemberName').textContent = memberName;
+                document.getElementById('deleteConfirmModal').classList.remove('hidden');
+            }
+            
+            function closeDeleteConfirm() {
+                memberToDelete = null;
+                document.getElementById('deleteConfirmModal').classList.add('hidden');
+            }
+            
+            async function confirmDelete() {
+                if (!memberToDelete) return;
+                
+                const memberId = memberToDelete;
+                closeDeleteConfirm();
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/${memberId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showSuccess('Team member deleted successfully');
+                        await loadCurrentSprintAndMembers();
+                    } else {
+                        showError(data.message || 'Failed to delete team member');
+                    }
+                } catch (error) {
+                    console.error('Error deleting member:', error);
+                    showError('Error deleting team member');
                 }
             }
             
-            function addLeaveDay() {
-                const leaveDateInput = document.getElementById('leaveDate');
-                const date = leaveDateInput.value;
+            function addLeaveDateRange() {
+                const startDateInput = document.getElementById('leaveStartDate');
+                const endDateInput = document.getElementById('leaveEndDate');
+                const startDateStr = startDateInput.value;
+                let endDateStr = endDateInput.value;
                 
-                if (date && !leaveDays.includes(date)) {
-                    leaveDays.push(date);
-                    leaveDays.sort();
-                    leaveDateInput.value = '';
-                    updateLeaveDaysDisplay();
+                if (!startDateStr) {
+                    showError('Please select a From Date');
+                    return;
                 }
+                
+                // If no end date, use start date (single day)
+                if (!endDateStr) {
+                    endDateStr = startDateStr;
+                }
+                
+                const startDate = new Date(startDateStr);
+                const endDate = new Date(endDateStr);
+                
+                if (endDate < startDate) {
+                    showError('To Date must be after or equal to From Date');
+                    return;
+                }
+                
+                // Generate all dates in the range (excluding weekends)
+                // Parse dates properly to avoid timezone issues
+                const currentDate = new Date(startDateStr + 'T00:00:00');
+                const finalDate = new Date(endDateStr + 'T00:00:00');
+                let addedCount = 0;
+                let skippedWeekends = 0;
+                
+                while (currentDate <= finalDate) {
+                    const dayOfWeek = currentDate.getDay();
+                    const year = currentDate.getFullYear();
+                    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(currentDate.getDate()).padStart(2, '0');
+                    const dateStr = `${year}-${month}-${day}`;
+                    
+                    // Skip Saturdays (6) and Sundays (0)
+                    if (dayOfWeek === 0 || dayOfWeek === 6) {
+                        skippedWeekends++;
+                        console.log(`Skipping weekend: ${dateStr} (day ${dayOfWeek})`);
+                    } else if (!leaveDays.includes(dateStr)) {
+                        leaveDays.push(dateStr);
+                        addedCount++;
+                        console.log(`Adding weekday: ${dateStr} (day ${dayOfWeek})`);
+                    }
+                    
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                
+                if (addedCount > 0) {
+                    leaveDays.sort();
+                    updateLeaveDaysDisplay();
+                    
+                    let message;
+                    if (addedCount === 1) {
+                        message = `Added 1 leave day (${startDateStr})`;
+                    } else {
+                        message = `Added ${addedCount} leave day${addedCount > 1 ? 's' : ''} (${startDateStr} to ${endDateStr})`;
+                        if (skippedWeekends > 0) {
+                            message += ` • Skipped ${skippedWeekends} weekend day${skippedWeekends > 1 ? 's' : ''}`;
+                        }
+                    }
+                    showSuccess(message);
+                    
+                    // Don't clear inputs - allow adding multiple ranges
+                } else if (skippedWeekends > 0 && addedCount === 0) {
+                    showWarning('Selected range contains only weekends (Saturdays/Sundays are automatically excluded)');
+                } else {
+                    showWarning('All dates in this range are already added');
+                }
+            }
+            
+            function clearLeaveDateInputs() {
+                document.getElementById('leaveStartDate').value = '';
+                document.getElementById('leaveEndDate').value = '';
             }
             
             function removeLeaveDay(date) {
@@ -272,27 +544,159 @@
                 `).join('');
             }
             
-            function saveMember() {
+            async function saveMember() {
                 const name = document.getElementById('memberName').value;
+                const email = document.getElementById('memberEmail').value;
                 const role = document.getElementById('memberRole').value;
                 const capacity = document.getElementById('memberCapacity').value;
                 
                 if (!name.trim()) {
-                    alert('Please enter a name');
+                    showError('Please enter a name');
                     return;
                 }
                 
-                // Mock save functionality
-                alert(`Member ${currentMember ? 'updated' : 'added'} successfully (mock functionality)`);
+                if (!email.trim()) {
+                    showError('Please enter an email');
+                    return;
+                }
+                
+                const memberData = {
+                    name: name.trim(),
+                    email: email.trim(),
+                    role: role,
+                    dailyCapacity: parseFloat(capacity),
+                    active: true,
+                    leaveDays: currentMemberId ? leaveDays : [] // Empty array for new members
+                };
+                
+                try {
+                    let response;
+                    if (currentMemberId) {
+                        // Update existing member
+                        response = await fetch(`${API_BASE_URL}/${currentMemberId}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(memberData)
+                        });
+                    } else {
+                        // Create new member
+                        response = await fetch(API_BASE_URL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(memberData)
+                        });
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showSuccess(data.message || `Team member ${currentMemberId ? 'updated' : 'added'} successfully`);
                 closeModal();
+                        await loadCurrentSprintAndMembers();
+                    } else {
+                        showError(data.message || 'Failed to save team member');
+                    }
+                } catch (error) {
+                    console.error('Error saving member:', error);
+                    showError('Error saving team member');
+                }
             }
             
-            // Close modal when clicking outside
-            document.getElementById('memberModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal();
+            // Utility functions
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Toast notification system
+            function showToast(message, type = 'success') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toastId = 'toast-' + Date.now();
+                
+                // Define toast styles based on type
+                const styles = {
+                    success: {
+                        bg: 'bg-green-500',
+                        icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                              </svg>`,
+                        iconBg: 'bg-green-600'
+                    },
+                    error: {
+                        bg: 'bg-red-500',
+                        icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                              </svg>`,
+                        iconBg: 'bg-red-600'
+                    },
+                    warning: {
+                        bg: 'bg-yellow-500',
+                        icon: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                              </svg>`,
+                        iconBg: 'bg-yellow-600'
+                    }
+                };
+                
+                const style = styles[type] || styles.success;
+                
+                // Create toast element
+                const toast = document.createElement('div');
+                toast.id = toastId;
+                toast.className = `${style.bg} text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px] max-w-md pointer-events-auto transform transition-all duration-300 ease-in-out translate-x-full opacity-0`;
+                toast.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1">
+                        <div class="${style.iconBg} rounded-full p-1 flex-shrink-0">
+                            ${style.icon}
+                        </div>
+                        <p class="text-sm font-medium">${escapeHtml(message)}</p>
+                    </div>
+                    <button onclick="removeToast('${toastId}')" class="text-white hover:text-gray-200 transition-colors flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                // Trigger animation after a small delay to ensure CSS transition works
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-full', 'opacity-0');
+                }, 10);
+                
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    removeToast(toastId);
+                }, 5000);
+            }
+            
+            function removeToast(toastId) {
+                const toast = document.getElementById(toastId);
+                if (toast) {
+                    toast.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
                 }
-            });
+            }
+            
+            function showSuccess(message) {
+                showToast(message, 'success');
+            }
+            
+            function showError(message) {
+                showToast(message, 'error');
+            }
+            
+            function showWarning(message) {
+                showToast(message, 'warning');
+            }
         </script>
     </main>
 </body>

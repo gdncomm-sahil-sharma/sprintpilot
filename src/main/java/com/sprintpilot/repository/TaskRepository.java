@@ -40,4 +40,10 @@ public interface TaskRepository extends JpaRepository<Task, String> {
     
     @Query("SELECT SUM(t.storyPoints) FROM Task t WHERE t.sprint.id = :sprintId")
     Double sumStoryPointsBySprintId(@Param("sprintId") String sprintId);
+    
+    @Query("SELECT t FROM Task t WHERE t.taskKey = :taskKey AND t.sprint.id = :sprintId")
+    Optional<Task> findByTaskKeyAndSprintId(@Param("taskKey") String taskKey, @Param("sprintId") String sprintId);
+    
+    @Query("SELECT t FROM Task t WHERE t.sprint.id = :sprintId AND t.taskKey IN :taskKeys")
+    List<Task> findBySprintIdAndTaskKeyIn(@Param("sprintId") String sprintId, @Param("taskKeys") List<String> taskKeys);
 }
