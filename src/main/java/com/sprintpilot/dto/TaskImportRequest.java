@@ -35,7 +35,9 @@ public record TaskImportRequest(
         String assigneeEmail,  // Assignee email address
         String startDate,      // ISO date string (yyyy-MM-dd)
         String endDate,        // ISO date string (yyyy-MM-dd)
-        String dueDate         // ISO date string (yyyy-MM-dd)
+        String dueDate,        // ISO date string (yyyy-MM-dd)
+        BigDecimal originalEstimate, // In hours
+        BigDecimal timeSpent         // In hours
     ) {}
     
     /**

@@ -283,11 +283,13 @@ public class TaskController {
                     category,
                     priority,
                     "TODO",
-                    assignee,  // assignee name
-                    null,      // assigneeEmail (not available in CSV)
-                    null,      // startDate
-                    null,      // endDate
-                    null       // dueDate
+                    assignee,          // assignee name
+                    null,              // assigneeEmail (not available in CSV)
+                    null,              // startDate
+                    null,              // endDate
+                    null,              // dueDate
+                    storyPoints,       // originalEstimate defaults to story points for CSV
+                    BigDecimal.ZERO    // timeSpent defaults to 0 for CSV
                 );
                 
                 tasks.add(task);

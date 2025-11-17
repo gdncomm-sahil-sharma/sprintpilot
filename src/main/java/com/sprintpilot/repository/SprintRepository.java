@@ -35,4 +35,8 @@ public interface SprintRepository extends JpaRepository<Sprint, String> {
     @EntityGraph(attributePaths = {"teamMembers", "events", "tasks", "tasks.assignees"})
     @Query("SELECT s FROM Sprint s WHERE s.id = :id")
     Optional<Sprint> findByIdWithFullDetails(@Param("id") String id);
+
+    @EntityGraph(attributePaths = {"teamMembers"})
+    @Query("SELECT s FROM Sprint s WHERE s.id = :id")
+    Optional<Sprint> findByIdWithTeamMembers(@Param("id") String id);
 }
