@@ -10,7 +10,9 @@ public record TaskImportRequest(
     String sprintId,
     ImportSource source,
     List<TaskImportDto> tasks,
-    JiraConfigDto jiraConfig,
+    JiraConfigDto jiraConfig, // @Deprecated - Jira config is now in properties file
+    String projectKey, // For Jira import: project key
+    String jqlQuery, // For Jira import: optional JQL query
     ColumnMappingDto columnMapping
 ) {
     
@@ -29,7 +31,11 @@ public record TaskImportRequest(
         String category,
         String priority,
         String status,
-        String assignee
+        String assignee,       // Assignee display name
+        String assigneeEmail,  // Assignee email address
+        String startDate,      // ISO date string (yyyy-MM-dd)
+        String endDate,        // ISO date string (yyyy-MM-dd)
+        String dueDate         // ISO date string (yyyy-MM-dd)
     ) {}
     
     /**

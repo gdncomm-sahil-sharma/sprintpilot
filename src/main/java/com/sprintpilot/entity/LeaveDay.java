@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "leave_day")
@@ -35,7 +36,7 @@ public class LeaveDay {
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
-        if (id == null) id = "leave-" + System.currentTimeMillis();
+        if (id == null) id = "leave-" + UUID.randomUUID().toString();
     }
     
     public enum LeaveType {

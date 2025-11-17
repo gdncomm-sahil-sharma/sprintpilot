@@ -2,6 +2,7 @@ package com.sprintpilot.service;
 
 import com.sprintpilot.dto.TeamMemberDto;
 import com.sprintpilot.dto.CapacitySummaryDto;
+import com.sprintpilot.dto.SprintAssignmentRequest;
 import java.util.List;
 
 public interface TeamService {
@@ -14,17 +15,19 @@ public interface TeamService {
     
     List<TeamMemberDto> getAllTeamMembers();
     
-    List<TeamMemberDto> getActiveTeamMembers();
+    List<TeamMemberDto> getAllTeamMembers(String sprintId);
+    
+    List<TeamMemberDto> getActiveTeamMembers(String sprintId);
     
     List<TeamMemberDto> getTeamMembersByRole(String role);
     
     void deleteTeamMember(String id);
     
-    TeamMemberDto addLeaveDay(String memberId, String leaveDate);
-    
-    TeamMemberDto removeLeaveDay(String memberId, String leaveDate);
-    
     List<CapacitySummaryDto> calculateTeamCapacity(String sprintId);
     
-    CapacitySummaryDto getMemberCapacity(String memberId, String sprintId);
+    void assignMembersToSprint(SprintAssignmentRequest request);
+    
+    List<String> getMemberIdsForSprint(String sprintId);
+    
+    List<TeamMemberDto> getTeamMembersForSprint(String sprintId);
 }

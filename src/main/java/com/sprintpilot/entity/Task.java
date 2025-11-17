@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "task")
@@ -72,7 +73,7 @@ public class Task {
     protected void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
         if (updatedAt == null) updatedAt = LocalDateTime.now();
-        if (id == null) id = "task-" + System.currentTimeMillis();
+        if (id == null) id = "task-" + UUID.randomUUID().toString();
     }
     
     @PreUpdate

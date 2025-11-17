@@ -1,20 +1,31 @@
 package com.sprintpilot.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "sprint")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Sprint {
     
     @Id
     @Column(name = "id")
     private String id;
+
+    @Column(name = "name", nullable = false)
+    private String sprintName;
     
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
@@ -56,7 +67,7 @@ public class Sprint {
     protected void onCreate() {
         if (createdAt == null) createdAt = LocalDateTime.now();
         if (updatedAt == null) updatedAt = LocalDateTime.now();
-        if (id == null) id = "sprint-" + System.currentTimeMillis();
+        if (id == null) id = "sprint-" + UUID.randomUUID().toString();
     }
     
     @PreUpdate
