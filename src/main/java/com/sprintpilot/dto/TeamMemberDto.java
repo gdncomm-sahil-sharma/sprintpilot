@@ -10,6 +10,7 @@ public record TeamMemberDto(
         TeamMember.Role role,
         BigDecimal dailyCapacity,
         String email,
+        String location,
         Boolean active,
         List<String> leaveDays,
         Boolean assignedToCurrentSprint

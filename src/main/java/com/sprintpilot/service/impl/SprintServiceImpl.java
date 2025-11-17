@@ -127,6 +127,7 @@ public class SprintServiceImpl implements SprintService {
             TeamMember.Role.FRONTEND,
             new BigDecimal("6"),
             "alice@company.com",
+            "Bangalore",
             true,
             List.of(), false
         ));
@@ -137,6 +138,7 @@ public class SprintServiceImpl implements SprintService {
             TeamMember.Role.BACKEND,
             new BigDecimal("7"),
             "bob@company.com",
+            "Coimbatore",
             true,
             List.of(), false
         ));
@@ -147,6 +149,7 @@ public class SprintServiceImpl implements SprintService {
             TeamMember.Role.QA,
             new BigDecimal("5"),
             "charlie@company.com",
+            "Indonesia",
             true,
             List.of(), false
         ));
@@ -157,6 +160,7 @@ public class SprintServiceImpl implements SprintService {
             TeamMember.Role.BACKEND,
             new BigDecimal("7"),
             "david@company.com",
+            "Bangalore",
             true,
             List.of(), false
         ));

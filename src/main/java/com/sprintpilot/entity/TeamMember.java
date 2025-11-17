@@ -29,6 +29,9 @@ public class TeamMember {
     
     @Column(name = "email")
     private String email;
+
+    @Column(name = "location")
+    private String location;
     
     @Column(name = "active")
     private Boolean active = true;
