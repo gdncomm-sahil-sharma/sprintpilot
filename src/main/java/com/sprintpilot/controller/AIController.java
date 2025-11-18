@@ -112,25 +112,6 @@ public class AIController {
         return null;
     }
     
-    @PostMapping("/confluence-page")
-    public ResponseEntity<ApiResponse<String>> generateConfluencePage(@RequestBody Map<String, Object> request) {
-        try {
-            @SuppressWarnings("unchecked")
-            List<TeamMemberDto> team = (List<TeamMemberDto>) request.get("team");
-            SprintDto sprint = (SprintDto) request.get("sprint");
-            @SuppressWarnings("unchecked")
-            List<TaskDto> tasks = (List<TaskDto>) request.get("tasks");
-            @SuppressWarnings("unchecked")
-            List<CapacitySummaryDto> workload = (List<CapacitySummaryDto>) request.get("workload");
-            
-            String page = aiService.generateConfluencePage(team, sprint, tasks, workload);
-            return ResponseEntity.ok(ApiResponse.success(page));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Failed to generate Confluence page", e.getMessage()));
-        }
-    }
-    
     @PostMapping("/teams-message")
     public ResponseEntity<ApiResponse<String>> generateTeamsMessage(@RequestBody Map<String, Object> request) {
         try {
