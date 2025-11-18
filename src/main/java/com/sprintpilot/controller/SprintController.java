@@ -1,6 +1,7 @@
 package com.sprintpilot.controller;
 
 import com.sprintpilot.dto.ApiResponse;
+import com.sprintpilot.dto.CompleteSprintResponse;
 import com.sprintpilot.dto.SprintDto;
 import com.sprintpilot.dto.SprintEventDto;
 import com.sprintpilot.dto.SprintMetricsDto;
@@ -102,6 +103,68 @@ public class SprintController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ApiResponse.error("Failed to archive sprint", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/{id}/reactivate")
+    public ResponseEntity<ApiResponse<SprintDto>> reactivateSprint(@PathVariable String id) {
+        try {
+            SprintDto sprint = sprintService.reactivateSprint(id);
+            return ResponseEntity.ok(ApiResponse.success("Sprint reactivated successfully", sprint));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Failed to reactivate sprint", e.getMessage()));
+        }
+    }
+    
+    @DeleteMapping("/{id}/archived")
+    public ResponseEntity<ApiResponse<Void>> deleteLatestArchivedSprint(@PathVariable String id) {
+        try {
+            sprintService.deleteLatestArchivedSprint(id);
+            return ResponseEntity.ok(ApiResponse.success("Latest archived sprint deleted successfully", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Failed to delete archived sprint", e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/{id}/can-complete")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> canCompleteSprint(@PathVariable String id) {
+        try {
+            boolean canComplete = sprintService.canCompleteSprint(id);
+            SprintDto sprint = sprintService.getSprintById(id);
+            
+            // Calculate days remaining
+            long daysRemaining = java.time.temporal.ChronoUnit.DAYS.between(
+                java.time.LocalDate.now(), 
+                sprint.endDate()
+            );
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("canComplete", canComplete);
+            response.put("daysRemaining", daysRemaining);
+            response.put("reason", canComplete ? 
+                "Sprint is ready to be completed" : 
+                "Sprint end date has not been reached yet (" + daysRemaining + " days remaining)");
+            
+            return ResponseEntity.ok(ApiResponse.success(response));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Failed to check sprint completion status", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/{id}/complete-and-archive")
+    public ResponseEntity<ApiResponse<CompleteSprintResponse>> completeAndArchiveSprint(@PathVariable String id) {
+        try {
+            CompleteSprintResponse response = sprintService.completeAndArchiveSprint(id);
+            return ResponseEntity.ok(ApiResponse.success(
+                "Sprint archived and next sprint created successfully", 
+                response
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Failed to complete sprint", e.getMessage()));
         }
     }
     

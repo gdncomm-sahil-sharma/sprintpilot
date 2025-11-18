@@ -34,6 +34,30 @@
                 </div>
             </div>
 
+            <!-- Sprint Name Input (Top of Form) -->
+            <div class="bg-white rounded-2xl shadow-lg border-2 border-primary-100 p-6 mb-6">
+                <label for="sprintName" class="block text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                    </svg>
+                    Sprint Name
+                    <span class="text-xs text-gray-500 font-normal ml-2">(Leave blank to auto-generate "Sprint YYYY-MM-DD")</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="sprintName" 
+                    name="sprintName" 
+                    placeholder="e.g., Q4 2025 Sprint 1, November Sprint, Release 2.0" 
+                    maxlength="100"
+                    pattern="^[a-zA-Z0-9\s\-_]+$"
+                    class="block w-full border-2 border-gray-200 rounded-xl shadow-sm p-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-colors"
+                    title="Sprint name can only contain letters, numbers, spaces, hyphens, and underscores"
+                />
+                <p class="text-xs text-gray-600 mt-2">
+                    <span class="font-semibold">Max 100 characters.</span> Allowed: letters, numbers, spaces, hyphens, underscores.
+                </p>
+            </div>
+
             <!-- EXACT ORIGINAL LAYOUT -->
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 <!-- Left Column - Configuration Cards -->
@@ -348,6 +372,48 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Sprint Actions Section -->
+            <div id="sprintActionsSection" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-2 border-purple-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-3xl">🎬</span>
+                            <h3 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                Sprint Actions
+                            </h3>
+                        </div>
+                        <span id="sprintStatusBadge" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                            🟢 ACTIVE
+                        </span>
+                    </div>
+                    
+                <div class="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-6 mb-6 border border-gray-200/50">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="bg-white/60 rounded-lg p-4 border border-white/80 shadow-sm">
+                            <p class="text-gray-600 mb-2 font-medium">📅 Sprint Period</p>
+                            <p class="font-bold text-gray-900 text-lg" id="sprintPeriodDisplay">-</p>
+                        </div>
+                        <div class="bg-white/60 rounded-lg p-4 border border-white/80 shadow-sm">
+                            <p class="text-gray-600 mb-2 font-medium">⏱️ Duration</p>
+                            <p class="font-bold text-gray-900 text-lg" id="sprintDurationDisplay">-</p>
+                        </div>
+                    </div>
+                </div>
+                    
+                    <div class="flex items-center justify-end">
+                        <button 
+                            id="completeSprintBtn"
+                            onclick="openCompleteSprintModal()"
+                            class="px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale transition-all duration-200 shadow-lg hover:shadow-2xl transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300 flex items-center space-x-2">
+                            <span>Complete Sprint</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- Custom Scrollbar Styling -->
@@ -521,6 +587,111 @@
                             </button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Complete Sprint Confirmation Modal -->
+        <div id="completeSprintModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden">
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                                <span class="text-3xl">✅</span>
+                            </div>
+                            <div class="text-white">
+                                <h3 class="text-2xl font-bold">Complete Sprint?</h3>
+                                <p class="text-sm text-white/90">Review summary before archiving</p>
+                            </div>
+                        </div>
+                        <button onclick="closeCompleteSprintModal()" class="text-white/80 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="p-6 space-y-6">
+                    <!-- Sprint Summary -->
+                    <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-5 border border-purple-100">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                            Sprint Summary
+                        </h4>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div class="bg-white/60 p-3 rounded-lg">
+                                <p class="text-gray-600 mb-1">Sprint Period</p>
+                                <p class="font-bold text-gray-900" id="modalSprintPeriod">-</p>
+                            </div>
+                            <div class="bg-white/60 p-3 rounded-lg">
+                                <p class="text-gray-600 mb-1">Duration</p>
+                                <p class="font-bold text-gray-900" id="modalSprintDuration">-</p>
+                            </div>
+                            <div class="bg-white/60 p-3 rounded-lg">
+                                <p class="text-gray-600 mb-1">Total Events</p>
+                                <p class="font-bold text-gray-900" id="modalEventCount">-</p>
+                            </div>
+                            <div class="bg-white/60 p-3 rounded-lg">
+                                <p class="text-gray-600 mb-1">Sprint Status</p>
+                                <p class="font-bold text-green-600">ACTIVE</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Warning Box -->
+                    <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <div class="text-sm">
+                                <p class="font-bold text-amber-800 mb-2">⚠️ This action will:</p>
+                                <ul class="space-y-1 text-amber-700">
+                                    <li class="flex items-start gap-2">
+                                        <span class="font-bold">1.</span>
+                                        <span>Archive this sprint and mark all data as read-only</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="font-bold">2.</span>
+                                        <span>Automatically create the next sprint (starting next Monday)</span>
+                                    </li>
+                                    <li class="flex items-start gap-2">
+                                        <span class="font-bold">3.</span>
+                                        <span>Move all sprint data to history for analytics</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Confirmation -->
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p class="text-center text-gray-700 font-medium">
+                            Are you sure you want to complete and archive this sprint?
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="border-t p-6 bg-gray-50 flex justify-between items-center">
+                    <button onclick="closeCompleteSprintModal()" 
+                            class="px-6 py-3 text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-all font-semibold">
+                        Cancel
+                    </button>
+                    <button onclick="archiveSprintAndCreateNext()" 
+                            id="confirmArchiveBtn"
+                            class="px-8 py-3 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                        </svg>
+                        <span>Archive Sprint</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -1085,11 +1256,15 @@
             }
             
             function createNewSprintAndSaveSettings(startDate, duration) {
+                // Get sprint name from input (can be null/empty for auto-generation)
+                const sprintName = document.getElementById('sprintName').value.trim() || null;
+                
                 // Create new sprint first
                 fetch('/api/sprints/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        sprintName: sprintName,
                         startDate: startDate,
                         duration: duration,
                         status: 'ACTIVE'
@@ -1117,6 +1292,9 @@
             }
             
             function updateSprintConfiguration(sprintId, startDate, duration) {
+                // Get sprint name from input (can be null/empty for keeping current or auto-generation)
+                const sprintName = document.getElementById('sprintName').value.trim() || null;
+                
                 // Collect all meeting data
                 const meetings = {
                     planning: {
@@ -1141,6 +1319,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
+                        sprintName: sprintName,
                         startDate: startDate,
                         duration: duration,
                         holidays: getCustomHolidaysForSaving(), // ✅ Save ONLY custom holidays (not global)
@@ -1700,6 +1879,7 @@
                             window.currentSprintId = sprint.id;
                             
                             // Populate form with sprint data
+                            document.getElementById('sprintName').value = sprint.sprintName || '';
                             document.getElementById('startDate').value = sprint.startDate;
                             document.getElementById('duration').value = sprint.duration;
                             document.getElementById('endDate').value = sprint.endDate;
@@ -1787,6 +1967,7 @@
                             
                             updateTimeline();
                             updateDateRestrictions(); // ✅ Restrict date pickers when loading existing sprint
+                            updateSprintActionsSection(); // ✅ Show Sprint Actions section
                             console.log('📋 Sprint data populated in form');
                         } else {
                             console.log('ℹ️ No active sprint found - showing blank form');
@@ -1935,6 +2116,182 @@
                 div.textContent = text;
                 return div.innerHTML;
             }
+            
+            // ========================================
+            // COMPLETE & ARCHIVE SPRINT FUNCTIONALITY
+            // ========================================
+            
+            /**
+             * Update Sprint Actions section with current sprint data
+             */
+            function updateSprintActionsSection() {
+                const sprintId = getCurrentSprintId();
+                console.log('📊 Updating Sprint Actions section, sprintId:', sprintId);
+                
+                if (!sprintId) {
+                    console.log('⚠️ No sprint ID, hiding Sprint Actions section');
+                    document.getElementById('sprintActionsSection')?.classList.add('hidden');
+                    return;
+                }
+                
+                const startDate = document.getElementById('startDate')?.value;
+                const endDate = document.getElementById('endDate')?.value;
+                const duration = document.getElementById('duration')?.value;
+                
+                console.log('📅 Sprint data:', { startDate, endDate, duration });
+                
+                if (!startDate || !endDate) {
+                    console.log('⚠️ Missing sprint dates, hiding section');
+                    document.getElementById('sprintActionsSection')?.classList.add('hidden');
+                    return;
+                }
+                
+                // Show the section
+                const actionsSection = document.getElementById('sprintActionsSection');
+                if (actionsSection) {
+                    actionsSection.classList.remove('hidden');
+                    console.log('✅ Sprint Actions section visible');
+                }
+                
+                // Update display fields
+                const periodDisplay = document.getElementById('sprintPeriodDisplay');
+                const durationDisplay = document.getElementById('sprintDurationDisplay');
+                
+                if (periodDisplay) {
+                    periodDisplay.textContent = `${formatDisplayDate(startDate)} - ${formatDisplayDate(endDate)}`;
+                }
+                
+                if (durationDisplay) {
+                    durationDisplay.textContent = `${duration} working days`;
+                }
+                
+                // Button is always enabled - can complete sprint anytime
+                const btn = document.getElementById('completeSprintBtn');
+                if (btn) {
+                    btn.disabled = false;
+                    console.log('✅ Complete Sprint button enabled');
+                }
+                
+                // Hide warning message (no longer needed)
+                const warning = document.getElementById('completionWarning');
+                if (warning) {
+                    warning.classList.add('hidden');
+                }
+            }
+            
+            /**
+             * Format date for display (e.g., "Nov 17, 2025")
+             */
+            function formatDisplayDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+            }
+            
+            /**
+             * Open the complete sprint confirmation modal
+             */
+            function openCompleteSprintModal() {
+                const sprintId = getCurrentSprintId();
+                if (!sprintId) {
+                    showError('No active sprint found');
+                    return;
+                }
+                
+                // Populate modal with sprint data
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                const duration = document.getElementById('duration').value;
+                
+                document.getElementById('modalSprintPeriod').textContent = 
+                    `${formatDisplayDate(startDate)} - ${formatDisplayDate(endDate)}`;
+                document.getElementById('modalSprintDuration').textContent = 
+                    `${duration} working days`;
+                
+                // Count total events
+                const eventCount = (sprintHolidays.length + sprintDeployments.length + 
+                                   sprintCodeFreezes.length + 3); // +3 for potential meetings
+                document.getElementById('modalEventCount').textContent = eventCount;
+                
+                // Show modal
+                document.getElementById('completeSprintModal').classList.remove('hidden');
+            }
+            
+            /**
+             * Close the complete sprint confirmation modal
+             */
+            function closeCompleteSprintModal() {
+                document.getElementById('completeSprintModal').classList.add('hidden');
+            }
+            
+            /**
+             * Archive sprint and create next sprint automatically
+             */
+            async function archiveSprintAndCreateNext() {
+                const sprintId = getCurrentSprintId();
+                if (!sprintId) {
+                    showError('No active sprint found');
+                    return;
+                }
+                
+                // Disable button and show loading
+                const btn = document.getElementById('confirmArchiveBtn');
+                const originalContent = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Archiving...</span>
+                `;
+                
+                try {
+                    const response = await fetch(`/api/sprints/${sprintId}/complete-and-archive`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.data) {
+                        // Close modal
+                        closeCompleteSprintModal();
+                        
+                        // data.data contains: { archivedSprint, nextSprint }
+                        const archivedSprint = data.data.archivedSprint;
+                        const nextSprint = data.data.nextSprint;
+                        
+                        // Show success message
+                        showSuccess(`Sprint "${archivedSprint.sprintName}" archived successfully! New sprint "${nextSprint.sprintName}" created.`);
+                        
+                        // Reload the page to show the new sprint
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showError(data.message || 'Failed to complete sprint');
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                    }
+                } catch (error) {
+                    console.error('Error completing sprint:', error);
+                    showError('Error completing sprint. Please try again.');
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
+            }
+            
+            // Update Sprint Actions section when sprint dates change
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('startDate')?.addEventListener('change', updateSprintActionsSection);
+                document.getElementById('endDate')?.addEventListener('change', updateSprintActionsSection);
+                document.getElementById('duration')?.addEventListener('change', updateSprintActionsSection);
+            });
+            
         </script>
     </div>
 </body>
