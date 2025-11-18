@@ -20,9 +20,6 @@ public interface AIService {
      */
     String generateRiskSummaryForSprint(String sprintId);
     
-    String generateConfluencePage(List<TeamMemberDto> team, SprintDto sprint, 
-                                 List<TaskDto> tasks, List<CapacitySummaryDto> workload);
-    
     String generateTeamsMessage(List<TeamMemberDto> team, SprintDto sprint, 
                                List<TaskDto> tasks, List<CapacitySummaryDto> workload);
     
