@@ -17,6 +17,6 @@ public class AtlassianConfigProperties {
     private Duration connectTimeout = Duration.ofSeconds(5);
     private Duration readTimeout = Duration.ofSeconds(10);
     private String wikiPath;
-    
+    private String jiraProjectName;
 }
 

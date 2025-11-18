@@ -8,9 +8,9 @@ import java.math.BigDecimal;
 public record MemberUtilizationDto(
         String memberId,
         String name,
-        BigDecimal remainingEstimate,  // Sum of remaining hours for all assigned tasks
-        BigDecimal capacity,            // dailyCapacity * days left in sprint
-        BigDecimal gap,                 // remainingEstimate - capacity
+        BigDecimal remainingEstimate,  // Total assigned work (original estimates) for all assigned tasks in the sprint
+        BigDecimal capacity,            // Total capacity available in sprint (dailyCapacity * available days after holidays/leaves)
+        BigDecimal gap,                 // assignedWork - capacity
         UtilizationStatus status        // OVER_UTILIZED, PROPERLY_UTILIZED, UNDER_UTILIZED
 ) {
     

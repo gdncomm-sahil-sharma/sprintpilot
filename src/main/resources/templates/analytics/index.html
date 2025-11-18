@@ -113,10 +113,8 @@
                 <!-- Work Distribution Chart -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
                     <h3 class="text-xl font-bold text-gray-700 mb-4 border-b pb-3">Work Distribution</h3>
-                    <div class="h-64 flex items-center justify-center">
-                        <div class="w-48 h-48">
+                    <div class="h-80">
                             <canvas id="workDistributionChart"></canvas>
-                        </div>
                     </div>
                 </div>
 
@@ -202,13 +200,627 @@
         </div>
 
         <script>
+            let velocityChartInstance = null;
+            let burndownChartInstance = null;
+            let currentSprintId = null;
+
             // Initialize charts when page loads
             document.addEventListener('DOMContentLoaded', function() {
-                initializeCharts();
+                // Wait a bit for app.js to set the cookie
+                setTimeout(() => {
+                    currentSprintId = CookieUtils.getCookie('currentSprintId');
+                    console.log('Current Sprint ID from cookie:', currentSprintId);
+                    
+                    if (currentSprintId) {
+                        loadAnalyticsData();
+                    } else {
+                        console.warn('No current sprint ID found, loading with mock data');
+                        initializeChartsWithMockData();
+                    }
+                }, 100);
             });
 
-            function initializeCharts() {
-                // Velocity Trend Chart
+            async function loadAnalyticsData() {
+                if (!currentSprintId) {
+                    console.error('No sprint ID available');
+                    initializeChartsWithMockData();
+                    return;
+                }
+
+                console.log('Loading analytics data for sprint:', currentSprintId);
+
+                try {
+                    const response = await fetch('/api/sprints/metrics/burndown-velocity', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sprintId: currentSprintId
+                        })
+                    });
+                    const data = await response.json();
+
+                    console.log('Analytics response:', data);
+                    console.log('Data structure:', JSON.stringify(data, null, 2));
+
+                    if (data.success && data.data) {
+                        console.log('Velocity data:', data.data.velocity);
+                        console.log('Burndown data:', data.data.burndown);
+                        
+                        renderVelocityChart(data.data.velocity);
+                        renderBurndownChart(data.data.burndown);
+                        
+                        // Load work distribution separately
+                        loadWorkDistribution();
+                        
+                        // Still render team performance with mock data
+                        renderTeamPerformanceChart();
+                    } else {
+                        console.error('Failed to load analytics data:', data.message);
+                        initializeChartsWithMockData();
+                    }
+                } catch (error) {
+                    console.error('Error loading analytics:', error);
+                    initializeChartsWithMockData();
+                }
+            }
+
+            function renderVelocityChart(velocityData) {
+                console.log('renderVelocityChart called with:', velocityData);
+                const velocityCtx = document.getElementById('velocityChart');
+
+                // Destroy existing chart if it exists
+                if (velocityChartInstance) {
+                    velocityChartInstance.destroy();
+                }
+
+                if (!velocityData) {
+                    console.error('velocityData is null/undefined');
+                    const ctx = velocityCtx.getContext('2d');
+                    ctx.font = '16px sans-serif';
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('No velocity data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                    return;
+                }
+
+                // Extract data from the actual API response structure
+                // historicalVelocity should be an array of objects with sprint data
+                const historicalVelocity = velocityData.historicalVelocity || [];
+                
+                console.log('Historical velocity data:', historicalVelocity);
+                console.log('Current sprint velocity:', velocityData.currentSprintVelocity);
+                console.log('Committed points:', velocityData.committedPoints);
+                console.log('Completed points:', velocityData.completedPoints);
+
+                // If no historical data, show current sprint only
+                if (!historicalVelocity || historicalVelocity.length === 0) {
+                    // Show current sprint data only
+                    const labels = ['Current Sprint'];
+                    const completed = [velocityData.completedPoints || 0];
+                    const committed = [velocityData.committedPoints || 0];
+
+                    velocityChartInstance = new Chart(velocityCtx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Completed Story Points',
+                                data: completed,
+                                borderColor: '#4f46e5',
+                                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                                borderWidth: 3,
+                                tension: 0.3,
+                                fill: true,
+                                pointRadius: 6,
+                                pointHoverRadius: 8
+                            }, {
+                                label: 'Committed Story Points',
+                                data: committed,
+                                borderColor: '#f59e0b',
+                                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                fill: false,
+                                pointRadius: 5,
+                                pointHoverRadius: 7
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                intersect: false,
+                                mode: 'index'
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    position: 'top',
+                                    labels: {
+                                        usePointStyle: true,
+                                        padding: 15
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    padding: 12,
+                                    cornerRadius: 8,
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            if (context.parsed.y !== null) {
+                                                label += context.parsed.y + ' SP';
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Story Points',
+                                        font: {
+                                            size: 13,
+                                            weight: 600
+                                        }
+                                    },
+                                    grid: {
+                                        color: 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    return;
+                }
+
+                // Parse historical velocity data
+                const labels = historicalVelocity.map(item => item.sprintName || item.name || 'Sprint');
+                const completedData = historicalVelocity.map(item => item.completedPoints || item.completed || 0);
+                const committedData = historicalVelocity.map(item => item.committedPoints || item.planned || item.committed || 0);
+
+                console.log('Chart labels:', labels);
+                console.log('Chart completed data:', completedData);
+                console.log('Chart committed data:', committedData);
+
+                velocityChartInstance = new Chart(velocityCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Completed Story Points',
+                            data: completedData,
+                            borderColor: '#4f46e5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }, {
+                            label: 'Committed Story Points',
+                            data: committedData,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: false,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += context.parsed.y + ' SP';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Story Points',
+                                    font: {
+                                        size: 13,
+                                        weight: 600
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderBurndownChart(burndownData) {
+                console.log('renderBurndownChart called with:', burndownData);
+                const burndownCtx = document.getElementById('burndownChart');
+
+                // Destroy existing chart if it exists
+                if (burndownChartInstance) {
+                    burndownChartInstance.destroy();
+                }
+
+                if (!burndownData) {
+                    console.error('burndownData is null/undefined');
+                    const ctx = burndownCtx.getContext('2d');
+                    ctx.font = '16px sans-serif';
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('No burndown data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                    return;
+                }
+
+                // Extract data from the actual API response structure
+                const points = burndownData.points || [];
+                const totalStoryPoints = burndownData.totalStoryPoints || 0;
+                const startDate = burndownData.startDate;
+                const endDate = burndownData.endDate;
+
+                console.log('Burndown points array:', points);
+                console.log('Total story points:', totalStoryPoints);
+                console.log('Start date:', startDate, 'End date:', endDate);
+
+                if (!points || points.length === 0) {
+                    const ctx = burndownCtx.getContext('2d');
+                    ctx.font = '16px sans-serif';
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('No burndown data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                    return;
+                }
+
+                // Parse the points array - each point should have date and remaining points
+                const labels = points.map(point => {
+                    const dateStr = point.date || point.day || '';
+                    if (!dateStr) return '';
+                    
+                    // Format date from "2025-12-01" to "Dec 1"
+                    try {
+                        const date = new Date(dateStr);
+                        const month = date.toLocaleDateString('en-US', { month: 'short' });
+                        const day = date.getDate();
+                        return `${month} ${day}`;
+                    } catch (e) {
+                        // If parsing fails, just return the original
+                        return dateStr;
+                    }
+                });
+                const actualBurndown = points.map(point => point.remaining || point.remainingPoints || 0);
+                
+                // Calculate ideal burndown
+                const idealBurndown = [];
+                const pointsPerDay = totalStoryPoints / (points.length - 1 || 1);
+                for (let i = 0; i < points.length; i++) {
+                    idealBurndown.push(Math.max(0, totalStoryPoints - (pointsPerDay * i)));
+                }
+
+                console.log('Chart labels (dates):', labels);
+                console.log('Actual burndown:', actualBurndown);
+                console.log('Ideal burndown:', idealBurndown);
+
+                burndownChartInstance = new Chart(burndownCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Ideal Burndown',
+                            data: idealBurndown,
+                            borderColor: '#9ca3af',
+                            backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.1,
+                            pointRadius: 3,
+                            pointHoverRadius: 5,
+                            fill: false
+                        }, {
+                            label: 'Actual Burndown',
+                            data: actualBurndown,
+                            borderColor: '#4f46e5',
+                            backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.1,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += context.parsed.y.toFixed(2) + ' SP';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Remaining Time Estimates',
+                                    font: {
+                                        size: 13,
+                                        weight: 600
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Sprint Days',
+                                    font: {
+                                        size: 13,
+                                        weight: 600
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    maxRotation: 45,
+                                    minRotation: 45,
+                                    autoSkip: true,
+                                    maxTicksLimit: 15,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            let workDistributionChartInstance = null;
+
+            async function loadWorkDistribution() {
+                if (!currentSprintId) {
+                    console.error('No sprint ID available for work distribution');
+                    renderWorkDistributionChart(null);
+                    return;
+                }
+
+                console.log('Loading work distribution for sprint:', currentSprintId);
+
+                try {
+                    const response = await fetch('/api/sprints/metrics/workDistribution', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sprintId: currentSprintId
+                        })
+                    });
+                    const data = await response.json();
+
+                    console.log('Work distribution response:', data);
+
+                    if (data.success && data.data) {
+                        renderWorkDistributionChart(data.data);
+                    } else {
+                        console.error('Failed to load work distribution:', data.message);
+                        renderWorkDistributionChart(null);
+                    }
+                } catch (error) {
+                    console.error('Error loading work distribution:', error);
+                    renderWorkDistributionChart(null);
+                }
+            }
+
+            function renderWorkDistributionChart(distributionData) {
+                const workCtx = document.getElementById('workDistributionChart');
+
+                // Destroy existing chart if it exists
+                if (workDistributionChartInstance) {
+                    workDistributionChartInstance.destroy();
+                }
+
+                // Use real data or fallback to mock
+                let labels, data, colors;
+                
+                if (distributionData && distributionData.labels && distributionData.labels.length > 0) {
+                    console.log('Rendering work distribution with real data:', distributionData);
+                    labels = distributionData.labels;
+                    data = distributionData.values.map(v => parseFloat(v));
+                    
+                    // Assign colors based on category
+                    colors = labels.map(label => {
+                        switch(label) {
+                            case 'Features': return '#4f46e5';
+                            case 'Tech Debt': return '#f59e0b';
+                            case 'Bug Fixes': return '#ef4444';
+                            case 'Support': return '#6b7280';
+                            default: return '#9ca3af';
+                        }
+                    });
+                } else {
+                    console.log('No work distribution data, using mock data');
+                    labels = ['Features', 'Tech Debt', 'Bug Fixes', 'Support'];
+                    data = [60, 25, 12, 3];
+                    colors = ['#4f46e5', '#f59e0b', '#ef4444', '#6b7280'];
+                }
+
+                workDistributionChartInstance = new Chart(workCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors,
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                left: 0,
+                                right: 0,
+                                top: 0,
+                                bottom: 0
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                align: 'center',
+                                labels: {
+                                    padding: 20,
+                                    font: {
+                                        size: 13,
+                                        weight: 500
+                                    },
+                                    boxWidth: 20,
+                                    boxHeight: 20,
+                                    usePointStyle: false
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        return `${label}: ${value} tasks (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderTeamPerformanceChart() {
+                const teamCtx = document.getElementById('teamPerformanceChart');
+                new Chart(teamCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Alice (FE)', 'Bob (BE)', 'Charlie (QA)', 'David (BE)'],
+                        datasets: [{
+                            label: 'Utilization %',
+                            data: [85, 95, 70, 88],
+                            backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444'],
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Utilization %',
+                                    font: {
+                                        size: 13,
+                                        weight: 600
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function initializeChartsWithMockData() {
+                // Velocity Trend Chart with mock data
                 const velocityCtx = document.getElementById('velocityChart');
                 new Chart(velocityCtx, {
                     type: 'line',
@@ -222,7 +834,7 @@
                             tension: 0.3,
                             fill: true
                         }, {
-                            label: 'Committed Story Points',
+                            label: 'Planned Story Points',
                             data: [90, 95, 100, 105, 115, 130],
                             borderColor: '#f59e0b',
                             backgroundColor: 'rgba(245, 158, 11, 0.1)',
@@ -245,52 +857,7 @@
                     }
                 });
 
-                // Work Distribution Chart
-                const workCtx = document.getElementById('workDistributionChart');
-                new Chart(workCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Features', 'Tech Debt', 'Bug Fixes', 'Support'],
-                        datasets: [{
-                            data: [60, 25, 12, 3],
-                            backgroundColor: ['#4f46e5', '#f59e0b', '#ef4444', '#6b7280']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-
-                // Team Performance Chart
-                const teamCtx = document.getElementById('teamPerformanceChart');
-                new Chart(teamCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Alice (FE)', 'Bob (BE)', 'Charlie (QA)', 'David (BE)'],
-                        datasets: [{
-                            label: 'Utilization %',
-                            data: [85, 95, 70, 88],
-                            backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ef4444']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100,
-                                title: {
-                                    display: true,
-                                    text: 'Utilization %'
-                                }
-                            }
-                        }
-                    }
-                });
-
-                // Burndown Chart
+                // Burndown Chart with mock data
                 const burndownCtx = document.getElementById('burndownChart');
                 new Chart(burndownCtx, {
                     type: 'line',
@@ -324,6 +891,10 @@
                         }
                     }
                 });
+
+                // Render other charts with mock data
+                renderWorkDistributionChart(null);
+                renderTeamPerformanceChart();
             }
 
             function generatePerformanceInsights() {

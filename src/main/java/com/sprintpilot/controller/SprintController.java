@@ -1,5 +1,6 @@
 package com.sprintpilot.controller;
 
+import com.sprintpilot.config.AtlassianConfigProperties;
 import com.sprintpilot.dto.ApiResponse;
 import com.sprintpilot.dto.CompleteSprintResponse;
 import com.sprintpilot.dto.SprintDto;
@@ -7,6 +8,7 @@ import com.sprintpilot.dto.SprintEventDto;
 import com.sprintpilot.dto.SprintMetricsDto;
 import com.sprintpilot.service.SprintMetricsService;
 import com.sprintpilot.service.SprintService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sprints")
+@Slf4j
 public class SprintController {
     
     @Autowired
@@ -26,6 +29,9 @@ public class SprintController {
 
     @Autowired
     private SprintMetricsService sprintMetricsService;
+
+    @Autowired
+    private AtlassianConfigProperties atlassianConfigProperties;
     
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<SprintDto>> createSprint(@RequestBody SprintDto sprintDto) {
@@ -268,6 +274,9 @@ public class SprintController {
     public ResponseEntity<ApiResponse<SprintMetricsDto>> getSprintMetrics(@RequestBody Map<String, String> request) {
         String sprintId = request.get("sprintId");
         String projectName = request.get("projectName");
+        if(!StringUtils.hasText(projectName)) {
+            projectName = atlassianConfigProperties.getJiraProjectName();
+        }
 
         if (!StringUtils.hasText(sprintId) || !StringUtils.hasText(projectName)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -280,6 +289,36 @@ public class SprintController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Failed to fetch sprint metrics", e.getMessage()));
+        }
+    }
+
+    /**
+     * Get work distribution by task category for a sprint
+     *
+     * @param request Map containing sprintId and optional projectName
+     * @return Work distribution data showing percentage of different task types
+     */
+    @PostMapping("/metrics/workDistribution")
+    public ResponseEntity<ApiResponse<com.sprintpilot.dto.WorkDistributionDto>> getWorkDistribution(@RequestBody Map<String, String> request) {
+        String sprintId = request.get("sprintId");
+        String projectName = request.get("projectName");
+        
+        if(!StringUtils.hasText(projectName)) {
+            projectName = atlassianConfigProperties.getJiraProjectName();
+        }
+
+        if (!StringUtils.hasText(sprintId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("sprintId is required", null));
+        }
+
+        try {
+            com.sprintpilot.dto.WorkDistributionDto distribution = sprintMetricsService.getWorkDistribution(sprintId, projectName);
+            return ResponseEntity.ok(ApiResponse.success("Work distribution calculated successfully", distribution));
+        } catch (Exception e) {
+            log.error("Failed to calculate work distribution", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Failed to calculate work distribution", e.getMessage()));
         }
     }
     

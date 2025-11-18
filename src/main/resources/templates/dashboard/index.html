@@ -124,56 +124,12 @@
                     </div>
                 </div>
                 
-                <!-- Right Column - Work Distribution Chart - Exact React WorkDistributionChart Component -->
+                <!-- Right Column - Work Distribution Chart -->
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 h-full">
                         <h3 class="text-2xl font-bold mb-4 border-b pb-3 text-gray-700">Work Distribution</h3>
-                        <div class="flex flex-col md:flex-row items-center justify-center pt-4 gap-6">
-                            <!-- SVG Donut Chart - Exact React Implementation -->
-                            <div class="relative w-40 h-40">
-                                <svg class="w-full h-full" viewBox="0 0 100 100">
-                                    <circle cx="50" cy="50" r="40" fill="none" stroke="#e5e7eb" stroke-width="15" />
-                                    <!-- Features - 60% -->
-                                    <circle cx="50" cy="50" r="40" fill="none" stroke="#4f46e5" stroke-width="15" 
-                                            stroke-dasharray="150.8 251.2" stroke-dashoffset="0" 
-                                            transform="rotate(-90 50 50)" stroke-linecap="round" />
-                                    <!-- Tech Debt - 25% -->
-                                    <circle cx="50" cy="50" r="40" fill="none" stroke="#f59e0b" stroke-width="15" 
-                                            stroke-dasharray="62.8 339.2" stroke-dashoffset="-150.8" 
-                                            transform="rotate(-90 50 50)" stroke-linecap="round" />
-                                    <!-- Bug Fixes - 12% -->
-                                    <circle cx="50" cy="50" r="40" fill="none" stroke="#ef4444" stroke-width="15" 
-                                            stroke-dasharray="30.2 371.8" stroke-dashoffset="-213.6" 
-                                            transform="rotate(-90 50 50)" stroke-linecap="round" />
-                                    <!-- Support - 3% -->
-                                    <circle cx="50" cy="50" r="40" fill="none" stroke="#6b7280" stroke-width="15" 
-                                            stroke-dasharray="7.5 394.5" stroke-dashoffset="-243.8" 
-                                            transform="rotate(-90 50 50)" stroke-linecap="round" />
-                                </svg>
-                            </div>
-                            <!-- Legend - Exact React Styling -->
-                            <ul class="space-y-2">
-                                <li class="flex items-center text-sm">
-                                    <span class="w-3 h-3 rounded-full mr-2" style="background-color: #4f46e5"></span>
-                                    <span class="text-gray-700 font-semibold w-24">Features</span>
-                                    <span class="text-gray-500">60.0%</span>
-                                </li>
-                                <li class="flex items-center text-sm">
-                                    <span class="w-3 h-3 rounded-full mr-2" style="background-color: #f59e0b"></span>
-                                    <span class="text-gray-700 font-semibold w-24">Tech Debt</span>
-                                    <span class="text-gray-500">25.0%</span>
-                                </li>
-                                <li class="flex items-center text-sm">
-                                    <span class="w-3 h-3 rounded-full mr-2" style="background-color: #ef4444"></span>
-                                    <span class="text-gray-700 font-semibold w-24">Bug Fixes</span>
-                                    <span class="text-gray-500">12.0%</span>
-                                </li>
-                                <li class="flex items-center text-sm">
-                                    <span class="w-3 h-3 rounded-full mr-2" style="background-color: #6b7280"></span>
-                                    <span class="text-gray-700 font-semibold w-24">Support</span>
-                                    <span class="text-gray-500">3.0%</span>
-                                </li>
-                            </ul>
+                        <div class="h-80 pt-4">
+                            <canvas id="dashboardWorkDistributionChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -181,6 +137,194 @@
         </div>
         
         <script>
+            let dashboardWorkDistributionChart = null;
+            let currentSprintId = null;
+
+            // Initialize dashboard on load
+            document.addEventListener('DOMContentLoaded', function() {
+                // Wait for cookie to be set
+                setTimeout(() => {
+                    currentSprintId = CookieUtils.getCookie('currentSprintId');
+                    console.log('Dashboard - Current Sprint ID:', currentSprintId);
+                    
+                    if (currentSprintId) {
+                        loadDashboardWorkDistribution();
+                    } else {
+                        console.warn('No current sprint ID found');
+                        renderEmptyWorkDistribution();
+                    }
+                }, 100);
+            });
+
+            async function loadDashboardWorkDistribution() {
+                if (!currentSprintId) {
+                    console.error('No sprint ID available for work distribution');
+                    renderEmptyWorkDistribution();
+                    return;
+                }
+
+                console.log('Loading work distribution for dashboard sprint:', currentSprintId);
+
+                try {
+                    const response = await fetch('/api/sprints/metrics/workDistribution', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sprintId: currentSprintId
+                        })
+                    });
+                    const data = await response.json();
+
+                    console.log('Dashboard work distribution response:', data);
+
+                    if (data.success && data.data && data.data.labels && data.data.labels.length > 0) {
+                        renderDashboardWorkDistribution(data.data);
+                    } else {
+                        console.log('No work distribution data available');
+                        renderEmptyWorkDistribution();
+                    }
+                } catch (error) {
+                    console.error('Error loading work distribution:', error);
+                    renderEmptyWorkDistribution();
+                }
+            }
+
+            function renderDashboardWorkDistribution(distributionData) {
+                const ctx = document.getElementById('dashboardWorkDistributionChart');
+
+                // Destroy existing chart if it exists
+                if (dashboardWorkDistributionChart) {
+                    dashboardWorkDistributionChart.destroy();
+                }
+
+                const labels = distributionData.labels;
+                const data = distributionData.values.map(v => parseFloat(v));
+                
+                // Assign colors based on category
+                const colors = labels.map(label => {
+                    switch(label) {
+                        case 'Features': return '#4f46e5';
+                        case 'Tech Debt': return '#f59e0b';
+                        case 'Bug Fixes': return '#ef4444';
+                        case 'Support': return '#6b7280';
+                        default: return '#9ca3af';
+                    }
+                });
+
+                dashboardWorkDistributionChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors,
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                align: 'center',
+                                labels: {
+                                    padding: 20,
+                                    font: {
+                                        size: 13,
+                                        weight: 500
+                                    },
+                                    boxWidth: 20,
+                                    boxHeight: 20,
+                                    usePointStyle: false,
+                                    generateLabels: function(chart) {
+                                        const data = chart.data;
+                                        if (data.labels.length && data.datasets.length) {
+                                            const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                            return data.labels.map((label, i) => {
+                                                const value = data.datasets[0].data[i];
+                                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                                return {
+                                                    text: `${label} (${percentage}%)`,
+                                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                                    hidden: false,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                        return `${label}: ${value} tasks (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderEmptyWorkDistribution() {
+                const ctx = document.getElementById('dashboardWorkDistributionChart');
+
+                // Destroy existing chart if it exists
+                if (dashboardWorkDistributionChart) {
+                    dashboardWorkDistributionChart.destroy();
+                }
+
+                // Create empty grey circle
+                dashboardWorkDistributionChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['No Data'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['#d1d5db'],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                enabled: false
+                            }
+                        }
+                    }
+                });
+
+                // Add "No data" text in the center
+                const centerText = document.createElement('div');
+                centerText.style.position = 'absolute';
+                centerText.style.top = '50%';
+                centerText.style.left = '50%';
+                centerText.style.transform = 'translate(-50%, -50%)';
+                centerText.style.textAlign = 'center';
+                centerText.style.pointerEvents = 'none';
+                centerText.innerHTML = '<p class="text-gray-400 font-medium">No tasks yet</p>';
+                ctx.parentElement.style.position = 'relative';
+                ctx.parentElement.appendChild(centerText);
+            }
+
             // Exact React AI Summary Generation Function
             async function generateSprintSummary() {
                 const content = document.getElementById('ai-summary-content');
