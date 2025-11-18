@@ -48,6 +48,12 @@ public class GeminiAIService implements AIService {
     @Autowired
     private Bucket rateLimiterBucket;
     
+    @Autowired
+    private RiskSummaryHelper riskSummaryHelper;
+    
+    @Autowired
+    private PerformanceInsightsHelper performanceInsightsHelper;
+    
     @Value("${app.ai.enabled:true}")
     private boolean aiEnabled;
     
@@ -259,30 +265,26 @@ public class GeminiAIService implements AIService {
     }
     
     /**
-     * Generates Confluence page content with wiki markup formatting
+     * Generate risk summary for a sprint by fetching tasks from database
+     * This method handles the complete flow: fetch tasks, convert DTOs, and generate summary
      */
     @Override
-    public String generateConfluencePage(List<TeamMemberDto> team, SprintDto sprint, 
-                                        List<TaskDto> tasks, List<CapacitySummaryDto> workload) {
+    public String generateRiskSummaryForSprint(String sprintId) {
         if (!aiEnabled) {
             return "AI features are disabled";
         }
         
-        String prompt = buildSprintDataPrompt(team, sprint, tasks, workload) + "\n\n" +
-                       """
-                       Based on the sprint data above, generate a Confluence page content using Confluence wiki markup.
-                       
-                       Create a well-structured Confluence page with these sections:
-                       1. A main title (h1.) for the sprint plan including the dates
-                       2. A "Sprint Goals" section (h2.) with 2-3 plausible, high-level goals
-                       3. A "Team Capacity" section (h2.) with a table showing team members and their capacity
-                       4. A "Work Items" section (h2.) listing all tasks using bullet points (*)
-                       5. A "Dependencies and Risks" section (h2.) if applicable
-                       
-                       Use proper Confluence wiki markup syntax.
-                       """;
+        logger.info("Generating risk summary for sprint: {}", sprintId);
         
-        return callAI(prompt, "Confluence Page");
+        // Use helper to fetch and convert tasks
+        RiskSummaryHelper.RiskSummaryData data = riskSummaryHelper.prepareRiskSummaryData(sprintId);
+        
+        if (data == null) {
+            return "No tasks found for this sprint. Please import tasks first.";
+        }
+        
+        // Call existing generateRiskSummary method with prepared data
+        return generateRiskSummary(data.tasks(), data.risks());
     }
     
     /**
@@ -439,6 +441,29 @@ public class GeminiAIService implements AIService {
         }
         
         return result;
+    }
+    
+    /**
+     * Generate performance insights by fetching sprint history from database
+     * This method handles the complete flow: fetch sprints, calculate metrics, and generate insights
+     */
+    @Override
+    public String generatePerformanceInsightsFromHistory() {
+        if (!aiEnabled) {
+            return "AI features are disabled";
+        }
+        
+        logger.info("Generating performance insights from sprint history");
+        
+        // Use helper to fetch sprints and calculate metrics
+        PerformanceInsightsHelper.PerformanceData data = performanceInsightsHelper.preparePerformanceData();
+        
+        if (data == null) {
+            return "No completed sprints found. Please complete at least one sprint to generate performance insights.";
+        }
+        
+        // Call existing analyzeHistoricalPerformance method with prepared data
+        return analyzeHistoricalPerformance(data.sprints(), data.velocityTrend(), data.workMixTrend(), data.roleUtilization());
     }
     
     /**

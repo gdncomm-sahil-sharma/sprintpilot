@@ -6,9 +6,10 @@ import com.sprintpilot.dto.SprintDto;
 import com.sprintpilot.dto.SprintEventDto;
 import com.sprintpilot.dto.SprintSummaryRequest;
 import com.sprintpilot.dto.TaskDto;
-import com.sprintpilot.dto.TaskRiskDto;
 import com.sprintpilot.dto.TeamMemberDto;
 import com.sprintpilot.service.AIService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -71,38 +72,44 @@ public class AIController {
     }
     
     @PostMapping("/risk-summary")
-    public ResponseEntity<ApiResponse<String>> generateRiskSummary(@RequestBody Map<String, Object> request) {
+    public ResponseEntity<ApiResponse<String>> generateRiskSummary(
+            @RequestBody Map<String, Object> request,
+            HttpServletRequest httpRequest) {
         try {
-            @SuppressWarnings("unchecked")
-            List<TaskDto> tasks = (List<TaskDto>) request.get("tasks");
-            @SuppressWarnings("unchecked")
-            List<TaskRiskDto> risks = (List<TaskRiskDto>) request.get("risks");
+            // Get sprint ID from cookie
+            String sprintId = getSprintIdFromCookie(httpRequest);
             
-            String summary = aiService.generateRiskSummary(tasks, risks);
+            if (sprintId == null || sprintId.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.failure("Sprint ID not found in cookie"));
+            }
+            
+            log.info("Generating risk summary for sprint: {}", sprintId);
+            
+            // Delegate to service layer - all business logic moved there
+            String summary = aiService.generateRiskSummaryForSprint(sprintId);
+            
             return ResponseEntity.ok(ApiResponse.success(summary));
         } catch (Exception e) {
+            log.error("Failed to generate risk summary: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Failed to generate risk summary", e.getMessage()));
         }
     }
     
-    @PostMapping("/confluence-page")
-    public ResponseEntity<ApiResponse<String>> generateConfluencePage(@RequestBody Map<String, Object> request) {
-        try {
-            @SuppressWarnings("unchecked")
-            List<TeamMemberDto> team = (List<TeamMemberDto>) request.get("team");
-            SprintDto sprint = (SprintDto) request.get("sprint");
-            @SuppressWarnings("unchecked")
-            List<TaskDto> tasks = (List<TaskDto>) request.get("tasks");
-            @SuppressWarnings("unchecked")
-            List<CapacitySummaryDto> workload = (List<CapacitySummaryDto>) request.get("workload");
-            
-            String page = aiService.generateConfluencePage(team, sprint, tasks, workload);
-            return ResponseEntity.ok(ApiResponse.success(page));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Failed to generate Confluence page", e.getMessage()));
+    /**
+     * Helper method to extract sprint ID from cookies
+     */
+    private String getSprintIdFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("currentSprintId".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
+        return null;
     }
     
     @PostMapping("/teams-message")
@@ -146,18 +153,14 @@ public class AIController {
     @PostMapping("/performance-insights")
     public ResponseEntity<ApiResponse<String>> analyzeHistoricalPerformance(@RequestBody Map<String, Object> request) {
         try {
-            @SuppressWarnings("unchecked")
-            List<SprintDto> sprints = (List<SprintDto>) request.get("sprints");
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> velocityTrend = (List<Map<String, Object>>) request.get("velocityTrend");
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> workMixTrend = (List<Map<String, Object>>) request.get("workMixTrend");
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> roleUtilization = (List<Map<String, Object>>) request.get("roleUtilization");
+            log.info("Generating performance insights from historical sprint data");
             
-            String insights = aiService.analyzeHistoricalPerformance(sprints, velocityTrend, workMixTrend, roleUtilization);
+            // Delegate to service layer - all business logic moved there
+            String insights = aiService.generatePerformanceInsightsFromHistory();
+            
             return ResponseEntity.ok(ApiResponse.success(insights));
         } catch (Exception e) {
+            log.error("Failed to generate performance insights: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Failed to generate performance insights", e.getMessage()));
         }
