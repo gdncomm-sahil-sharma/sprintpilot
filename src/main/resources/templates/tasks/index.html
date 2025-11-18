@@ -208,15 +208,6 @@
             <!-- Utilization Tab Content -->
             <div id="utilizationTabContent" class="tab-content hidden">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
-                    <div class="flex items-center justify-end mb-6">
-                        <button onclick="loadMemberUtilization()" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors flex items-center space-x-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                            <span>Refresh</span>
-                        </button>
-                    </div>
-
                     <!-- Utilization Summary Cards -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                         <div class="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -257,8 +248,8 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member Name</th>
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining Work (hrs)</th>
                                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity (hrs)</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned Work (hrs)</th>
                                     <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Gap (hrs)</th>
                                     <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 </tr>
@@ -673,11 +664,12 @@
 
             async function analyzeTaskRisks() {
                 const button = document.getElementById('analyzeButtonText');
+                const buttonElement = button.parentElement;
                 const originalText = button.textContent;
                 
                 // Show loading state
                 button.textContent = 'Analyzing...';
-                button.parentElement.disabled = true;
+                buttonElement.disabled = true;
                 
                 try {
                     // Call backend API to analyze risks
@@ -692,9 +684,9 @@
                     
                     if (data.success) {
                         button.textContent = 'Analysis Complete';
-                button.parentElement.classList.remove('bg-primary-600', 'hover:bg-primary-700');
-                button.parentElement.classList.add('bg-gray-400', 'cursor-not-allowed');
-                
+                        buttonElement.classList.remove('bg-primary-600', 'hover:bg-primary-700');
+                        buttonElement.classList.add('bg-gray-400', 'cursor-not-allowed');
+                        
                         showToast(`Risk analysis completed! ${data.data} task${data.data !== 1 ? 's' : ''} analyzed successfully.`, 'success');
                         
                         // Reload tasks to show updated risk factors
@@ -702,15 +694,24 @@
                         
                         // Scroll to top to see grouped results
                         window.scrollTo({ top: 0, behavior: 'smooth' });
+                        
+                        // Re-enable button after 5 seconds
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                            buttonElement.disabled = false;
+                            buttonElement.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                            buttonElement.classList.add('bg-primary-600', 'hover:bg-primary-700');
+                            console.log('✅ Analyze button re-enabled');
+                        }, 5000); // 10 seconds
                     } else {
                         button.textContent = originalText;
-                        button.parentElement.disabled = false;
+                        buttonElement.disabled = false;
                         showToast('Analysis failed: ' + (data.message || 'Unknown error'), 'error');
                     }
                 } catch (error) {
                     console.error('Failed to analyze risks:', error);
                     button.textContent = originalText;
-                    button.parentElement.disabled = false;
+                    buttonElement.disabled = false;
                     showToast('Failed to analyze risks. Please check your connection and try again.', 'error');
                 }
             }
@@ -965,8 +966,8 @@
                     return `
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${u.name}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">${Number(u.remainingEstimate).toFixed(2)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">${Number(u.capacity).toFixed(2)}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">${Number(u.remainingEstimate).toFixed(2)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${gapClass}">${Number(u.gap).toFixed(2)}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColors[u.status]}">

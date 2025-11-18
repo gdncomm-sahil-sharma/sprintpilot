@@ -9,7 +9,7 @@ public interface TeamService {
     
     TeamMemberDto createTeamMember(TeamMemberDto memberDto);
     
-    TeamMemberDto updateTeamMember(String id, TeamMemberDto memberDto);
+    TeamMemberDto updateTeamMember(String id, TeamMemberDto memberDto, String sprintId);
     
     TeamMemberDto getTeamMemberById(String id);
     

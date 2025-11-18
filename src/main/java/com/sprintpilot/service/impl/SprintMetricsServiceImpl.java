@@ -1,6 +1,7 @@
 package com.sprintpilot.service.impl;
 
 import com.sprintpilot.dto.SprintMetricsDto;
+import com.sprintpilot.dto.WorkDistributionDto;
 import com.sprintpilot.entity.Sprint;
 import com.sprintpilot.entity.Task;
 import com.sprintpilot.entity.TeamMember;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -239,6 +241,73 @@ public class SprintMetricsServiceImpl implements SprintMetricsService {
 
     private BigDecimal clampNonNegative(BigDecimal value) {
         return value.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : value;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WorkDistributionDto getWorkDistribution(String sprintId, String projectName) {
+        log.info("Calculating work distribution for sprint: {}", sprintId);
+        
+        // Verify sprint exists
+        sprintRepository.findById(sprintId)
+                .orElseThrow(() -> new RuntimeException("Sprint not found: " + sprintId));
+
+        List<Task> tasks = taskRepository.findBySprintId(sprintId);
+        
+        if (tasks.isEmpty()) {
+            log.info("No tasks found for sprint {}. Returning empty work distribution.", sprintId);
+            return new WorkDistributionDto(List.of(), List.of(), List.of(), 0);
+        }
+
+        // Count tasks by category
+        Map<String, Integer> categoryCount = new HashMap<>();
+        categoryCount.put("Features", 0);
+        categoryCount.put("Tech Debt", 0);
+        categoryCount.put("Bug Fixes", 0);
+        categoryCount.put("Support", 0);
+
+        for (Task task : tasks) {
+            Task.TaskCategory category = task.getCategory();
+            if (category == null) {
+                category = Task.TaskCategory.OTHER;
+            }
+            
+            switch (category) {
+                case FEATURE:
+                    categoryCount.put("Features", categoryCount.get("Features") + 1);
+                    break;
+                case TECH_DEBT:
+                    categoryCount.put("Tech Debt", categoryCount.get("Tech Debt") + 1);
+                    break;
+                case PROD_ISSUE:
+                    categoryCount.put("Bug Fixes", categoryCount.get("Bug Fixes") + 1);
+                    break;
+                case OTHER:
+                    categoryCount.put("Support", categoryCount.get("Support") + 1);
+                    break;
+            }
+        }
+
+        // Build result lists
+        List<String> labels = new ArrayList<>();
+        List<BigDecimal> values = new ArrayList<>();
+        List<BigDecimal> percentages = new ArrayList<>();
+        int totalTasks = tasks.size();
+
+        for (Map.Entry<String, Integer> entry : categoryCount.entrySet()) {
+            if (entry.getValue() > 0) {  // Only include categories that have tasks
+                labels.add(entry.getKey());
+                values.add(BigDecimal.valueOf(entry.getValue()));
+                
+                BigDecimal percentage = BigDecimal.valueOf(entry.getValue())
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(BigDecimal.valueOf(totalTasks), 2, RoundingMode.HALF_UP);
+                percentages.add(percentage);
+            }
+        }
+
+        log.info("Work distribution calculated: Total tasks={}, Categories={}", totalTasks, labels.size());
+        return new WorkDistributionDto(labels, values, percentages, totalTasks);
     }
 }
 

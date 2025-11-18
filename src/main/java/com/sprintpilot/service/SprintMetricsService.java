@@ -1,6 +1,7 @@
 package com.sprintpilot.service;
 
 import com.sprintpilot.dto.SprintMetricsDto;
+import com.sprintpilot.dto.WorkDistributionDto;
 
 /**
  * Service for generating sprint analytics metrics such as burndown and velocity.
@@ -15,5 +16,14 @@ public interface SprintMetricsService {
      * @return Calculated sprint metrics.
      */
     SprintMetricsDto getSprintMetrics(String sprintId, String projectName);
+
+    /**
+     * Calculate work distribution by task category for a sprint.
+     *
+     * @param sprintId    Sprint identifier.
+     * @param projectName Optional project name.
+     * @return Work distribution data by category.
+     */
+    WorkDistributionDto getWorkDistribution(String sprintId, String projectName);
 }
 

@@ -3,13 +3,17 @@ package com.sprintpilot.service.impl;
 import com.sprintpilot.dto.CapacitySummaryDto;
 import com.sprintpilot.dto.SprintAssignmentRequest;
 import com.sprintpilot.dto.TeamMemberDto;
+import com.sprintpilot.entity.Holiday;
 import com.sprintpilot.entity.LeaveDay;
 import com.sprintpilot.entity.Sprint;
+import com.sprintpilot.entity.SprintEvent;
 import com.sprintpilot.entity.SprintTeam;
 import com.sprintpilot.entity.TeamMember;
+import com.sprintpilot.repository.HolidayRepository;
 import com.sprintpilot.repository.LeaveDayRepository;
-import com.sprintpilot.repository.SprintTeamRepository;
+import com.sprintpilot.repository.SprintEventRepository;
 import com.sprintpilot.repository.SprintRepository;
+import com.sprintpilot.repository.SprintTeamRepository;
 import com.sprintpilot.repository.TeamMemberRepository;
 import com.sprintpilot.service.TeamService;
 import jakarta.persistence.EntityManager;
@@ -45,6 +49,12 @@ public class TeamServiceImpl implements TeamService {
     
     @Autowired
     private SprintTeamRepository sprintTeamRepository;
+    
+    @Autowired
+    private HolidayRepository holidayRepository;
+    
+    @Autowired
+    private SprintEventRepository sprintEventRepository;
     
     @PersistenceContext
     private EntityManager entityManager;
@@ -101,7 +111,7 @@ public class TeamServiceImpl implements TeamService {
     
     @Override
     @Transactional
-    public TeamMemberDto updateTeamMember(String id, TeamMemberDto memberDto) {
+    public TeamMemberDto updateTeamMember(String id, TeamMemberDto memberDto, String sprintId) {
         TeamMember existingMember = teamMemberRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Team member not found: " + id));;
         
@@ -142,15 +152,30 @@ public class TeamServiceImpl implements TeamService {
                 .orElseThrow(() -> new RuntimeException("Team member not found: " + id));
             
             // Add new leave days - save them directly to avoid collection management issues
+            // But first validate that the dates are not already holidays
+            Sprint sprint = null;
+            if (sprintId != null && !sprintId.isBlank()) {
+                sprint = sprintRepository.findById(sprintId).orElse(null);
+            }
+            
             for (String leaveDateStr : memberDto.leaveDays()) {
                 try {
                     LocalDate leaveDate = LocalDate.parse(leaveDateStr, DATE_FORMATTER);
+                    
+                    // Check if this date is already a holiday
+                    if (isDateAHoliday(leaveDate, id)) {
+                        log.info("Skipping leave date {} for member {} - already a holiday", leaveDateStr, id);
+                        continue; // Don't save as leave if it's already a holiday
+                    }
+                    
                     LeaveDay leaveDay = new LeaveDay();
                     leaveDay.setMember(existingMember);
+                    leaveDay.setSprint(sprint); // Assign sprint to leave day
                     leaveDay.setLeaveDate(leaveDate);
                     leaveDay.setLeaveType(LeaveDay.LeaveType.PERSONAL);
                     // Save directly to database, not through collection
                     leaveDayRepository.save(leaveDay);
+                    log.debug("Saved leave date {} for member {} in sprint {}", leaveDateStr, id, sprintId);
                 } catch (DateTimeParseException e) {
                     // Skip invalid dates
                     log.error(INVALID_DATE_FORMAT, leaveDateStr);
@@ -160,7 +185,7 @@ public class TeamServiceImpl implements TeamService {
         
         TeamMember updatedMember = teamMemberRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Team member not found: " + id));
-        return convertToDto(updatedMember);
+        return convertToDto(updatedMember, sprintId);
     }
     
     @Override
@@ -176,7 +201,7 @@ public class TeamServiceImpl implements TeamService {
     public TeamMemberDto getTeamMemberById(String id, String sprintId) {
         TeamMember member = teamMemberRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Team member not found: " + id));
-        return convertToDto(member, getMemberIdsForSprint(sprintId));
+        return convertToDto(member, getMemberIdsForSprint(sprintId), sprintId);
     }
     
     @Override
@@ -189,7 +214,7 @@ public class TeamServiceImpl implements TeamService {
     @Transactional(readOnly = true)
     public List<TeamMemberDto> getAllTeamMembers(String sprintId) {
         return teamMemberRepository.findAll().stream()
-                .map(member -> convertToDto(member, getMemberIdsForSprint(sprintId)))
+                .map(member -> convertToDto(member, getMemberIdsForSprint(sprintId), sprintId))
                 .toList();
     }
     
@@ -197,7 +222,7 @@ public class TeamServiceImpl implements TeamService {
     @Transactional(readOnly = true)
     public List<TeamMemberDto> getActiveTeamMembers(String sprintId) {
         return teamMemberRepository.findActiveMembers().stream()
-                .map(member -> convertToDto(member, getMemberIdsForSprint(sprintId)))
+                .map(member -> convertToDto(member, getMemberIdsForSprint(sprintId), sprintId))
                 .toList();
     }
     
@@ -240,13 +265,29 @@ public class TeamServiceImpl implements TeamService {
     // Helper methods
     
     private TeamMemberDto convertToDto(TeamMember member) {
-        return convertToDto(member, new ArrayList<>());
+        return convertToDto(member, new ArrayList<>(), null);
     }
     
-    private TeamMemberDto convertToDto(TeamMember member, List<String> assignedMemberIds) {
-        List<String> leaveDays = leaveDayRepository.findByMemberId(member.getId()).stream()
-                .map(ld -> ld.getLeaveDate().format(DATE_FORMATTER))
-                .toList();
+    private TeamMemberDto convertToDto(TeamMember member, String sprintId) {
+        return convertToDto(member, new ArrayList<>(), sprintId);
+    }
+    
+    private TeamMemberDto convertToDto(TeamMember member, List<String> assignedMemberIds, String sprintId) {
+        // Fetch leave days - filter by sprint if sprintId is provided
+        List<String> leaveDays;
+        if (sprintId != null && !sprintId.isBlank()) {
+            // Get only leave days for the current sprint
+            leaveDays = leaveDayRepository.findByMemberIdAndSprintId(member.getId(), sprintId).stream()
+                    .map(ld -> ld.getLeaveDate().format(DATE_FORMATTER))
+                    .toList();
+            log.debug("Fetched {} leave days for member {} in sprint {}", leaveDays.size(), member.getId(), sprintId);
+        } else {
+            // Get all leave days (backward compatibility)
+            leaveDays = leaveDayRepository.findByMemberId(member.getId()).stream()
+                    .map(ld -> ld.getLeaveDate().format(DATE_FORMATTER))
+                    .toList();
+        }
+        
         return new TeamMemberDto(
                 member.getId(),
                 member.getName(),
@@ -264,6 +305,19 @@ public class TeamServiceImpl implements TeamService {
         // Calculate working days in sprint
         long sprintDays = ChronoUnit.DAYS.between(sprint.getStartDate(), sprint.getEndDate()) + 1;
         
+        // Count holidays in sprint from holidays table
+        long holidaysInSprint = holidayRepository.countHolidaysInRange(
+                sprint.getStartDate(), 
+                sprint.getEndDate()
+        );
+        
+        // Count holidays from sprint events
+        List<SprintEvent> sprintHolidayEvents = sprintEventRepository.findBySprintIdAndEventTypeOrderByEventDate(
+                sprint.getId(), 
+                SprintEvent.EventType.HOLIDAY
+        );
+        long sprintEventHolidays = sprintHolidayEvents.size();
+        
         // Get leave days during sprint
         List<LeaveDay> leaveDaysInSprint = leaveDayRepository.findByMemberIdAndDateRange(
                 member.getId(),
@@ -271,8 +325,8 @@ public class TeamServiceImpl implements TeamService {
                 sprint.getEndDate()
         );
         
-        // Calculate available days
-        long availableDays = sprintDays - leaveDaysInSprint.size();
+        // Calculate available days: total days - holidays - sprint event holidays - personal leaves
+        long availableDays = sprintDays - holidaysInSprint - sprintEventHolidays - leaveDaysInSprint.size();
         
         // Calculate total capacity
         BigDecimal totalCapacity = member.getDailyCapacity()
@@ -387,5 +441,35 @@ public class TeamServiceImpl implements TeamService {
         }
         
         return members;
+    }
+    
+    /**
+     * Check if a date is already a holiday (either in holidays table or in sprint events)
+     * @param date The date to check
+     * @param memberId The member ID (to find their sprint assignments)
+     * @return true if the date is a holiday, false otherwise
+     */
+    private boolean isDateAHoliday(LocalDate date, String memberId) {
+        // Check in global holidays table
+        List<Holiday> holidays = holidayRepository.findByDateRange(date, date);
+        if (!holidays.isEmpty()) {
+            log.debug("Date {} is a holiday in holidays table", date);
+            return true;
+        }
+        
+        // Check in sprint events for all sprints this member is assigned to
+        List<String> sprintIds = sprintTeamRepository.findSprintIdsByMemberId(memberId);
+        for (String sprintId : sprintIds) {
+            List<SprintEvent> sprintEvents = sprintEventRepository.findBySprintIdAndEventTypeOrderByEventDate(
+                sprintId, SprintEvent.EventType.HOLIDAY);
+            for (SprintEvent event : sprintEvents) {
+                if (event.getEventDate().equals(date)) {
+                    log.debug("Date {} is a holiday in sprint {} events", date, sprintId);
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 }
