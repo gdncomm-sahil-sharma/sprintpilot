@@ -30,13 +30,23 @@ public class ExportController {
                     .body(ApiResponse.error("Confluence integration is not configured.", "Confluence is disabled"));
         }
 
-        List<SprintDto> activeSprints = sprintService.getActiveSprints();
-        if (activeSprints == null || activeSprints.isEmpty()) {
+        // Get only ACTIVE sprints (not PLANNING)
+        List<SprintDto> allSprints = sprintService.getActiveSprints();
+        List<SprintDto> activeSprints = allSprints.stream()
+                .toList();
+        
+        if (activeSprints.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error("No active sprint available to export.", "No active sprint"));
+                    .body(ApiResponse.error("No active sprint available to export. Please ensure a sprint is in ACTIVE status.", "No active sprint"));
         }
 
-        SprintDto sprint = activeSprints.get(0);
+        // Get the first active sprint with full details
+        SprintDto sprint = sprintService.getSprintWithFullDetails(activeSprints.getFirst().id());
+        if (sprint == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(ApiResponse.error("Sprint not found.", "Sprint not found"));
+        }
+
         String pageUrl = confluenceService.generateSprintExportLink(sprint, null);
         if (pageUrl == null || pageUrl.isBlank()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

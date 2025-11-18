@@ -34,7 +34,7 @@ public interface TaskRepository extends JpaRepository<Task, String> {
     
     @Query("SELECT new com.sprintpilot.dto.TaskDto(t.id, t.sprint.id, t.taskKey, t.summary, t.description, " +
            "t.storyPoints, t.category, t.priority, t.status, t.startDate, t.dueDate, t.timeSpent, " +
-           "CASE WHEN SIZE(t.assignees) > 0 THEN t.assignees[0].id ELSE null END) " +
+           "(SELECT MIN(tm.id) FROM TeamMember tm JOIN tm.assignedTasks at WHERE at.id = t.id)) " +
            "FROM Task t WHERE t.sprint.id = :sprintId")
     List<TaskDto> findTaskDtosBySprintId(@Param("sprintId") String sprintId);
     

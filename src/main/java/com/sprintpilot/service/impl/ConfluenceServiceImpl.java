@@ -1,9 +1,12 @@
 package com.sprintpilot.service.impl;
 
 import com.sprintpilot.confluence.ConfluencePageBuilder;
+import com.sprintpilot.dto.HolidayDto;
 import com.sprintpilot.dto.SprintDto;
+import com.sprintpilot.repository.SprintRepository;
 import com.sprintpilot.service.ConfluenceClient;
 import com.sprintpilot.service.ConfluenceService;
+import com.sprintpilot.service.HolidayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,15 +31,21 @@ public class ConfluenceServiceImpl implements ConfluenceService {
     private final ConfluenceClient confluenceClient;
     private final ConfluencePageBuilder pageBuilder;
     private final String defaultSpaceKey;
+    private final HolidayService holidayService;
+    private final SprintRepository sprintRepository;
     
     @Autowired
     public ConfluenceServiceImpl(
             ConfluenceClient confluenceClient,
             ConfluencePageBuilder pageBuilder,
-            @Value("${confluence.space-key:SP}") String defaultSpaceKey) {
+            @Value("${confluence.space-key:SP}") String defaultSpaceKey,
+            HolidayService holidayService,
+            SprintRepository sprintRepository) {
         this.confluenceClient = confluenceClient;
         this.pageBuilder = pageBuilder;
         this.defaultSpaceKey = defaultSpaceKey;
+        this.holidayService = holidayService;
+        this.sprintRepository = sprintRepository;
     }
     
     @Override
@@ -135,26 +145,68 @@ public class ConfluenceServiceImpl implements ConfluenceService {
     }
     
     /**
-     * Builds page title in format: "Sprint {sprintId} - {month} {year}"
+     * Builds page title in format: "SP{number}-{month}-{year}"
+     * Example: SP01-Nov-2025, SP01-Dec-2025, SP02-Dec-2026
      */
     private String buildSprintPageTitle(SprintDto sprintDto) {
-        String sprintId = sprintDto.id() != null ? sprintDto.id() : "UNKNOWN";
-        String month = sprintDto.startDate() != null ? sprintDto.startDate().format(DateTimeFormatter.ofPattern("MMMM")) : "Unknown";
-        String year = sprintDto.startDate() != null ? String.valueOf(sprintDto.startDate().getYear()) : "Unknown";
-        return String.format("Sprint %s - %s %s", sprintId, month, year);
+        if (sprintDto.startDate() == null) {
+            return "SP01-Unknown-Unknown";
+        }
+        
+        int year = sprintDto.startDate().getYear();
+        String month = sprintDto.startDate().format(DateTimeFormatter.ofPattern("MMM"));
+        
+        // Calculate sprint number: count sprints in the same year with start date <= current sprint's start date
+        // Exclude the current sprint itself, then add 1
+        long sprintNumber = 1; // Default to 1 if no other sprints found
+        try {
+            List<Object[]> sprintDates = sprintRepository.findAllSprintDates();
+            long countBefore = sprintDates.stream()
+                .filter(row -> {
+                    java.time.LocalDate startDate = (java.time.LocalDate) row[1];
+                    return startDate != null && startDate.getYear() == year;
+                })
+                .filter(row -> {
+                    String sprintId = (String) row[0];
+                    return sprintDto.id() == null || !sprintId.equals(sprintDto.id()); // Exclude current sprint
+                })
+                .filter(row -> {
+                    java.time.LocalDate startDate = (java.time.LocalDate) row[1];
+                    return startDate.isBefore(sprintDto.startDate()) || 
+                           (startDate.isEqual(sprintDto.startDate()) && 
+                            row[2] != null); // createdAt check
+                })
+                .count();
+            
+            sprintNumber = countBefore + 1;
+        } catch (Exception e) {
+            log.warn("Failed to calculate sprint number for sprint {}: {}", sprintDto.id(), e.getMessage());
+        }
+        
+        return String.format("SP%02d-%s-%d", sprintNumber, month, year);
     }
     
     private String ensureSprintPlanningPage(SprintDto sprintDto, String spaceKey) throws Exception {
         String pageTitle = buildSprintPageTitle(sprintDto);
         String pageId = confluenceClient.searchPageByTitle(spaceKey, pageTitle);
-        if (pageId != null) {
-            return pageId;
-        }
         
         Map<String, String> variables = buildPlanningPageVariables(sprintDto);
         String content = pageBuilder.buildPageContent("sprint-planning-page.html", variables);
         String confluenceContent = pageBuilder.htmlToConfluenceStorage(content);
-        return confluenceClient.createPage(spaceKey, pageTitle, confluenceContent, null);
+        
+        if (pageId != null) {
+            // Page exists - update it with latest data
+            Map<String, Object> currentPage = confluenceClient.getPage(pageId);
+            Integer currentVersion = (Integer) currentPage.get("version");
+            confluenceClient.updatePage(pageId, confluenceContent, currentVersion + 1);
+            log.info("Updated existing Confluence page: {} (ID: {})", pageTitle, pageId);
+            return pageId;
+        } else {
+            // Page doesn't exist - create new one
+            String newPageId = confluenceClient.createPage(spaceKey, pageTitle, confluenceContent, null);
+            log.info("Created new Confluence page: {} (ID: {})", pageTitle, newPageId);
+            return newPageId;
+        }
     }
     
     private String extractPageUrl(Map<String, Object> pageData) {
@@ -194,14 +246,20 @@ public class ConfluenceServiceImpl implements ConfluenceService {
             variables.put("freezeDateRow", "");
         }
         
-        // Team information
+        // Team information with Confluence user mentions
         if (sprintDto.teamMembers() != null && !sprintDto.teamMembers().isEmpty()) {
             variables.put("teamSize", String.valueOf(sprintDto.teamMembers().size()));
-            // Format team members list as HTML
+            // Format team members list with Confluence user mentions
             StringBuilder teamMembersList = new StringBuilder();
             teamMembersList.append("<ul>");
             for (var member : sprintDto.teamMembers()) {
-                teamMembersList.append("<li><strong>").append(escapeHtml(member.name())).append("</strong> - ");
+                teamMembersList.append("<li>");
+                
+                // Add Confluence user mention using @username format
+                String mention = formatConfluenceUserMention(member.name());
+                teamMembersList.append(mention);
+                
+                teamMembersList.append(" - ");
                 teamMembersList.append(member.role() != null ? member.role().toString() : "");
                 if (member.dailyCapacity() != null) {
                     teamMembersList.append(" (Daily Capacity: ").append(member.dailyCapacity()).append(" hours)");
@@ -215,29 +273,51 @@ public class ConfluenceServiceImpl implements ConfluenceService {
             variables.put("teamMembers", "<p><em>No team members assigned.</em></p>");
         }
         
-        // Capacity and metrics (can be calculated from sprint data)
+        // Capacity and metrics (calculated from sprint data)
         variables.put("totalCapacity", calculateTotalCapacity(sprintDto));
         variables.put("sprintCapacity", calculateSprintCapacity(sprintDto));
         variables.put("plannedStoryPoints", calculatePlannedStoryPoints(sprintDto));
-        variables.put("averageVelocity", "0"); // Can be calculated from history
+        variables.put("averageVelocity", calculateAverageVelocity(sprintDto));
         variables.put("workingDays", String.valueOf(sprintDto.duration() != null ? sprintDto.duration() : 0));
-        variables.put("holidayCount", "0"); // Can be calculated from holiday service
-        variables.put("holidays", "");
-        variables.put("holidaysInfo", ""); // Will be populated if holidays exist
+        
+        // Fetch holidays from database for sprint date range
+        List<HolidayDto> holidays = List.of();
+        if (sprintDto.startDate() != null && sprintDto.endDate() != null) {
+            try {
+                holidays = holidayService.getHolidaysByDateRange(sprintDto.startDate(), sprintDto.endDate());
+            } catch (Exception e) {
+                log.warn("Failed to fetch holidays for sprint {}: {}", sprintDto.id(), e.getMessage());
+            }
+        }
+        
+        variables.put("holidayCount", String.valueOf(holidays.size()));
+        if (holidays.isEmpty()) {
+            variables.put("holidays", "");
+            variables.put("holidaysInfo", "<p><em>No holidays during this sprint period.</em></p>");
+        } else {
+            // Format holidays as HTML list
+            StringBuilder holidaysList = new StringBuilder();
+            holidaysList.append("<ul>");
+            for (HolidayDto holiday : holidays) {
+                holidaysList.append("<li><strong>").append(escapeHtml(holiday.name())).append("</strong> - ");
+                holidaysList.append(holiday.holidayDate() != null ? holiday.holidayDate().toString() : "");
+                if (holiday.location() != null && !holiday.location().isEmpty()) {
+                    holidaysList.append(" (Locations: ").append(String.join(", ", holiday.location())).append(")");
+                }
+                holidaysList.append("</li>");
+            }
+            holidaysList.append("</ul>");
+            variables.put("holidays", holidaysList.toString());
+            variables.put("holidaysInfo", "<p><strong>Holidays during sprint:</strong></p>" + holidaysList.toString());
+        }
         
         // Sprint goals (if available in future)
         variables.put("sprintGoals", "<p><em>Sprint goals to be defined during planning meeting.</em></p>");
         variables.put("risks", "<p><em>No identified risks at sprint start.</em></p>");
         
-        // Tasks information
-        if (sprintDto.tasks() != null && !sprintDto.tasks().isEmpty()) {
-            String tasksTable = formatTasksForTemplate(new java.util.ArrayList<>(sprintDto.tasks()));
-            variables.put("plannedTasks", tasksTable);
-            variables.put("totalPlannedStoryPoints", calculateTotalStoryPoints(sprintDto.tasks()));
-        } else {
-            variables.put("plannedTasks", "<p><em>Tasks will be added during sprint planning.</em></p>");
-            variables.put("totalPlannedStoryPoints", "0");
-        }
+        // Tasks information - removed as per requirement
+        variables.put("plannedTasks", "");
+        variables.put("totalPlannedStoryPoints", "0");
         
         // Category breakdown
         Map<String, String> categoryBreakdown = calculateCategoryBreakdown(sprintDto);
@@ -356,12 +436,32 @@ public class ConfluenceServiceImpl implements ConfluenceService {
     
     // Helper methods for calculations and formatting
     private String calculateTotalCapacity(SprintDto sprintDto) {
-        // Calculate from team members and duration
-        return "0"; // Placeholder - implement based on your capacity calculation logic
+        if (sprintDto.teamMembers() == null || sprintDto.teamMembers().isEmpty()) {
+            return "0";
+        }
+        
+        // Calculate total capacity: sum of all team members' daily capacity * sprint duration
+        double totalCapacity = 0;
+        int duration = sprintDto.duration() != null ? sprintDto.duration() : 0;
+        
+        for (var member : sprintDto.teamMembers()) {
+            if (member.dailyCapacity() != null && member.active() != null && member.active()) {
+                totalCapacity += member.dailyCapacity().doubleValue() * duration;
+            }
+        }
+        
+        return String.format("%.1f", totalCapacity);
     }
     
     private String calculateSprintCapacity(SprintDto sprintDto) {
-        return "0"; // Placeholder
+        // Same as total capacity for now (can be adjusted for holidays/leaves)
+        return calculateTotalCapacity(sprintDto);
+    }
+    
+    private String calculateAverageVelocity(SprintDto sprintDto) {
+        // For now, return planned story points as velocity
+        // In future, can calculate from historical sprint data
+        return calculatePlannedStoryPoints(sprintDto);
     }
     
     private String calculatePlannedStoryPoints(SprintDto sprintDto) {
@@ -372,14 +472,6 @@ public class ConfluenceServiceImpl implements ConfluenceService {
             return String.format("%.1f", total);
         }
         return "0";
-    }
-    
-    private String calculateTotalStoryPoints(java.util.List<com.sprintpilot.dto.TaskDto> tasks) {
-        if (tasks == null || tasks.isEmpty()) return "0";
-        double total = tasks.stream()
-                .mapToDouble(t -> t.storyPoints() != null ? t.storyPoints().doubleValue() : 0)
-                .sum();
-        return String.format("%.1f", total);
     }
     
     private Map<String, String> calculateCategoryBreakdown(SprintDto sprintDto) {
@@ -496,6 +588,22 @@ public class ConfluenceServiceImpl implements ConfluenceService {
                    .replace(">", "&gt;")
                    .replace("\"", "&quot;")
                    .replace("'", "&#39;");
+    }
+    
+    /**
+     * Formats a Confluence user mention using @username format
+     * Simple approach: just prefix the username with @
+     * 
+     * @param username User's name/username
+     * @return Formatted mention with @ prefix
+     */
+    private String formatConfluenceUserMention(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            return "<strong>Unknown User</strong>";
+        }
+        
+        // Simple @username format - Confluence will try to resolve it
+        return "<strong>@" + escapeHtml(username.trim()) + "</strong>";
     }
     
     private String assessTeamPerformance(double completionRate) {
