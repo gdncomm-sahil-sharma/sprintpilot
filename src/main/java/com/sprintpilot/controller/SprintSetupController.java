@@ -76,6 +76,7 @@ public class SprintSetupController {
             @RequestBody Map<String, Object> config) {
         try {
             // Extract configuration values
+            String sprintName = (String) config.get("sprintName");
             String startDateStr = (String) config.get("startDate");
             Integer duration = (Integer) config.get("duration");
             @SuppressWarnings("unchecked")
@@ -101,10 +102,13 @@ public class SprintSetupController {
             // Calculate end date using working days
             LocalDate endDate = DateUtils.addWorkingDays(startDate, duration, existingHolidays);
             
-            // Update sprint basic info (freezeDate is no longer a single field - now multiple code freeze events)
+            // Update sprint basic info (including sprint name if provided)
             SprintDto currentSprint = sprintService.getSprintById(sprintId);
+            String updatedSprintName = StringUtils.hasText(sprintName) ? sprintName : currentSprint.sprintName();
+            
             SprintDto updatedSprint = new SprintDto(
                 currentSprint.id(),
+                updatedSprintName,
                 startDate,
                 endDate,
                 duration,

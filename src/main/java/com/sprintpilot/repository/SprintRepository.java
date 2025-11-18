@@ -39,7 +39,13 @@ public interface SprintRepository extends JpaRepository<Sprint, String> {
     @EntityGraph(attributePaths = {"teamMembers"})
     @Query("SELECT s FROM Sprint s WHERE s.id = :id")
     Optional<Sprint> findByIdWithTeamMembers(@Param("id") String id);
-    
+
+    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END FROM Sprint s WHERE s.sprintName = :name AND s.id != :id")
+    boolean existsBySprintNameAndIdNot(@Param("name") String sprintName, @Param("id") String id);
+
+    @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END FROM Sprint s WHERE s.sprintName = :name")
+    boolean existsBySprintName(@Param("name") String sprintName);
+
     /**
      * Finds sprint IDs and start dates for sprint number calculation
      * Only fetches id, startDate, and createdAt to avoid lazy loading issues

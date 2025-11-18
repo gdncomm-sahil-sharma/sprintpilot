@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
+import java.util.Comparator;
 import java.util.List;
 
 @Controller
@@ -115,7 +116,16 @@ public class PageController {
     
     @GetMapping("/history")
     public String history(Model model) {
-        model.addAttribute("archivedSprints", sprintService.getArchivedSprints());
+        List<SprintDto> archivedSprints = sprintService.getArchivedSprints();
+        model.addAttribute("archivedSprints", archivedSprints);
+        
+        // Identify the latest archived sprint (by endDate) for reactivation
+        String latestSprintId = archivedSprints.stream()
+            .max(Comparator.comparing(SprintDto::endDate))
+            .map(SprintDto::id)
+            .orElse(null);
+        model.addAttribute("latestSprintId", latestSprintId);
+        
         model.addAttribute("pageTitle", "Sprint History");
         return "history/index";
     }

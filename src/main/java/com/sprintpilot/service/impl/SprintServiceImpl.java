@@ -23,16 +23,16 @@ public class SprintServiceImpl implements SprintService {
 
     @Autowired
     private SprintRepository sprintRepository;
-    
+
     @Autowired
     private com.sprintpilot.service.SprintEventService sprintEventService;
     
     @Autowired
     private TaskRepository taskRepository;
-    
+
     @Autowired
     private TeamMemberRepository teamMemberRepository;
-    
+
     @Value("${app.data.mock-data-path}")
     private String mockDataPath;
 
@@ -43,6 +43,31 @@ public class SprintServiceImpl implements SprintService {
     @Override
     @Transactional
     public SprintDto createSprint(SprintDto sprintDto) {
+        // Enforce one active sprint rule
+        List<Sprint> activeSprints = sprintRepository.findAll().stream()
+            .filter(s -> s.getStatus() == Sprint.SprintStatus.ACTIVE)
+            .collect(Collectors.toList());
+
+        if (!activeSprints.isEmpty()) {
+            Sprint existingActive = activeSprints.get(0);
+            throw new RuntimeException(
+                "Cannot create sprint. An active sprint already exists: " + existingActive.getId() +
+                ". Please complete/archive the current sprint first."
+            );
+        }
+
+        // Auto-generate sprint name if not provided (format: "Sprint YYYY-MM-DD")
+        String sprintName = sprintDto.sprintName();
+        if (sprintName == null || sprintName.isBlank()) {
+            sprintName = "Sprint " + sprintDto.startDate().toString();
+            log.info("Auto-generated sprint name: {}", sprintName);
+        }
+
+        // Check for uniqueness
+        if (sprintRepository.existsBySprintName(sprintName)) {
+            throw new RuntimeException("Sprint name already exists: " + sprintName + ". Please choose a unique name.");
+        }
+
         // Calculate endDate and freezeDate if not provided
         LocalDate endDate = sprintDto.endDate();
         LocalDate freezeDate = sprintDto.freezeDate();
@@ -55,30 +80,22 @@ public class SprintServiceImpl implements SprintService {
             freezeDate = DateUtils.addWorkingDays(sprintDto.startDate(), sprintDto.duration() - 2, List.of());
         }
         
-        // In mock mode, just add to the list
+        // Generate unique sprint ID
         String newId = "sprint-" + System.currentTimeMillis();
-        SprintDto newSprint = new SprintDto(
-            newId,
-            sprintDto.startDate(),
-            endDate,
-            sprintDto.duration(),
-            freezeDate,
-            Sprint.SprintStatus.ACTIVE,
-            sprintDto.events() != null ? sprintDto.events() : List.of(),
-            sprintDto.teamMembers() != null ? sprintDto.teamMembers() : List.of(),
-            sprintDto.tasks() != null ? sprintDto.tasks() : List.of()
-        );
+
         Sprint sprint = Sprint.builder()
             .id(newId)
-            .sprintName("SCRUM Sprint 1")
+            .sprintName(sprintName)
             .startDate(sprintDto.startDate())
             .endDate(endDate)
             .freezeDate(freezeDate)
             .duration(sprintDto.duration())
-            .status(sprintDto.status())
+            .status(Sprint.SprintStatus.ACTIVE)
             .build();
-        sprintRepository.save(sprint);
-        log.info("Created new sprint: {} from {} to {}", newId, newSprint.startDate(), newSprint.endDate());
+        Sprint savedSprint = sprintRepository.save(sprint);
+        log.info("Created new sprint: {} '{}' from {} to {}", newId, sprintName, savedSprint.getStartDate(), savedSprint.getEndDate());
+
+        SprintDto newSprint = convertToDto(savedSprint);
 
         return newSprint;
     }
@@ -89,6 +106,16 @@ public class SprintServiceImpl implements SprintService {
         Sprint sprint = sprintRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Sprint not found: " + id));
         
+        // Validate sprint name uniqueness if provided and changed
+        if (sprintDto.sprintName() != null && !sprintDto.sprintName().isBlank()) {
+            if (!sprintDto.sprintName().equals(sprint.getSprintName())) {
+                if (sprintRepository.existsBySprintNameAndIdNot(sprintDto.sprintName(), id)) {
+                    throw new RuntimeException("Sprint name already exists: " + sprintDto.sprintName() + ". Please choose a unique name.");
+                }
+                sprint.setSprintName(sprintDto.sprintName());
+            }
+        }
+
         sprint.setStartDate(sprintDto.startDate());
         sprint.setEndDate(sprintDto.endDate());
         sprint.setDuration(sprintDto.duration());
@@ -154,7 +181,7 @@ public class SprintServiceImpl implements SprintService {
         
         // Fetch tasks from database
         List<TaskDto> tasks = taskRepository.findTaskDtosBySprintId(sprint.getId());
-        
+
         // Fetch team members from database
         List<TeamMember> teamMembers = teamMemberRepository.findBySprintId(sprint.getId());
         List<TeamMemberDto> teamMemberDtos = teamMembers.stream()
@@ -170,9 +197,10 @@ public class SprintServiceImpl implements SprintService {
                 true // Assigned to current sprint
             ))
             .collect(Collectors.toList());
-        
+
         return new SprintDto(
             sprint.getId(),
+            sprint.getSprintName(),
             sprint.getStartDate(),
             sprint.getEndDate(),
             sprint.getDuration(),
@@ -190,6 +218,7 @@ public class SprintServiceImpl implements SprintService {
         SprintDto sprint = getSprintById(id);
         SprintDto updatedSprint = new SprintDto(
             sprint.id(),
+            sprint.sprintName(),
             sprint.startDate(),
             sprint.endDate(),
             sprint.duration(),
@@ -204,10 +233,200 @@ public class SprintServiceImpl implements SprintService {
     
     @Override
     @Transactional
+    public SprintDto reactivateSprint(String id) {
+        // Find the sprint to reactivate
+        Sprint sprint = sprintRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Sprint not found: " + id));
+
+        if (sprint.getStatus() != Sprint.SprintStatus.ARCHIVED) {
+            throw new RuntimeException("Only archived sprints can be reactivated");
+        }
+
+        // Check if there's already an active sprint - prevent reactivation
+        List<Sprint> activeSprints = sprintRepository.findAll().stream()
+            .filter(s -> s.getStatus() == Sprint.SprintStatus.ACTIVE)
+            .collect(Collectors.toList());
+
+        if (!activeSprints.isEmpty()) {
+            Sprint existingActive = activeSprints.get(0);
+            throw new RuntimeException(
+                "Cannot reactivate sprint. An active sprint already exists: " + existingActive.getSprintName() +
+                ". Please complete the current active sprint first before reactivating an archived one."
+            );
+        }
+
+        // Reactivate the requested sprint
+        sprint.setStatus(Sprint.SprintStatus.ACTIVE);
+        Sprint reactivated = sprintRepository.save(sprint);
+
+        log.info("Sprint reactivated successfully: {}", id);
+        return convertToDto(reactivated);
+    }
+
+    @Override
+    public boolean canCompleteSprint(String id) {
+        Sprint sprint = sprintRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Sprint not found: " + id));
+
+        // Sprint can be completed anytime if it's ACTIVE
+        return sprint.getStatus() == Sprint.SprintStatus.ACTIVE;
+    }
+
+    @Override
+    @Transactional
+    public CompleteSprintResponse completeAndArchiveSprint(String id) {
+        // 1. Validate sprint exists and is ACTIVE
+        Sprint sprint = sprintRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Sprint not found: " + id));
+
+        if (sprint.getStatus() != Sprint.SprintStatus.ACTIVE) {
+            throw new RuntimeException("Only active sprints can be completed");
+        }
+
+        // 2. Verify there's only one active sprint (sanity check)
+        List<Sprint> activeSprints = sprintRepository.findAll().stream()
+            .filter(s -> s.getStatus() == Sprint.SprintStatus.ACTIVE)
+            .collect(Collectors.toList());
+
+        if (activeSprints.size() > 1) {
+            log.warn("Multiple active sprints detected! This should not happen.");
+        }
+
+        // 3. Archive the current sprint
+        sprint.setStatus(Sprint.SprintStatus.ARCHIVED);
+        Sprint archivedSprint = sprintRepository.save(sprint);
+        log.info("Sprint archived successfully: {}", id);
+
+        // 4. Auto-create next sprint
+        Sprint nextSprint = createNextSprint(archivedSprint);
+        log.info("Next sprint created automatically: {}", nextSprint.getId());
+
+        return new CompleteSprintResponse(
+            convertToDto(archivedSprint),
+            convertToDto(nextSprint)
+        );
+    }
+
+    /**
+     * Helper method to create the next sprint automatically
+     * Calculates start date as the next Monday after the previous sprint's end date
+     */
+    private Sprint createNextSprint(Sprint previousSprint) {
+        // Calculate next sprint start date (next Monday after previous end date)
+        LocalDate nextStartDate = calculateNextMonday(previousSprint.getEndDate());
+
+        // Calculate end date based on same duration as previous sprint
+        LocalDate nextEndDate = DateUtils.addWorkingDays(nextStartDate, previousSprint.getDuration(), List.of());
+
+        // Auto-generate sprint name using "Sprint YYYY-MM-DD" format
+        String nextSprintName = "Sprint " + nextStartDate.toString();
+
+        // Check for uniqueness and append a counter if needed
+        String uniqueName = nextSprintName;
+        int counter = 1;
+        while (sprintRepository.existsBySprintName(uniqueName)) {
+            uniqueName = nextSprintName + "-" + counter;
+            counter++;
+        }
+
+        // Create the new sprint
+        Sprint nextSprint = Sprint.builder()
+            .id("sprint-" + System.currentTimeMillis())
+            .sprintName(uniqueName)
+            .startDate(nextStartDate)
+            .endDate(nextEndDate)
+            .duration(previousSprint.getDuration())
+            .freezeDate(null) // Will be set when configured
+            .status(Sprint.SprintStatus.ACTIVE)
+            .build();
+
+        return sprintRepository.save(nextSprint);
+    }
+
+    /**
+     * Calculate the next Monday after a given date
+     * If the date is already a Monday, returns the next Monday
+     */
+    private LocalDate calculateNextMonday(LocalDate date) {
+        LocalDate nextDay = date.plusDays(1);
+
+        // Find the next Monday
+        while (nextDay.getDayOfWeek() != java.time.DayOfWeek.MONDAY) {
+            nextDay = nextDay.plusDays(1);
+        }
+
+        return nextDay;
+    }
+
+    /**
+     * Extract sprint number from sprint name and increment it
+     * Examples: "SCRUM Sprint 1" -> 2, "Sprint 5" -> 6
+     * If no number found, returns 1
+     */
+    private int extractAndIncrementSprintNumber(String sprintName) {
+        if (sprintName == null || sprintName.isEmpty()) {
+            return 1;
+        }
+
+        // Extract the last number from the sprint name
+        String[] parts = sprintName.split("\\s+");
+        for (int i = parts.length - 1; i >= 0; i--) {
+            try {
+                int number = Integer.parseInt(parts[i]);
+                return number + 1;
+            } catch (NumberFormatException e) {
+                // Continue searching
+            }
+        }
+
+        // No number found, default to 1
+        return 1;
+    }
+
+    @Override
+    @Transactional
     public void deleteSprint(String id) {
         sprintRepository.deleteById(id);
     }
     
+    @Override
+    @Transactional
+    public void deleteLatestArchivedSprint(String id) {
+        // 1. Validate sprint exists and is ARCHIVED
+        Sprint sprint = sprintRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Sprint not found: " + id));
+
+        if (sprint.getStatus() != Sprint.SprintStatus.ARCHIVED) {
+            throw new RuntimeException("Only archived sprints can be deleted");
+        }
+
+        // 2. Get all archived sprints and find the latest one by endDate
+        List<Sprint> archivedSprints = sprintRepository.findAll().stream()
+            .filter(s -> s.getStatus() == Sprint.SprintStatus.ARCHIVED)
+            .collect(Collectors.toList());
+
+        if (archivedSprints.isEmpty()) {
+            throw new RuntimeException("No archived sprints found");
+        }
+
+        // Find the latest archived sprint by endDate
+        Sprint latestArchivedSprint = archivedSprints.stream()
+            .max(Comparator.comparing(Sprint::getEndDate))
+            .orElseThrow(() -> new RuntimeException("Could not determine latest archived sprint"));
+
+        // 3. Verify the sprint being deleted is the latest one
+        if (!sprint.getId().equals(latestArchivedSprint.getId())) {
+            throw new RuntimeException(
+                "Only the latest archived sprint can be deleted. Latest sprint: " +
+                latestArchivedSprint.getSprintName()
+            );
+        }
+
+        // 4. Delete the sprint (this will cascade delete events, team assignments, tasks)
+        sprintRepository.deleteById(id);
+        log.info("Successfully deleted latest archived sprint: {} ({})", sprint.getSprintName(), id);
+    }
+
     @Override
     @Transactional
     public SprintDto addEvent(String sprintId, SprintEventDto event) {
@@ -217,6 +436,7 @@ public class SprintServiceImpl implements SprintService {
         
         SprintDto updatedSprint = new SprintDto(
             sprint.id(),
+            sprint.sprintName(),
             sprint.startDate(),
             sprint.endDate(),
             sprint.duration(),
@@ -239,6 +459,7 @@ public class SprintServiceImpl implements SprintService {
         
         SprintDto updatedSprint = new SprintDto(
             sprint.id(),
+            sprint.sprintName(),
             sprint.startDate(),
             sprint.endDate(),
             sprint.duration(),
@@ -254,14 +475,14 @@ public class SprintServiceImpl implements SprintService {
     @Override
     @Transactional
     public SprintDto addTeamMember(String sprintId, String memberId) {
-        // Mock implementation
+        // TODO: Implement actual team member assignment logic
         return getSprintById(sprintId);
     }
     
     @Override
     @Transactional
     public SprintDto removeTeamMember(String sprintId, String memberId) {
-        // Mock implementation
+        // TODO: Implement actual team member removal logic
         return getSprintById(sprintId);
     }
     
@@ -272,6 +493,7 @@ public class SprintServiceImpl implements SprintService {
         
         return new SprintDto(
             null,
+            null, // Sprint name will be auto-generated during creation
             startDate,
             endDate,
             duration,

@@ -1,6 +1,8 @@
 package com.sprintpilot.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,7 +27,9 @@ public class Sprint {
     @Column(name = "id")
     private String id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true, length = 100)
+    @Size(max = 100, message = "Sprint name must not exceed 100 characters")
+    @Pattern(regexp = "^[a-zA-Z0-9\\s\\-_]+$", message = "Sprint name can only contain letters, numbers, spaces, hyphens, and underscores")
     private String sprintName;
     
     @Column(name = "start_date", nullable = false)

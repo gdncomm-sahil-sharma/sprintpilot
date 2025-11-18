@@ -6,278 +6,513 @@
 </head>
 <body>
     <main>
+        <!-- Toast Container -->
+        <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-3 pointer-events-none">
+            <!-- Toasts will be dynamically inserted here -->
+        </div>
+        
         <div class="space-y-6">
-            <!-- Header Section - Exact React Match -->
+            <!-- Header Section -->
             <div>
                 <h2 class="text-3xl font-bold text-gray-800">Sprint History</h2>
-                <p class="text-gray-600">Review past sprints to identify trends and inform future planning. Select sprints to generate AI-powered performance insights.</p>
+                <p class="text-gray-600">Review past sprints to identify trends and inform future planning.</p>
             </div>
 
             <!-- History Table Card -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-0 overflow-hidden">
-                <!-- Selection Banner -->
-                <div id="selectionBanner" class="hidden bg-primary-50 p-3 border-b border-primary-200 flex justify-between items-center">
-                    <p class="text-sm font-semibold text-primary-800"><span id="selectedCount">0</span> sprint(s) selected.</p>
-                    <button onclick="generateHistoricalInsights()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        Generate Insights
-                    </button>
-                </div>
-
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 overflow-hidden">
                 <!-- Table -->
                 <div class="overflow-x-auto">
                     <table class="min-w-full bg-white text-sm">
-                        <thead class="bg-gray-50">
+                        <thead class="bg-gradient-to-r from-gray-50 to-blue-50">
                             <tr>
-                                <th class="py-3 px-4 text-center">
-                                    <input type="checkbox" id="selectAll" onchange="handleSelectAll()" class="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" />
-                                </th>
-                                <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Sprint Dates</th>
-                                <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Team Size</th>
-                                <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Tasks Delivered</th>
-                                <th class="text-left py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Total Hours</th>
-                                <th class="text-center py-3 px-4 font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                                <th class="text-left py-4 px-6 font-bold text-gray-700 uppercase tracking-wider">Sprint Name</th>
+                                <th class="text-left py-4 px-6 font-bold text-gray-700 uppercase tracking-wider">Sprint Period</th>
+                                <th class="text-center py-4 px-6 font-bold text-gray-700 uppercase tracking-wider">Duration</th>
+                                <th class="text-center py-4 px-6 font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                <th class="text-center py-4 px-6 font-bold text-gray-700 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            <!-- Sprint 6 -->
-                            <tr id="sprint-6" class="hover:bg-gray-50">
-                                <td class="py-3 px-4 text-center">
-                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-6" onchange="handleSprintSelection()" />
-                                </td>
-                                <td class="py-3 px-4 font-medium text-gray-900">Nov 1 - Nov 15, 2024</td>
-                                <td class="py-3 px-4 text-gray-600">4</td>
-                                <td class="py-3 px-4 text-gray-600">18</td>
-                                <td class="py-3 px-4 text-gray-600">125h</td>
-                                <td class="py-3 px-4 text-center">
-                                    <button onclick="viewSprintDetails('sprint-6')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
-                                        View Details
-                                    </button>
-                                </td>
-                            </tr>
-
-                            <!-- Sprint 5 -->
-                            <tr id="sprint-5" class="hover:bg-gray-50">
-                                <td class="py-3 px-4 text-center">
-                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-5" onchange="handleSprintSelection()" />
-                                </td>
-                                <td class="py-3 px-4 font-medium text-gray-900">Oct 15 - Oct 29, 2024</td>
-                                <td class="py-3 px-4 text-gray-600">4</td>
-                                <td class="py-3 px-4 text-gray-600">16</td>
-                                <td class="py-3 px-4 text-gray-600">110h</td>
-                                <td class="py-3 px-4 text-center">
-                                    <button onclick="viewSprintDetails('sprint-5')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
-                                        View Details
-                                    </button>
+                        <tbody class="divide-y divide-gray-200" id="sprintsTableBody">
+                            <!-- Empty State -->
+                            <tr th:if="${#lists.isEmpty(archivedSprints)}" class="hover:bg-gray-50">
+                                <td colspan="5" class="py-12 px-6 text-center">
+                                    <div class="flex flex-col items-center justify-center space-y-4">
+                                        <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <div>
+                                            <p class="text-lg font-semibold text-gray-600">No Archived Sprints Yet</p>
+                                            <p class="text-sm text-gray-500 mt-1">Complete your first sprint to see it appear here!</p>
+                                        </div>
+                                        <a href="/sprint/new" class="mt-4 px-6 py-3 bg-gradient-to-r from-primary-600 to-blue-600 hover:from-primary-700 hover:to-blue-700 text-white rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl transform hover:scale-105">
+                                            Go to Sprint Setup
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
-
-                            <!-- Sprint 4 -->
-                            <tr id="sprint-4" class="hover:bg-gray-50">
-                                <td class="py-3 px-4 text-center">
-                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-4" onchange="handleSprintSelection()" />
+                            
+                            <!-- Sprint Rows -->
+                            <tr th:each="sprint : ${archivedSprints}" th:id="'sprint-' + ${sprint.id()}" class="hover:bg-gray-50 transition-colors">
+                                <td class="py-4 px-6 font-semibold text-gray-900">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                                        </svg>
+                                        <span th:text="${sprint.sprintName()}">Sprint Name</span>
+                                    </div>
                                 </td>
-                                <td class="py-3 px-4 font-medium text-gray-900">Oct 1 - Oct 14, 2024</td>
-                                <td class="py-3 px-4 text-gray-600">4</td>
-                                <td class="py-3 px-4 text-gray-600">15</td>
-                                <td class="py-3 px-4 text-gray-600">95h</td>
-                                <td class="py-3 px-4 text-center">
-                                    <button onclick="viewSprintDetails('sprint-4')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
-                                        View Details
-                                    </button>
+                                <td class="py-4 px-6 text-gray-700">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span th:text="${#temporals.format(sprint.startDate(), 'MMM dd, yyyy')} + ' - ' + ${#temporals.format(sprint.endDate(), 'MMM dd, yyyy')}">Dates</span>
+                                    </div>
                                 </td>
-                            </tr>
-
-                            <!-- Sprint 3 -->
-                            <tr id="sprint-3" class="hover:bg-gray-50">
-                                <td class="py-3 px-4 text-center">
-                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-3" onchange="handleSprintSelection()" />
+                                <td class="py-4 px-6 text-center text-gray-700">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span th:text="${sprint.duration()} + ' days'">Days</span>
+                                    </span>
                                 </td>
-                                <td class="py-3 px-4 font-medium text-gray-900">Sep 15 - Sep 29, 2024</td>
-                                <td class="py-3 px-4 text-gray-600">4</td>
-                                <td class="py-3 px-4 text-gray-600">14</td>
-                                <td class="py-3 px-4 text-gray-600">88h</td>
-                                <td class="py-3 px-4 text-center">
-                                    <button onclick="viewSprintDetails('sprint-3')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
-                                        View Details
-                                    </button>
+                                <td class="py-4 px-6 text-center">
+                                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gray-200 text-gray-700">
+                                        📦 ARCHIVED
+                                    </span>
                                 </td>
-                            </tr>
-
-                            <!-- Sprint 2 -->
-                            <tr id="sprint-2" class="hover:bg-gray-50">
-                                <td class="py-3 px-4 text-center">
-                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-2" onchange="handleSprintSelection()" />
-                                </td>
-                                <td class="py-3 px-4 font-medium text-gray-900">Sep 1 - Sep 14, 2024</td>
-                                <td class="py-3 px-4 text-gray-600">4</td>
-                                <td class="py-3 px-4 text-gray-600">13</td>
-                                <td class="py-3 px-4 text-gray-600">92h</td>
-                                <td class="py-3 px-4 text-center">
-                                    <button onclick="viewSprintDetails('sprint-2')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
-                                        View Details
-                                    </button>
-                                </td>
-                            </tr>
-
-                            <!-- Sprint 1 -->
-                            <tr id="sprint-1" class="hover:bg-gray-50">
-                                <td class="py-3 px-4 text-center">
-                                    <input type="checkbox" class="sprint-checkbox rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-offset-0 focus:ring-primary-200 focus:ring-opacity-50" data-sprint="sprint-1" onchange="handleSprintSelection()" />
-                                </td>
-                                <td class="py-3 px-4 font-medium text-gray-900">Aug 15 - Aug 29, 2024</td>
-                                <td class="py-3 px-4 text-gray-600">4</td>
-                                <td class="py-3 px-4 text-gray-600">12</td>
-                                <td class="py-3 px-4 text-gray-600">85h</td>
-                                <td class="py-3 px-4 text-center">
-                                    <button onclick="viewSprintDetails('sprint-1')" class="text-primary-600 hover:text-primary-800 font-medium text-sm">
-                                        View Details
-                                    </button>
+                                <td class="py-4 px-6">
+                                    <div class="flex items-center justify-center gap-3">
+                                        <button th:data-sprint-id="${sprint.id()}" 
+                                                onclick="viewSprintDetails(this.dataset.sprintId)"
+                                                class="inline-flex items-center px-4 py-2 text-sm font-semibold text-primary-600 hover:text-primary-800 hover:bg-primary-50 rounded-lg transition-colors whitespace-nowrap">
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                            </svg>
+                                            View Details
+                                        </button>
+                                        <!-- Show Delete button only for the latest archived sprint -->
+                                        <button th:if="${sprint.id() == latestSprintId}"
+                                                th:data-sprint-id="${sprint.id()}"
+                                                onclick="openDeleteModal(this.dataset.sprintId)"
+                                                class="inline-flex items-center px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors whitespace-nowrap">
+                                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                            Delete
+                                        </button>
+                                        <span th:if="${sprint.id() != latestSprintId}" class="inline-block text-xs text-gray-400 italic px-3">
+                                            (Older sprint - cannot delete)
+                                        </span>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+        </div>
 
-            <!-- Historical Insights Modal -->
-            <div id="insightsModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-                <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-4 mb-4 flex items-center">
-                        <svg class="w-6 h-6 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        AI Performance Insights
-                    </h2>
-                    <div id="modalInsightsContent" class="flex-grow overflow-y-auto pr-2">
-                        <!-- Content will be loaded here -->
-                    </div>
-                    <div class="border-t pt-4 mt-4 flex justify-end">
-                        <button onclick="closeInsightsModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
-                            Close
+        <!-- View Details Modal -->
+        <div id="viewDetailsModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-white">
+                                <h3 class="text-2xl font-bold" id="modalSprintName">Sprint Details</h3>
+                                <p class="text-sm text-white/90">Read-only view of archived sprint</p>
+                            </div>
+                        </div>
+                        <button onclick="closeViewDetailsModal()" class="text-white/80 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
                         </button>
                     </div>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="flex-1 overflow-y-auto p-6 space-y-6">
+                    <!-- Sprint Configuration -->
+                    <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-5 border border-blue-200">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Sprint Configuration
+                        </h4>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                            <div class="bg-white/60 p-3 rounded-lg">
+                                <p class="text-gray-600 mb-1">Start Date</p>
+                                <p class="font-bold text-gray-900" id="modalStartDate">-</p>
+                            </div>
+                            <div class="bg-white/60 p-3 rounded-lg">
+                                <p class="text-gray-600 mb-1">End Date</p>
+                                <p class="font-bold text-gray-900" id="modalEndDate">-</p>
+                            </div>
+                            <div class="bg-white/60 p-3 rounded-lg">
+                                <p class="text-gray-600 mb-1">Duration</p>
+                                <p class="font-bold text-gray-900" id="modalDuration">-</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sprint Timeline -->
+                    <div class="bg-white rounded-xl border border-gray-200 p-5">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Sprint Timeline
+                        </h4>
+                        <div id="modalTimeline" class="space-y-3 max-h-64 overflow-y-auto">
+                            <!-- Timeline items will be rendered here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Sprint Events Summary -->
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200">
+                        <h4 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                            Events Summary
+                        </h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                            <div class="bg-white/60 p-3 rounded-lg text-center">
+                                <p class="text-2xl font-bold text-blue-600" id="modalMeetingsCount">0</p>
+                                <p class="text-gray-600 text-xs">Meetings</p>
+                            </div>
+                            <div class="bg-white/60 p-3 rounded-lg text-center">
+                                <p class="text-2xl font-bold text-yellow-600" id="modalHolidaysCount">0</p>
+                                <p class="text-gray-600 text-xs">Holidays</p>
+                            </div>
+                            <div class="bg-white/60 p-3 rounded-lg text-center">
+                                <p class="text-2xl font-bold text-green-600" id="modalDeploymentsCount">0</p>
+                                <p class="text-gray-600 text-xs">Deployments</p>
+                            </div>
+                            <div class="bg-white/60 p-3 rounded-lg text-center">
+                                <p class="text-2xl font-bold text-orange-600" id="modalCodeFreezesCount">0</p>
+                                <p class="text-gray-600 text-xs">Code Freezes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="border-t p-6 bg-gray-50 flex justify-end">
+                    <button onclick="closeViewDetailsModal()" 
+                            class="px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-semibold transition-all">
+                        Close
+                    </button>
                 </div>
             </div>
         </div>
 
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteModal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+                <!-- Modal Header -->
+                <div class="bg-gradient-to-r from-red-600 to-rose-600 p-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </div>
+                            <div class="text-white">
+                                <h3 class="text-2xl font-bold">Delete Sprint?</h3>
+                                <p class="text-sm text-white/90">Permanently remove this archived sprint</p>
+                            </div>
+                        </div>
+                        <button onclick="closeDeleteModal()" class="text-white/80 hover:text-white transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Modal Body -->
+                <div class="p-6 space-y-4">
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                        <div class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <div class="text-sm">
+                                <p class="font-bold text-red-800 mb-2">⚠️ Warning - This action cannot be undone!</p>
+                                <ul class="space-y-1 text-red-700">
+                                    <li>• Only the latest archived sprint can be deleted</li>
+                                    <li>• All sprint data, events, and configurations will be permanently removed</li>
+                                    <li>• This is useful if you made a mistake and want to start over</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p class="text-center text-gray-700 font-medium">
+                            Are you sure you want to permanently delete this sprint?
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="border-t p-6 bg-gray-50 flex justify-between items-center">
+                    <button onclick="closeDeleteModal()" 
+                            class="px-6 py-3 text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-all font-semibold">
+                        Cancel
+                    </button>
+                    <button onclick="deleteArchivedSprint()" 
+                            id="confirmDeleteBtn"
+                            class="px-8 py-3 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        <span>Delete Sprint</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- JavaScript -->
         <script>
-            let selectedSprints = new Set();
-
-            function handleSprintSelection() {
-                const checkboxes = document.querySelectorAll('.sprint-checkbox');
-                selectedSprints.clear();
-                
-                checkboxes.forEach(cb => {
-                    if (cb.checked) {
-                        selectedSprints.add(cb.dataset.sprint);
-                        document.getElementById(cb.dataset.sprint).classList.add('bg-primary-50');
+            let currentSprintIdForAction = null;
+            
+            // View Sprint Details
+            async function viewSprintDetails(sprintId) {
+                try {
+                    const response = await fetch(`/api/sprints/${sprintId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.data) {
+                        const sprint = data.data;
+                        
+                        // Populate modal
+                        document.getElementById('modalSprintName').textContent = `Sprint ${sprintId.substring(7, 17)}`;
+                        document.getElementById('modalStartDate').textContent = formatDate(sprint.startDate);
+                        document.getElementById('modalEndDate').textContent = formatDate(sprint.endDate);
+                        document.getElementById('modalDuration').textContent = `${sprint.duration} working days`;
+                        
+                        // Render timeline
+                        renderTimeline(sprint.events || []);
+                        
+                        // Count events by type
+                        const meetings = (sprint.events || []).filter(e => e.eventType === 'MEETING').length;
+                        const holidays = (sprint.events || []).filter(e => e.eventType === 'HOLIDAY').length;
+                        const deployments = (sprint.events || []).filter(e => e.eventType === 'DEPLOYMENT').length;
+                        const codeFreezes = (sprint.events || []).filter(e => e.eventType === 'CODE_FREEZE').length;
+                        
+                        document.getElementById('modalMeetingsCount').textContent = meetings;
+                        document.getElementById('modalHolidaysCount').textContent = holidays;
+                        document.getElementById('modalDeploymentsCount').textContent = deployments;
+                        document.getElementById('modalCodeFreezesCount').textContent = codeFreezes;
+                        
+                        // Show modal
+                        document.getElementById('viewDetailsModal').classList.remove('hidden');
                     } else {
-                        document.getElementById(cb.dataset.sprint).classList.remove('bg-primary-50');
+                        alert('Failed to load sprint details');
                     }
-                });
-
-                updateSelectionBanner();
-            }
-
-            function handleSelectAll() {
-                const selectAll = document.getElementById('selectAll');
-                const checkboxes = document.querySelectorAll('.sprint-checkbox');
-                
-                checkboxes.forEach(cb => {
-                    cb.checked = selectAll.checked;
-                });
-                
-                handleSprintSelection();
-            }
-
-            function updateSelectionBanner() {
-                const banner = document.getElementById('selectionBanner');
-                const countElement = document.getElementById('selectedCount');
-                
-                if (selectedSprints.size > 0) {
-                    banner.classList.remove('hidden');
-                    countElement.textContent = selectedSprints.size;
-                } else {
-                    banner.classList.add('hidden');
+                } catch (error) {
+                    console.error('Error loading sprint details:', error);
+                    alert('Error loading sprint details');
                 }
             }
-
-            function viewSprintDetails(sprintId) {
-                alert(`Sprint details for ${sprintId} (mock functionality)`);
+            
+            function closeViewDetailsModal() {
+                document.getElementById('viewDetailsModal').classList.add('hidden');
             }
-
-            function generateHistoricalInsights() {
-                const modal = document.getElementById('insightsModal');
-                const content = document.getElementById('modalInsightsContent');
+            
+            function renderTimeline(events) {
+                const timeline = document.getElementById('modalTimeline');
                 
-                content.innerHTML = `
-                    <div class="flex items-center justify-center h-48 text-gray-500">
-                        <svg class="w-6 h-6 animate-pulse mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                        </svg>
-                        Analyzing trends and generating insights...
-                    </div>
-                `;
+                if (!events || events.length === 0) {
+                    timeline.innerHTML = '<p class="text-gray-500 text-sm text-center py-4">No events recorded for this sprint</p>';
+                    return;
+                }
                 
-                modal.classList.remove('hidden');
+                // Sort events by date
+                const sortedEvents = events.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
                 
-                setTimeout(() => {
-                    content.innerHTML = `
-                        <div class="text-sm text-gray-700 space-y-4">
-                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 class="font-semibold text-blue-800 mb-2">📈 Velocity Trends</h4>
-                                <ul class="space-y-1 text-blue-700">
-                                    <li>• Steady improvement: 85h → 125h (+47% over 6 sprints)</li>
-                                    <li>• Most significant jump in Sprint 5 (+15.8%)</li>
-                                    <li>• Consistent delivery growth with manageable variance</li>
-                                </ul>
+                timeline.innerHTML = sortedEvents.map(event => {
+                    const icon = getEventIcon(event.eventType, event.eventSubtype);
+                    const color = getEventColor(event.eventType);
+                    
+                    return `
+                        <div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-full ${color} flex items-center justify-center">
+                                ${icon}
                             </div>
-                            
-                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <h4 class="font-semibold text-green-800 mb-2">✅ Team Performance</h4>
-                                <ul class="space-y-1 text-green-700">
-                                    <li>• Team size stable at 4 members (good consistency)</li>
-                                    <li>• Average delivery: 15.3 tasks per sprint</li>
-                                    <li>• Task completion trending upward (+50% from Sprint 1)</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                <h4 class="font-semibold text-yellow-800 mb-2">🎯 Future Predictions</h4>
-                                <ul class="space-y-1 text-yellow-700">
-                                    <li>• Projected Sprint 7 velocity: 135-140h</li>
-                                    <li>• Team approaching optimal sustainable pace</li>
-                                    <li>• Consider capacity planning for continued growth</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                                <h4 class="font-semibold text-purple-800 mb-2">💡 Strategic Insights</h4>
-                                <ol class="space-y-1 text-purple-700 list-decimal list-inside">
-                                    <li>Team has found effective collaboration rhythm</li>
-                                    <li>Incremental improvements indicate healthy growth</li>
-                                    <li>No signs of velocity plateau or burnout</li>
-                                    <li>Process optimizations yielding measurable results</li>
-                                </ol>
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-900">${event.name}</p>
+                                <p class="text-sm text-gray-600">${formatDate(event.eventDate)}${event.eventTime ? ' at ' + event.eventTime : ''}</p>
+                                ${event.description ? `<p class="text-xs text-gray-500 mt-1">${event.description}</p>` : ''}
                             </div>
                         </div>
                     `;
-                }, 3000);
+                }).join('');
             }
-
-            function closeInsightsModal() {
-                document.getElementById('insightsModal').classList.add('hidden');
+            
+            function getEventIcon(eventType, eventSubtype) {
+                if (eventType === 'MEETING') return '👥';
+                if (eventType === 'HOLIDAY') return '🏖️';
+                if (eventType === 'DEPLOYMENT') return '🚀';
+                if (eventType === 'CODE_FREEZE') return '🔒';
+                return '📌';
             }
-
-            // Close modal when clicking outside
-            document.getElementById('insightsModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeInsightsModal();
+            
+            function getEventColor(eventType) {
+                if (eventType === 'MEETING') return 'bg-blue-100';
+                if (eventType === 'HOLIDAY') return 'bg-yellow-100';
+                if (eventType === 'DEPLOYMENT') return 'bg-green-100';
+                if (eventType === 'CODE_FREEZE') return 'bg-orange-100';
+                return 'bg-gray-100';
+            }
+            
+            function formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric', 
+                    year: 'numeric' 
+                });
+            }
+            
+            // Reactivate Sprint
+            function openDeleteModal(sprintId) {
+                currentSprintIdForAction = sprintId;
+                document.getElementById('deleteModal').classList.remove('hidden');
+            }
+            
+            function closeDeleteModal() {
+                currentSprintIdForAction = null;
+                document.getElementById('deleteModal').classList.add('hidden');
+            }
+            
+            // Toast Notification Functions
+            function showToast(message, type = 'success') {
+                const container = document.getElementById('toastContainer');
+                const toastId = 'toast-' + Date.now();
+                
+                const icons = {
+                    success: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>',
+                    error: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>',
+                    warning: '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>'
+                };
+                
+                const colors = {
+                    success: 'bg-green-500',
+                    error: 'bg-red-500',
+                    warning: 'bg-yellow-500'
+                };
+                
+                const toast = document.createElement('div');
+                toast.id = toastId;
+                toast.className = `${colors[type]} text-white px-6 py-4 rounded-lg shadow-2xl flex items-center gap-3 pointer-events-auto transform transition-all duration-300 ease-in-out translate-x-full opacity-0 min-w-[320px]`;
+                toast.innerHTML = `
+                    <div class="flex-shrink-0">
+                        ${icons[type]}
+                    </div>
+                    <p class="flex-1 font-medium">${message}</p>
+                    <button onclick="document.getElementById('${toastId}').remove()" class="flex-shrink-0 hover:bg-white/20 rounded p-1 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                `;
+                
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-full', 'opacity-0');
+                }, 10);
+                
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, 5000);
+            }
+            
+            function showSuccess(message) {
+                showToast(message, 'success');
+            }
+            
+            function showError(message) {
+                showToast(message, 'error');
+            }
+            
+            function showWarning(message) {
+                showToast(message, 'warning');
+            }
+            
+            async function deleteArchivedSprint() {
+                if (!currentSprintIdForAction) return;
+                
+                const btn = document.getElementById('confirmDeleteBtn');
+                const originalContent = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Deleting...</span>
+                `;
+                
+                try {
+                    const response = await fetch(`/api/sprints/${currentSprintIdForAction}/archived`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok && data.success) {
+                        closeDeleteModal();
+                        
+                        // Remove the sprint row from the table with animation
+                        const sprintRow = document.getElementById('sprint-' + currentSprintIdForAction);
+                        if (sprintRow) {
+                            sprintRow.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+                            sprintRow.style.opacity = '0';
+                            sprintRow.style.transform = 'translateX(20px)';
+                            setTimeout(() => sprintRow.remove(), 300);
+                        }
+                        
+                        showSuccess('Latest archived sprint deleted successfully!');
+                        
+                        // Check if table is empty and show empty state
+                        setTimeout(() => {
+                            const tableBody = document.getElementById('sprintsTableBody');
+                            const remainingRows = tableBody.querySelectorAll('tr:not(.hover\\:bg-gray-50)').length;
+                            if (remainingRows === 1) { // Only empty state row remains
+                                window.location.reload(); // Reload to show proper empty state
+                            }
+                        }, 500);
+                    } else {
+                        // Handle error response - error message is in data.error or data.message
+                        const errorMsg = data.error || data.message || 'Unknown error';
+                        showError(errorMsg);
+                        closeDeleteModal();
+                    }
+                } catch (error) {
+                    console.error('Error deleting sprint:', error);
+                    showError('Error deleting sprint. Please try again.');
+                    closeDeleteModal();
                 }
-            });
+            }
         </script>
     </main>
 </body>
