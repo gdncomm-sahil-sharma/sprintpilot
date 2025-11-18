@@ -262,6 +262,11 @@ const CookieUtils = {
         document.cookie = name + "=" + (value || "") + expires + "; path=/";
     },
     
+    // Set a session cookie (cleared when browser closes)
+    setSessionCookie: function(name, value) {
+        document.cookie = name + "=" + (value || "") + "; path=/";
+    },
+    
     // Delete a cookie
     deleteCookie: function(name) {
         document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
