@@ -2,6 +2,7 @@ package com.sprintpilot.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -46,12 +47,15 @@ public class TeamMember {
     private LocalDateTime updatedAt;
     
     @ManyToMany(mappedBy = "teamMembers", fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<Sprint> sprints = new ArrayList<>();
     
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<LeaveDay> leaveDays = new ArrayList<>();
     
     @ManyToMany(mappedBy = "assignees", fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<Task> assignedTasks = new ArrayList<>();
     
     @PrePersist

@@ -79,15 +79,15 @@
                                 <div class="ml-6 space-y-2">
                                     <label class="flex items-center space-x-2">
                                         <input type="checkbox" id="locationBangalore" name="location" value="BANGALORE" class="location-checkbox rounded border-gray-300 text-primary-600 focus:ring-primary-500" onchange="updateLocationAllCheckbox()" />
-                                        <span class="text-sm text-gray-700">Bangalore</span>
+                                        <span class="text-sm text-gray-700 cursor-pointer" onclick="handleLocationTextClick('locationBangalore', event)">Bangalore</span>
                                     </label>
                                     <label class="flex items-center space-x-2">
                                         <input type="checkbox" id="locationCoimbatore" name="location" value="COIMBATORE" class="location-checkbox rounded border-gray-300 text-primary-600 focus:ring-primary-500" onchange="updateLocationAllCheckbox()" />
-                                        <span class="text-sm text-gray-700">Coimbatore</span>
+                                        <span class="text-sm text-gray-700 cursor-pointer" onclick="handleLocationTextClick('locationCoimbatore', event)">Coimbatore</span>
                                     </label>
                                     <label class="flex items-center space-x-2">
                                         <input type="checkbox" id="locationJakarta" name="location" value="JAKARTA" class="location-checkbox rounded border-gray-300 text-primary-600 focus:ring-primary-500" onchange="updateLocationAllCheckbox()" />
-                                        <span class="text-sm text-gray-700">Jakarta</span>
+                                        <span class="text-sm text-gray-700 cursor-pointer" onclick="handleLocationTextClick('locationJakarta', event)">Jakarta</span>
                                     </label>
                                 </div>
                             </div>
@@ -117,6 +117,27 @@
         <script>
             let currentHoliday = null;
             let holidays = [];
+            const LOCATION_OPTIONS = [
+                { id: 'locationBangalore', value: 'BANGALORE' },
+                { id: 'locationCoimbatore', value: 'COIMBATORE' },
+                { id: 'locationJakarta', value: 'JAKARTA' }
+            ];
+            const TOTAL_LOCATIONS = LOCATION_OPTIONS.length;
+            
+            function setLocationCheckboxState({ allSelected, selectedValues = [] }) {
+                document.getElementById('locationAll').checked = !!allSelected;
+                LOCATION_OPTIONS.forEach(option => {
+                    const checkbox = document.getElementById(option.id);
+                    checkbox.checked = allSelected ? false : selectedValues.includes(option.value);
+                    checkbox.disabled = !!allSelected;
+                });
+            }
+            
+            function getSelectedLocationValues() {
+                return LOCATION_OPTIONS
+                    .filter(option => document.getElementById(option.id).checked)
+                    .map(option => option.value);
+            }
 
             // Get ApiService - try direct access first, then wait if needed
             function getApiService() {
@@ -270,34 +291,57 @@
                 document.getElementById('holidayName').value = '';
                 document.getElementById('holidayDate').value = '';
                 document.getElementById('holidayType').value = 'PUBLIC';
-                document.getElementById('locationAll').checked = true;
-                document.getElementById('locationBangalore').checked = false;
-                document.getElementById('locationCoimbatore').checked = false;
-                document.getElementById('locationJakarta').checked = false;
+                setLocationCheckboxState({ allSelected: true });
                 document.getElementById('holidayRecurring').checked = false;
                 document.getElementById('holidayModal').classList.remove('hidden');
             }
 
             function toggleAllLocations() {
                 const allChecked = document.getElementById('locationAll').checked;
-                document.getElementById('locationBangalore').checked = false;
-                document.getElementById('locationCoimbatore').checked = false;
-                document.getElementById('locationJakarta').checked = false;
-                document.getElementById('locationBangalore').disabled = allChecked;
-                document.getElementById('locationCoimbatore').disabled = allChecked;
-                document.getElementById('locationJakarta').disabled = allChecked;
+                LOCATION_OPTIONS.forEach(option => {
+                    const checkbox = document.getElementById(option.id);
+                    checkbox.checked = false;
+                    checkbox.disabled = allChecked;
+                });
+            }
+            
+            function handleLocationTextClick(checkboxId, event) {
+                event.preventDefault();
+                event.stopPropagation();
+                const checkbox = document.getElementById(checkboxId);
+                // If checkbox is disabled (meaning "All Locations" is checked), enable it first
+                if (checkbox.disabled) {
+                    // Uncheck "All Locations" and enable all checkboxes
+                    document.getElementById('locationAll').checked = false;
+                    LOCATION_OPTIONS.forEach(option => {
+                        const cb = document.getElementById(option.id);
+                        cb.disabled = false;
+                    });
+                    // Since it was disabled, we want to check it (not toggle)
+                    checkbox.checked = true;
+                } else {
+                    // If enabled, toggle it normally
+                    checkbox.checked = !checkbox.checked;
+                }
+                updateLocationAllCheckbox();
+                return false;
             }
             
             function updateLocationAllCheckbox() {
-                const bangalore = document.getElementById('locationBangalore').checked;
-                const coimbatore = document.getElementById('locationCoimbatore').checked;
-                const jakarta = document.getElementById('locationJakarta').checked;
-                const anySelected = bangalore || coimbatore || jakarta;
+                const selectedValues = getSelectedLocationValues();
+                const anySelected = selectedValues.length > 0;
+                
+                if (selectedValues.length === TOTAL_LOCATIONS) {
+                    document.getElementById('locationAll').checked = true;
+                    toggleAllLocations();
+                    return;
+                }
+                
                 document.getElementById('locationAll').checked = !anySelected;
                 if (anySelected) {
-                    document.getElementById('locationBangalore').disabled = false;
-                    document.getElementById('locationCoimbatore').disabled = false;
-                    document.getElementById('locationJakarta').disabled = false;
+                    LOCATION_OPTIONS.forEach(option => {
+                        document.getElementById(option.id).disabled = false;
+                    });
                 }
             }
 
@@ -320,22 +364,10 @@
                 
                 // Set location checkboxes
                 const locations = holiday.location || [];
-                if (locations.length === 0) {
-                    document.getElementById('locationAll').checked = true;
-                    document.getElementById('locationBangalore').checked = false;
-                    document.getElementById('locationCoimbatore').checked = false;
-                    document.getElementById('locationJakarta').checked = false;
-                    document.getElementById('locationBangalore').disabled = true;
-                    document.getElementById('locationCoimbatore').disabled = true;
-                    document.getElementById('locationJakarta').disabled = true;
+                if (locations.length === 0 || locations.length === TOTAL_LOCATIONS) {
+                    setLocationCheckboxState({ allSelected: true });
                 } else {
-                    document.getElementById('locationAll').checked = false;
-                    document.getElementById('locationBangalore').checked = locations.includes('BANGALORE');
-                    document.getElementById('locationCoimbatore').checked = locations.includes('COIMBATORE');
-                    document.getElementById('locationJakarta').checked = locations.includes('JAKARTA');
-                    document.getElementById('locationBangalore').disabled = false;
-                    document.getElementById('locationCoimbatore').disabled = false;
-                    document.getElementById('locationJakarta').disabled = false;
+                    setLocationCheckboxState({ allSelected: false, selectedValues: locations });
                 }
                 
                 document.getElementById('holidayRecurring').checked = holiday.recurring || false;
@@ -388,20 +420,17 @@
                 // Get selected locations
                 let location = null;
                 if (!document.getElementById('locationAll').checked) {
-                    location = [];
-                    if (document.getElementById('locationBangalore').checked) {
-                        location.push('BANGALORE');
-                    }
-                    if (document.getElementById('locationCoimbatore').checked) {
-                        location.push('COIMBATORE');
-                    }
-                    if (document.getElementById('locationJakarta').checked) {
-                        location.push('JAKARTA');
-                    }
+                    location = getSelectedLocationValues();
                     // If no locations selected, treat as global (null)
                     if (location.length === 0) {
                         location = null;
                     }
+                }
+                
+                // If all locations selected explicitly, treat as global
+                if (location && location.length === TOTAL_LOCATIONS) {
+                    location = null;
+                    setLocationCheckboxState({ allSelected: true });
                 }
                 
                 const recurring = document.getElementById('holidayRecurring').checked;
