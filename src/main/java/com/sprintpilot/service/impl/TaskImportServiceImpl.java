@@ -238,17 +238,19 @@ public class TaskImportServiceImpl implements TaskImportService {
                     }
                     
                     // Set assignees using email ID from Jira
-                    if (jiraTask.assigneeEmail() != null && !jiraTask.assigneeEmail().isBlank()) {
+                    if (jiraTask.assignee() != null && !jiraTask.assignee().isBlank()) {
                         try {
-                            Optional<TeamMember> assigneeMember = teamMemberRepository.findByEmail(jiraTask.assigneeEmail());
+                            Optional<TeamMember> assigneeMember;
+                            if(jiraTask.assigneeEmail() != null && !jiraTask.assigneeEmail().isBlank()) {
+                                assigneeMember = teamMemberRepository.findByEmail(jiraTask.assigneeEmail());
+                            } else {
+                                assigneeMember = teamMemberRepository.findByName(jiraTask.assignee());
+                            }
                             if (assigneeMember.isPresent()) {
                                 List<TeamMember> assignees = new ArrayList<>();
                                 assignees.add(assigneeMember.get());
                                 task.setAssignees(assignees);
                                 log.debug("Assigned team member {} to task {}", assigneeMember.get().getName(), jiraTask.taskKey());
-                            } else {
-                                log.warn("No team member found with email: {} for task {}", jiraTask.assigneeEmail(), jiraTask.taskKey());
-                                warnings.add("No team member found with email " + jiraTask.assigneeEmail() + " for task " + jiraTask.taskKey());
                             }
                         } catch (Exception e) {
                             log.warn("Failed to assign team member for task {}: {}", jiraTask.taskKey(), e.getMessage());
