@@ -3,6 +3,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('SprintPilot Application Loaded');
     
+    // Fetch current sprint and store ID as cookie on every page load
+    fetchCurrentSprintAndStoreCookie();
+    
     // Initialize tooltips
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -15,6 +18,34 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Popover(popoverTriggerEl);
     });
 });
+
+// Fetch current sprint and store sprint ID as cookie
+async function fetchCurrentSprintAndStoreCookie() {
+    try {
+        console.log('Fetching current sprint...');
+        const response = await fetch('/api/sprints/current');
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Current sprint data:', data);
+            
+            // Check for sprint ID in the nested data structure
+            const sprintId = data?.data?.id || data?.id;
+            
+            if (sprintId) {
+                // Store sprint ID as cookie using CookieUtils
+                CookieUtils.setCookie('currentSprintId', sprintId, 7); // 7 days expiry
+                console.log('Cookie set with currentSprintId:', sprintId);
+            } else {
+                console.warn('No sprint ID found in response');
+            }
+        } else {
+            console.warn('Failed to fetch current sprint, status:', response.status);
+        }
+    } catch (error) {
+        console.error('Error fetching current sprint:', error);
+    }
+}
 
 // API Service
 const ApiService = {

@@ -296,102 +296,8 @@
 
                 <!-- Modal Content -->
                 <div class="p-6">
-                    <!-- Import Method Tabs -->
-                    <div class="flex mb-6 bg-gray-100 p-1 rounded-lg">
-                        <button id="csvTab" onclick="switchImportTab('csv')" class="flex-1 px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-200 bg-white text-primary-600 shadow-sm">
-                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                            </svg>
-                            CSV Upload
-                        </button>
-                        <button id="jiraTab" onclick="switchImportTab('jira')" class="flex-1 px-4 py-2 rounded-md text-sm font-semibold transition-colors duration-200 text-gray-600 hover:bg-white hover:text-primary-600">
-                            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                            </svg>
-                            Jira Integration
-                        </button>
-                    </div>
-
-                    <!-- CSV Import Tab -->
-                    <div id="csvImportContent" class="import-tab-content">
-                        <div class="space-y-6">
-                            <!-- File Upload Area -->
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                <div id="fileDropArea" class="space-y-4">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                    <div class="text-center">
-                                        <p class="text-lg font-medium text-gray-900">Upload CSV File</p>
-                                        <p class="text-sm text-gray-500">Drag and drop or click to select</p>
-                                    </div>
-                                    <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleFileUpload(event)">
-                                    <button onclick="document.getElementById('csvFileInput').click()" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors">
-                                        Choose File
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- File Preview -->
-                            <div id="filePreview" class="hidden space-y-4">
-                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                    <div class="flex items-center">
-                                        <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        <div>
-                                            <p class="font-medium text-green-800" id="fileName">File uploaded successfully</p>
-                                            <p class="text-sm text-green-600" id="fileInfo">Ready to import</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Column Mapping -->
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <h4 class="font-semibold text-gray-800 mb-3">Column Mapping</h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Task Key Column</label>
-                                            <select id="taskKeyColumn" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
-                                                <option value="">Select column...</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Summary Column</label>
-                                            <select id="summaryColumn" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
-                                                <option value="">Select column...</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Story Points Column</label>
-                                            <select id="storyPointsColumn" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
-                                                <option value="">Select column...</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">Assignee Column</label>
-                                            <select id="assigneeColumn" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500">
-                                                <option value="">Select column...</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Sample CSV Format -->
-                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 class="font-semibold text-blue-800 mb-2">Expected CSV Format</h4>
-                                <div class="text-sm text-blue-600 font-mono bg-white p-3 rounded border">
-                                    Task Key,Summary,Description,Story Points,Category,Priority,Assignee<br/>
-                                    PROJ-101,"Implement dashboard","Dashboard redesign",8,FEATURE,HIGH,alice@company.com<br/>
-                                    PROJ-102,"Fix login bug","Login timeout issue",3,PROD_ISSUE,CRITICAL,bob@company.com
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Jira Import Tab -->
-                    <div id="jiraImportContent" class="import-tab-content hidden">
+                    <!-- Jira Import Content -->
+                    <div id="jiraImportContent" class="import-tab-content">
                         <div class="space-y-6">
                             <!-- Jira Connection -->
                             <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
@@ -428,7 +334,7 @@
                         <button onclick="closeImportModal()" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
                             Cancel
                         </button>
-                        <button id="importButton" onclick="importTasks()" class="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                        <button id="importButton" onclick="fetchJiraIssues()" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
                             Import Tasks
                         </button>
                     </div>
@@ -441,8 +347,6 @@
 
         <script>
             let analysisComplete = false;
-            let csvData = null;
-            let activeImportTab = 'csv';
             let currentSprintId = null;
             let currentTasks = [];
 
@@ -515,16 +419,20 @@
                     currentSprintId = 'current-sprint';
                 }
                 
-                // Save to cookie for future use
-                CookieUtils.setCookie('currentSprintId', currentSprintId);
-                
-                console.log('Using Sprint ID from cookie:', currentSprintId);
+                // If cookie wasn't found, set as session cookie (cleared when browser closes)
+                if (!CookieUtils.getCookie('currentSprintId')) {
+                    CookieUtils.setSessionCookie('currentSprintId', currentSprintId);
+                    console.log('Session cookie created for sprint:', currentSprintId);
+                } else {
+                    console.log('Using Sprint ID from existing cookie:', currentSprintId);
+                }
             }
             
             // Function to change sprint ID (can be called from UI or other pages)
             function changeSprintId(newSprintId) {
                 currentSprintId = newSprintId;
-                CookieUtils.setCookie('currentSprintId', currentSprintId);
+                // Use session cookie so it's cleared when browser closes
+                CookieUtils.setSessionCookie('currentSprintId', currentSprintId);
                 
                 // Reload tasks for new sprint
                 loadTasks();
@@ -536,7 +444,6 @@
             document.addEventListener('DOMContentLoaded', function() {
                 initializeSprintId();
                 loadTasks();
-                setupDragAndDrop();
             });
 
             // Pagination state for each risk factor
@@ -867,7 +774,6 @@
             // Import Modal Functions
             function openImportModal() {
                 document.getElementById('importModal').classList.remove('hidden');
-                switchImportTab('csv'); // Default to CSV tab
             }
 
             function closeImportModal(event) {
@@ -876,54 +782,14 @@
                     resetImportForm();
                 }
             }
-
-            function switchImportTab(tab) {
-                activeImportTab = tab;
-                
-                // Update tab buttons
-                document.getElementById('csvTab').classList.toggle('bg-white', tab === 'csv');
-                document.getElementById('csvTab').classList.toggle('text-primary-600', tab === 'csv');
-                document.getElementById('csvTab').classList.toggle('shadow-sm', tab === 'csv');
-                document.getElementById('csvTab').classList.toggle('text-gray-600', tab !== 'csv');
-                
-                document.getElementById('jiraTab').classList.toggle('bg-white', tab === 'jira');
-                document.getElementById('jiraTab').classList.toggle('text-primary-600', tab === 'jira');
-                document.getElementById('jiraTab').classList.toggle('shadow-sm', tab === 'jira');
-                document.getElementById('jiraTab').classList.toggle('text-gray-600', tab !== 'jira');
-                
-                // Show/hide content
-                document.getElementById('csvImportContent').classList.toggle('hidden', tab !== 'csv');
-                document.getElementById('jiraImportContent').classList.toggle('hidden', tab !== 'jira');
-                
-                // Update Import button style and state
-                updateImportButton();
-            }
             
             function updateImportButton() {
                 const importButton = document.getElementById('importButton');
-                
-                if (activeImportTab === 'jira') {
-                    // Jira tab - green button
-                    importButton.className = 'px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed';
-                    
-                    // Enable/disable based on project key
                     const projectKey = document.getElementById('jiraProject').value.trim();
                     importButton.disabled = !projectKey;
-                } else {
-                    // CSV tab - primary button
-                    importButton.className = 'px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed';
-                    
-                    // Enable/disable based on CSV data
-                    importButton.disabled = !csvData;
-                }
             }
 
             function resetImportForm() {
-                // Reset CSV form
-                document.getElementById('csvFileInput').value = '';
-                document.getElementById('filePreview').classList.add('hidden');
-                csvData = null;
-                
                 // Reset Jira form
                 document.getElementById('jiraProject').value = '';
                 document.getElementById('jqlQuery').value = '';
@@ -979,180 +845,6 @@
                 }
             }
 
-            // CSV Import Functions
-            function handleFileUpload(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-                
-                if (!file.name.toLowerCase().endsWith('.csv')) {
-                    alert('Please select a CSV file.');
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const text = e.target.result;
-                    parseCSV(text, file.name);
-                };
-                reader.readAsText(file);
-            }
-
-            function parseCSV(text, fileName) {
-                const lines = text.split('\n').filter(line => line.trim());
-                if (lines.length < 2) {
-                    alert('CSV file must have at least a header row and one data row.');
-                    return;
-                }
-                
-                const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                const rows = lines.slice(1).map(line => 
-                    line.split(',').map(cell => cell.trim().replace(/"/g, ''))
-                );
-                
-                csvData = { headers, rows };
-                
-                // Show file preview
-                document.getElementById('fileName').textContent = fileName;
-                document.getElementById('fileInfo').textContent = `${rows.length} tasks ready to import`;
-                document.getElementById('filePreview').classList.remove('hidden');
-                
-                // Populate column mapping dropdowns
-                populateColumnMappings(headers);
-                
-                // Enable import button
-                document.getElementById('importButton').disabled = false;
-            }
-
-            function populateColumnMappings(headers) {
-                const selects = ['taskKeyColumn', 'summaryColumn', 'storyPointsColumn', 'assigneeColumn'];
-                
-                selects.forEach(selectId => {
-                    const select = document.getElementById(selectId);
-                    select.innerHTML = '<option value="">Select column...</option>';
-                    
-                    headers.forEach((header, index) => {
-                        const option = document.createElement('option');
-                        option.value = index;
-                        option.textContent = header;
-                        
-                        // Auto-select likely matches
-                        if (selectId === 'taskKeyColumn' && header.toLowerCase().includes('key')) {
-                            option.selected = true;
-                        } else if (selectId === 'summaryColumn' && header.toLowerCase().includes('summary')) {
-                            option.selected = true;
-                        } else if (selectId === 'storyPointsColumn' && (header.toLowerCase().includes('points') || header.toLowerCase().includes('estimate'))) {
-                            option.selected = true;
-                        } else if (selectId === 'assigneeColumn' && (header.toLowerCase().includes('assignee') || header.toLowerCase().includes('owner'))) {
-                            option.selected = true;
-                        }
-                        
-                        select.appendChild(option);
-                    });
-                });
-            }
-
-            // Jira Import Functions
-
-            // Import Tasks Function
-            function importTasks() {
-                if (activeImportTab === 'csv' && csvData) {
-                    importFromCSV();
-                } else if (activeImportTab === 'jira') {
-                    fetchJiraIssues();
-                }
-            }
-
-            function importFromCSV() {
-                const taskKeyCol = document.getElementById('taskKeyColumn').value;
-                const summaryCol = document.getElementById('summaryColumn').value;
-                const storyPointsCol = document.getElementById('storyPointsColumn').value;
-                const assigneeCol = document.getElementById('assigneeColumn').value;
-                
-                if (!taskKeyCol || !summaryCol) {
-                    alert('Please map at least Task Key and Summary columns.');
-                    return;
-                }
-                
-                const tasks = csvData.rows.map(row => ({
-                    taskKey: row[taskKeyCol] || '',
-                    summary: row[summaryCol] || '',
-                    storyPoints: storyPointsCol ? parseFloat(row[storyPointsCol]) || 0 : 0,
-                    assignee: assigneeCol ? row[assigneeCol] || null : null,
-                    category: 'FEATURE',
-                    priority: 'MEDIUM',
-                    status: 'TODO'
-                }));
-                
-                // Mock import
-                fetch('/api/tasks/import/csv', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tasks, sprintId: currentSprintId })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast(`Successfully imported ${tasks.length} tasks from CSV!`, 'success');
-                        closeImportModal();
-                        // Reload tasks from API
-                        loadTasks();
-                    } else {
-                        showToast('Import failed: ' + data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    // Mock successful import for demo
-                    setTimeout(() => {
-                        showToast(`Successfully imported ${tasks.length} tasks from CSV!`, 'success');
-                        closeImportModal();
-                        // Reload tasks from API
-                        loadTasks();
-                    }, 1000);
-                });
-            }
-
-
-            // Drag and drop support for CSV files
-            function setupDragAndDrop() {
-                const dropArea = document.getElementById('fileDropArea');
-                
-                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                    dropArea.addEventListener(eventName, preventDefaults, false);
-                });
-                
-                function preventDefaults(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-                
-                ['dragenter', 'dragover'].forEach(eventName => {
-                    dropArea.addEventListener(eventName, highlight, false);
-                });
-                
-                ['dragleave', 'drop'].forEach(eventName => {
-                    dropArea.addEventListener(eventName, unhighlight, false);
-                });
-                
-                function highlight(e) {
-                    dropArea.classList.add('border-primary-400', 'bg-primary-50');
-                }
-                
-                function unhighlight(e) {
-                    dropArea.classList.remove('border-primary-400', 'bg-primary-50');
-                }
-                
-                dropArea.addEventListener('drop', handleDrop, false);
-                
-                function handleDrop(e) {
-                    const dt = e.dataTransfer;
-                    const files = dt.files;
-                    
-                    if (files.length > 0) {
-                        document.getElementById('csvFileInput').files = files;
-                        handleFileUpload({ target: { files: files } });
-                    }
-                }
-            }
 
             // Tab Switching Functions
             function switchTab(tabName) {

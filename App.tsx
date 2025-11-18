@@ -969,84 +969,17 @@ const TaskPlanningScreen: React.FC<{
     const [isSummaryLoading, setIsSummaryLoading] = useState(false);
     
     // --- Import Logic ---
-    const [tasksForPreview, setTasksForPreview] = useState<JiraTask[]>([]);
     const [error, setError] = useState('');
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [importMethod, setImportMethod] = useState<'jira' | 'csv'>('jira');
     const [isJiraModalOpen, setIsJiraModalOpen] = useState(false);
     
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const content = e.target?.result as string;
-            try {
-                const lines = content.split('\n').map(l => l.trim()).filter(Boolean);
-                if (lines.length < 2) throw new Error("CSV is empty or has only a header.");
-
-                const header = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                const keyIndex = header.findIndex(h => h.toLowerCase().includes('issue key'));
-                const summaryIndex = header.findIndex(h => h.toLowerCase().includes('summary'));
-                const pointsIndex = header.findIndex(h => h.toLowerCase().includes('story points') || h.toLowerCase().includes('custom field (story points)'));
-                const estimateIndex = header.findIndex(h => h.toLowerCase().includes('original estimate'));
-                const labelsIndex = header.findIndex(h => h.toLowerCase().includes('labels'));
-                
-                if (keyIndex === -1 || summaryIndex === -1) throw new Error("CSV must contain 'Issue Key' and 'Summary' columns.");
-                if (pointsIndex === -1 && estimateIndex === -1) throw new Error("CSV must contain 'Story Points' or 'Original Estimate' column for effort.");
-
-                const tasks: JiraTask[] = lines.slice(1).map((line, i) => {
-                    const values = line.split(',');
-                    const storyPointsRaw = pointsIndex > -1 ? values[pointsIndex] : values[estimateIndex];
-                    const storyPoints = storyPointsRaw ? parseFloat(storyPointsRaw) / 3600 : 0; // Assuming estimate is in seconds
-                    
-                    const labels = (labelsIndex > -1 ? (values[labelsIndex] || '') : '').toUpperCase();
-                    let category = 'FEATURE';
-                    if (labels.includes('TECH_DEBT')) category = 'TECH_DEBT';
-                    else if (labels.includes('PROD_ISSUE')) category = 'PROD_ISSUE';
-
-                    return {
-                        id: `task-${Date.now()}-${i}`,
-                        key: values[keyIndex],
-                        summary: values[summaryIndex],
-                        storyPoints: isNaN(storyPoints) ? 0 : storyPoints,
-                        category,
-                    };
-                });
-                setTasksForPreview(tasks);
-                setError('');
-            } catch (err: any) {
-                setError(`Failed to parse CSV: ${err.message}`);
-                setTasksForPreview([]);
-            }
-        };
-        reader.readAsText(file);
-    };
-
     const handleJiraTasksFetched = (tasks: JiraTask[]) => {
-        setTasksForPreview(tasks);
+        onTasksUpdate(tasks);
+        alert(`${tasks.length} tasks imported successfully!`);
         setError('');
-    };
-
-    const handleConfirmImport = () => {
-        onTasksUpdate(tasksForPreview);
-        alert(`${tasksForPreview.length} tasks imported successfully!`);
-        setTasksForPreview([]);
-        if(fileInputRef.current) fileInputRef.current.value = "";
-    };
-
-    const handleCancelPreview = () => {
-        setTasksForPreview([]);
-        setError('');
-        if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
     useEffect(() => {
         setSprintData(initialSprintData);
-        if (initialSprintData.tasks.length > 0 && tasksForPreview.length > 0) {
-            setTasksForPreview([]); // Clear preview if tasks are updated from above
-        }
     }, [initialSprintData]);
     
     const handleAssigneeChange = (taskId: string, assigneeId: string) => {
@@ -1169,62 +1102,16 @@ const TaskPlanningScreen: React.FC<{
     };
 
     // FIX: The Importer component was incomplete and had a malformed className attribute.
-    // This has been corrected to provide full functionality for Jira and CSV imports.
+    // This has been corrected to provide full functionality for Jira import.
     const Importer = () => (
         <Card className="p-0 overflow-hidden">
-            <div className="flex border-b border-gray-200">
-                <button
-                    onClick={() => setImportMethod('jira')}
-                    className={`px-6 py-3 text-sm font-semibold transition-colors duration-200 -mb-px border-b-2 flex items-center space-x-2 ${
-                        importMethod === 'jira'
-                        ? 'border-primary-500 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                >
-                    <JiraIcon className="w-5 h-5"/> <span>Connect to Jira</span>
-                </button>
-                <button
-                    onClick={() => setImportMethod('csv')}
-                    className={`px-6 py-3 text-sm font-semibold transition-colors duration-200 -mb-px border-b-2 flex items-center space-x-2 ${
-                        importMethod === 'csv'
-                        ? 'border-primary-500 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                >
-                    <DocumentArrowUpIcon className="w-5 h-5"/> <span>Import from CSV</span>
-                </button>
-            </div>
             <div className="p-6">
-                {importMethod === 'jira' ? (
-                    <div>
-                        <h3 className="text-lg font-bold text-gray-800">Import from Jira</h3>
-                        <p className="text-sm text-gray-500 mt-1 mb-4">Connect to your Jira instance to import tasks directly. (This is a mocked action)</p>
-                        <Button onClick={() => setIsJiraModalOpen(true)}>Connect to Jira</Button>
-                    </div>
-                ) : (
-                    <div>
-                        <h3 className="text-lg font-bold text-gray-800">Import from CSV</h3>
-                        <p className="text-sm text-gray-500 mt-1 mb-4">Upload a CSV file exported from Jira. Ensure it has 'Issue Key', 'Summary', and 'Story Points' columns.</p>
-                        <input type="file" accept=".csv" onChange={handleFileChange} ref={fileInputRef} className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100" />
-                    </div>
-                )}
+                <div>
+                    <h3 className="text-lg font-bold text-gray-800">Import from Jira</h3>
+                    <p className="text-sm text-gray-500 mt-1 mb-4">Connect to your Jira instance to import tasks directly. (This is a mocked action)</p>
+                    <Button onClick={() => setIsJiraModalOpen(true)}>Connect to Jira</Button>
+                </div>
                 {error && <p className="text-danger mt-4 text-sm font-semibold">{error}</p>}
-                {tasksForPreview.length > 0 && (
-                    <div className="mt-6">
-                        <h4 className="font-bold text-gray-700">Preview ({tasksForPreview.length} tasks)</h4>
-                        <div className="max-h-60 overflow-y-auto border rounded-lg mt-2 text-sm bg-gray-50">
-                            <ul className="divide-y divide-gray-200">
-                                {tasksForPreview.map(task => (
-                                    <li key={task.id} className="p-3"><strong>{task.key}</strong>: {task.summary} ({task.storyPoints}h)</li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="flex justify-end space-x-3 mt-4">
-                            <Button onClick={handleCancelPreview} variant="secondary">Cancel</Button>
-                            <Button onClick={handleConfirmImport}>Confirm Import</Button>
-                        </div>
-                    </div>
-                )}
             </div>
         </Card>
     );
