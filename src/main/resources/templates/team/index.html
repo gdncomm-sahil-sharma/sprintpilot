@@ -269,6 +269,7 @@
             let memberToDelete = null;
             let selectedMemberIds = [];
             let availableSprints = [];
+            let currentSprintDates = { startDate: null, endDate: null };
             
             // API Base URL
             const API_BASE_URL = '/api/team-members';
@@ -310,17 +311,58 @@
                 currentSprintId = getSprintIdFromCookie();
                 
                 if (currentSprintId) {
-                        console.log('Current sprint ID:', currentSprintId);
-                        // Show the filter toggle since we have an active sprint
-                        document.getElementById('sprintFilterContainer').classList.remove('hidden');
-                    } else {
+                    console.log('Current sprint ID:', currentSprintId);
+                    // Show the filter toggle since we have an active sprint
+                    document.getElementById('sprintFilterContainer').classList.remove('hidden');
+                    
+                    // Fetch sprint details to get dates for calendar restrictions
+                    try {
+                        const response = await fetch(`${SPRINT_API_BASE_URL}/${currentSprintId}`);
+                        const data = await response.json();
+                        
+                        if (data.success && data.data) {
+                            // Store sprint dates for calendar restrictions
+                            currentSprintDates.startDate = data.data.startDate;
+                            currentSprintDates.endDate = data.data.endDate;
+                            console.log('Sprint dates set for calendar:', currentSprintDates);
+                            
+                            // Apply date restrictions to the date pickers
+                            updateDatePickerRestrictions();
+                        }
+                    } catch (error) {
+                        console.error('Error loading current sprint details:', error);
+                    }
+                } else {
                     console.log('No active sprint found in cookie');
-                        // Hide the filter toggle since there's no active sprint
+                    // Hide the filter toggle since there's no active sprint
                     document.getElementById('sprintFilterContainer').classList.add('hidden');
                 }
                 
                 // Load team members (with or without sprint context)
                 await loadTeamMembers();
+            }
+            
+            // Update date picker restrictions based on sprint dates
+            function updateDatePickerRestrictions() {
+                const leaveStartDateInput = document.getElementById('leaveStartDate');
+                const leaveEndDateInput = document.getElementById('leaveEndDate');
+                
+                if (currentSprintDates.startDate && currentSprintDates.endDate) {
+                    // Set min and max attributes to restrict date selection
+                    leaveStartDateInput.setAttribute('min', currentSprintDates.startDate);
+                    leaveStartDateInput.setAttribute('max', currentSprintDates.endDate);
+                    leaveEndDateInput.setAttribute('min', currentSprintDates.startDate);
+                    leaveEndDateInput.setAttribute('max', currentSprintDates.endDate);
+                    
+                    console.log(`📅 Date pickers restricted to sprint range: ${currentSprintDates.startDate} to ${currentSprintDates.endDate}`);
+                } else {
+                    // Remove restrictions if no sprint dates available
+                    leaveStartDateInput.removeAttribute('min');
+                    leaveStartDateInput.removeAttribute('max');
+                    leaveEndDateInput.removeAttribute('min');
+                    leaveEndDateInput.removeAttribute('max');
+                    console.log('📅 Date pickers have no restrictions (no active sprint)');
+                }
             }
             
             // Fetch and display team members
@@ -535,6 +577,9 @@
                         // Clear date input fields (they should start empty for adding new ranges)
                         document.getElementById('leaveStartDate').value = '';
                         document.getElementById('leaveEndDate').value = '';
+                        
+                        // Apply date restrictions based on sprint dates
+                        updateDatePickerRestrictions();
                         
                         // Make name, email, and location read-only for editing
                         document.getElementById('memberName').setAttribute('readonly', 'readonly');

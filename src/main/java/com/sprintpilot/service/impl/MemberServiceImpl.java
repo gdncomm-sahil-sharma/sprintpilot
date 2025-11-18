@@ -140,12 +140,13 @@ public class MemberServiceImpl implements MemberService {
                     member.getName(), remainingWork, capacity, gap, status);
         }
 
-        // 6. Also include members with no tasks assigned
-        List<TeamMember> allActiveMembers = teamMemberRepository.findAll().stream()
-                .filter(member -> member.getActive() != null && member.getActive())
-                .toList();
+        // 6. Also include members assigned to sprint but with no tasks assigned
+        // Only get members who are assigned to THIS sprint
+        List<TeamMember> sprintMembers = teamMemberRepository.findBySprintId(sprintId);
+        log.info("Found {} members assigned to sprint {}", sprintMembers.size(), sprintId);
         
-        for (TeamMember member : allActiveMembers) {
+        for (TeamMember member : sprintMembers) {
+            // Only add if not already in the map (members with tasks are already added)
             if (!memberMap.containsKey(member.getId())) {
                 BigDecimal dailyCapacity = member.getDailyCapacity() != null ? member.getDailyCapacity() : BigDecimal.ZERO;
                 BigDecimal capacity = dailyCapacity.multiply(BigDecimal.valueOf(daysRemaining));
@@ -163,10 +164,12 @@ public class MemberServiceImpl implements MemberService {
                 );
                 
                 utilizations.add(dto);
+                log.debug("Added sprint member with no tasks: {}, Capacity: {}, Gap: {}", 
+                        member.getName(), capacity, gap);
             }
         }
 
-        log.info("Calculated utilization for {} members", utilizations.size());
+        log.info("Calculated utilization for {} members in sprint", utilizations.size());
         return utilizations;
     }
 

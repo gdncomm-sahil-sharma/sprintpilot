@@ -54,13 +54,18 @@ public class TeamMemberController {
     /**
      * Update an existing team member
      * PUT /api/team-members/{id}
+     * Reads current sprint ID from cookie 'currentSprintId' to assign sprint to leave days
      */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<TeamMemberDto>> updateTeamMember(
             @PathVariable String id,
-            @RequestBody TeamMemberDto memberDto) {
+            @RequestBody TeamMemberDto memberDto,
+            HttpServletRequest request) {
         try {
-            TeamMemberDto updatedMember = teamService.updateTeamMember(id, memberDto);
+            // Get sprintId from cookie to assign to leave days
+            String currentSprintId = getSprintIdFromCookie(request);
+            
+            TeamMemberDto updatedMember = teamService.updateTeamMember(id, memberDto, currentSprintId);
             return ResponseEntity.ok(
                     ApiResponse.success("Team member updated successfully", updatedMember));
         } catch (IllegalArgumentException e) {

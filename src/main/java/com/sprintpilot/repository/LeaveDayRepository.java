@@ -29,6 +29,9 @@ public interface LeaveDayRepository extends JpaRepository<LeaveDay, String> {
     @Query("SELECT l FROM LeaveDay l WHERE l.sprint.id = :sprintId")
     List<LeaveDay> findBySprintId(@Param("sprintId") String sprintId);
     
+    @Query("SELECT l FROM LeaveDay l WHERE l.member.id = :memberId AND l.sprint.id = :sprintId ORDER BY l.leaveDate")
+    List<LeaveDay> findByMemberIdAndSprintId(@Param("memberId") String memberId, @Param("sprintId") String sprintId);
+    
     @Query("SELECT l FROM LeaveDay l WHERE l.leaveDate = :date")
     List<LeaveDay> findByDate(@Param("date") LocalDate date);
     
