@@ -172,18 +172,14 @@ public class AIController {
     @PostMapping("/performance-insights")
     public ResponseEntity<ApiResponse<String>> analyzeHistoricalPerformance(@RequestBody Map<String, Object> request) {
         try {
-            @SuppressWarnings("unchecked")
-            List<SprintDto> sprints = (List<SprintDto>) request.get("sprints");
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> velocityTrend = (List<Map<String, Object>>) request.get("velocityTrend");
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> workMixTrend = (List<Map<String, Object>>) request.get("workMixTrend");
-            @SuppressWarnings("unchecked")
-            List<Map<String, Object>> roleUtilization = (List<Map<String, Object>>) request.get("roleUtilization");
+            log.info("Generating performance insights from historical sprint data");
             
-            String insights = aiService.analyzeHistoricalPerformance(sprints, velocityTrend, workMixTrend, roleUtilization);
+            // Delegate to service layer - all business logic moved there
+            String insights = aiService.generatePerformanceInsightsFromHistory();
+            
             return ResponseEntity.ok(ApiResponse.success(insights));
         } catch (Exception e) {
+            log.error("Failed to generate performance insights: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Failed to generate performance insights", e.getMessage()));
         }

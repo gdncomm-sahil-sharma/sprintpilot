@@ -51,6 +51,9 @@ public class GeminiAIService implements AIService {
     @Autowired
     private RiskSummaryHelper riskSummaryHelper;
     
+    @Autowired
+    private PerformanceInsightsHelper performanceInsightsHelper;
+    
     @Value("${app.ai.enabled:true}")
     private boolean aiEnabled;
     
@@ -465,6 +468,29 @@ public class GeminiAIService implements AIService {
         }
         
         return result;
+    }
+    
+    /**
+     * Generate performance insights by fetching sprint history from database
+     * This method handles the complete flow: fetch sprints, calculate metrics, and generate insights
+     */
+    @Override
+    public String generatePerformanceInsightsFromHistory() {
+        if (!aiEnabled) {
+            return "AI features are disabled";
+        }
+        
+        logger.info("Generating performance insights from sprint history");
+        
+        // Use helper to fetch sprints and calculate metrics
+        PerformanceInsightsHelper.PerformanceData data = performanceInsightsHelper.preparePerformanceData();
+        
+        if (data == null) {
+            return "No completed sprints found. Please complete at least one sprint to generate performance insights.";
+        }
+        
+        // Call existing analyzeHistoricalPerformance method with prepared data
+        return analyzeHistoricalPerformance(data.sprints(), data.velocityTrend(), data.workMixTrend(), data.roleUtilization());
     }
     
     /**

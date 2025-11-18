@@ -34,5 +34,12 @@ public interface AIService {
                                         List<Map<String, Object>> workMixTrend,
                                         List<Map<String, Object>> roleUtilization);
     
+    /**
+     * Generate performance insights by fetching sprint history from database
+     * and calculating velocity trends, work mix, and role utilization
+     * @return AI-generated performance insights
+     */
+    String generatePerformanceInsightsFromHistory();
+    
     Map<String, String> generateMeetingDetails(SprintEventDto meeting, SprintDto sprint);
 }
