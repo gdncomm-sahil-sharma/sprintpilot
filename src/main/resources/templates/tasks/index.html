@@ -414,25 +414,21 @@
                     currentSprintId = urlParams.get('sprintId');
                 }
                 
-                // Fall back to default if still not set
-                if (!currentSprintId) {
-                    currentSprintId = 'current-sprint';
-                }
+                // Don't fall back to a hardcoded value - let app.js handle setting the cookie
+                // The fetchCurrentSprintAndStoreCookie() in app.js will set it properly
                 
-                // If cookie wasn't found, set as session cookie (cleared when browser closes)
-                if (!CookieUtils.getCookie('currentSprintId')) {
-                    CookieUtils.setSessionCookie('currentSprintId', currentSprintId);
-                    console.log('Session cookie created for sprint:', currentSprintId);
-                } else {
+                if (currentSprintId) {
                     console.log('Using Sprint ID from existing cookie:', currentSprintId);
+                } else {
+                    console.warn('No sprint ID found yet, waiting for app.js to set it...');
                 }
             }
             
             // Function to change sprint ID (can be called from UI or other pages)
             function changeSprintId(newSprintId) {
                 currentSprintId = newSprintId;
-                // Use session cookie so it's cleared when browser closes
-                CookieUtils.setSessionCookie('currentSprintId', currentSprintId);
+                // Update cookie with same 7-day expiry as app.js
+                CookieUtils.setCookie('currentSprintId', currentSprintId, 7);
                 
                 // Reload tasks for new sprint
                 loadTasks();
@@ -440,10 +436,26 @@
                 console.log('Sprint ID changed to:', currentSprintId);
             }
 
-            // Load tasks when page loads
+            // Load tasks when page loads - wait for sprint ID to be set
             document.addEventListener('DOMContentLoaded', function() {
                 initializeSprintId();
-                loadTasks();
+                
+                // If sprint ID is available, load tasks immediately
+                if (currentSprintId) {
+                    loadTasks();
+                } else {
+                    // Wait a bit for app.js to fetch and set the cookie
+                    console.log('Waiting for sprint ID to be set by app.js...');
+                    setTimeout(function() {
+                        initializeSprintId(); // Try again
+                        if (currentSprintId) {
+                            loadTasks();
+                        } else {
+                            console.error('Sprint ID not available after waiting. Cannot load tasks.');
+                            showToast('Error: Sprint ID not found. Please refresh the page.', 'error');
+                        }
+                    }, 500); // Wait 500ms for the async fetch to complete
+                }
             });
 
             // Pagination state for each risk factor

@@ -1101,9 +1101,9 @@
                         const newSprintId = data.data.id;
                         console.log('✅ New sprint created:', newSprintId);
                         
-                        // Update the page context and set session cookie
+                        // Update the page context and set cookie with 7-day expiry
                         window.currentSprintId = newSprintId;
-                        CookieUtils.setSessionCookie('currentSprintId', newSprintId);
+                        CookieUtils.setCookie('currentSprintId', newSprintId, 7);
                         
                         // Now save the detailed configuration
                         updateSprintConfiguration(newSprintId, startDate, duration);
@@ -1697,9 +1697,9 @@
                             const sprint = data.data.currentSprint;
                             console.log('✅ Active sprint found:', sprint.id);
                             
-                            // Store sprint ID globally and set session cookie
+                            // Store sprint ID globally and set cookie with 7-day expiry
                             window.currentSprintId = sprint.id;
-                            CookieUtils.setSessionCookie('currentSprintId', sprint.id);
+                            CookieUtils.setCookie('currentSprintId', sprint.id, 7);
                             
                             // Populate form with sprint data
                             document.getElementById('startDate').value = sprint.startDate;
