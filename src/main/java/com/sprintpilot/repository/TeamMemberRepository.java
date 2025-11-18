@@ -21,6 +21,8 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, String> 
     List<TeamMember> findByRole(@Param("role") TeamMember.Role role);
     
     Optional<TeamMember> findByEmail(String email);
+
+    Optional<TeamMember> findByName(String name);
     
     @EntityGraph(attributePaths = {"leaveDays", "assignedTasks"})
     @Query("SELECT t FROM TeamMember t WHERE t.id = :id")
