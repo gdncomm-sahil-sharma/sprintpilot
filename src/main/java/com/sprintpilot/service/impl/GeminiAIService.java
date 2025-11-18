@@ -48,6 +48,9 @@ public class GeminiAIService implements AIService {
     @Autowired
     private Bucket rateLimiterBucket;
     
+    @Autowired
+    private RiskSummaryHelper riskSummaryHelper;
+    
     @Value("${app.ai.enabled:true}")
     private boolean aiEnabled;
     
@@ -256,6 +259,29 @@ public class GeminiAIService implements AIService {
         );
         
         return callAI(prompt, "Risk Summary");
+    }
+    
+    /**
+     * Generate risk summary for a sprint by fetching tasks from database
+     * This method handles the complete flow: fetch tasks, convert DTOs, and generate summary
+     */
+    @Override
+    public String generateRiskSummaryForSprint(String sprintId) {
+        if (!aiEnabled) {
+            return "AI features are disabled";
+        }
+        
+        logger.info("Generating risk summary for sprint: {}", sprintId);
+        
+        // Use helper to fetch and convert tasks
+        RiskSummaryHelper.RiskSummaryData data = riskSummaryHelper.prepareRiskSummaryData(sprintId);
+        
+        if (data == null) {
+            return "No tasks found for this sprint. Please import tasks first.";
+        }
+        
+        // Call existing generateRiskSummary method with prepared data
+        return generateRiskSummary(data.tasks(), data.risks());
     }
     
     /**

@@ -1,14 +1,26 @@
 package com.sprintpilot.service.impl;
 
-import com.sprintpilot.dto.*;
+import com.sprintpilot.dto.CapacitySummaryDto;
+import com.sprintpilot.dto.SprintDto;
+import com.sprintpilot.dto.SprintEventDto;
+import com.sprintpilot.dto.TaskDto;
+import com.sprintpilot.dto.TaskRiskDto;
+import com.sprintpilot.dto.TeamMemberDto;
 import com.sprintpilot.service.AIService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-import java.util.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @ConditionalOnProperty(name = "app.ai.mock-mode", havingValue = "true")
 public class MockAIService implements AIService {
+    
+    @Autowired
+    private RiskSummaryHelper riskSummaryHelper;
     
     @Override
     public String generateSprintSummary(List<TeamMemberDto> team, SprintDto sprint, 
@@ -94,6 +106,19 @@ public class MockAIService implements AIService {
             3. Consider moving non-critical features to next sprint
             4. Daily standup focus on at-risk items until resolved
             """;
+    }
+    
+    @Override
+    public String generateRiskSummaryForSprint(String sprintId) {
+        // Use helper to fetch and convert tasks
+        RiskSummaryHelper.RiskSummaryData data = riskSummaryHelper.prepareRiskSummaryData(sprintId);
+        
+        if (data == null) {
+            return "No tasks found for this sprint. Please import tasks first.";
+        }
+        
+        // Call existing generateRiskSummary method with prepared data
+        return generateRiskSummary(data.tasks(), data.risks());
     }
     
     @Override
