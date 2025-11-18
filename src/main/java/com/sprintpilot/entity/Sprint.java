@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -50,6 +51,7 @@ public class Sprint {
     private LocalDateTime updatedAt;
     
     @OneToMany(mappedBy = "sprint", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<SprintEvent> events = new ArrayList<>();
     
     @ManyToMany(fetch = FetchType.LAZY)
@@ -58,9 +60,11 @@ public class Sprint {
         joinColumns = @JoinColumn(name = "sprint_id"),
         inverseJoinColumns = @JoinColumn(name = "member_id")
     )
+    @ToString.Exclude
     private List<TeamMember> teamMembers = new ArrayList<>();
     
     @OneToMany(mappedBy = "sprint", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
     private List<Task> tasks = new ArrayList<>();
     
     @PrePersist

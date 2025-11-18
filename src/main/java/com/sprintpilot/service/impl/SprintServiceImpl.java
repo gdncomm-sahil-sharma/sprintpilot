@@ -2,9 +2,11 @@ package com.sprintpilot.service.impl;
 
 import com.sprintpilot.dto.*;
 import com.sprintpilot.entity.Sprint;
+import com.sprintpilot.entity.TeamMember;
 import com.sprintpilot.repository.SprintRepository;
+import com.sprintpilot.repository.TaskRepository;
+import com.sprintpilot.repository.TeamMemberRepository;
 import com.sprintpilot.service.SprintService;
-import com.sprintpilot.service.ConfluenceService;
 import com.sprintpilot.util.DateUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +24,14 @@ public class SprintServiceImpl implements SprintService {
     @Autowired
     private SprintRepository sprintRepository;
     
-    @Autowired(required = false)
-    private ConfluenceService confluenceService;
-    
     @Autowired
     private com.sprintpilot.service.SprintEventService sprintEventService;
+    
+    @Autowired
+    private TaskRepository taskRepository;
+    
+    @Autowired
+    private TeamMemberRepository teamMemberRepository;
     
     @Value("${app.data.mock-data-path}")
     private String mockDataPath;
@@ -75,14 +80,6 @@ public class SprintServiceImpl implements SprintService {
         sprintRepository.save(sprint);
         log.info("Created new sprint: {} from {} to {}", newId, newSprint.startDate(), newSprint.endDate());
 
-        if (confluenceService.isEnabled()) {
-            try {
-                confluenceService.createSprintPage(newSprint, null);
-            } catch (Exception e) {
-                log.error("Failed to create Confluence page for sprint: {}", newSprint.id(), e);
-            }
-        }
-
         return newSprint;
     }
     
@@ -103,6 +100,7 @@ public class SprintServiceImpl implements SprintService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public SprintDto getSprintById(String id) {
         Sprint sprint = sprintRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Sprint not found: " + id));
@@ -110,11 +108,13 @@ public class SprintServiceImpl implements SprintService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public SprintDto getSprintWithFullDetails(String id) {
         return getSprintById(id);
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<SprintDto> getAllSprints() {
         return sprintRepository.findAll().stream()
             .map(this::convertToDto)
@@ -122,6 +122,7 @@ public class SprintServiceImpl implements SprintService {
     }
     
     @Override
+    @Transactional(readOnly = true)
     public List<SprintDto> getActiveSprints() {
         // Query actual database for active sprints (only ACTIVE status)
         List<Sprint> activeSprints = sprintRepository.findAll().stream()
@@ -151,6 +152,25 @@ public class SprintServiceImpl implements SprintService {
         // Fetch related data for complete DTO
         List<SprintEventDto> events = sprintEventService.getEventsBySprintId(sprint.getId());
         
+        // Fetch tasks from database
+        List<TaskDto> tasks = taskRepository.findTaskDtosBySprintId(sprint.getId());
+        
+        // Fetch team members from database
+        List<TeamMember> teamMembers = teamMemberRepository.findBySprintId(sprint.getId());
+        List<TeamMemberDto> teamMemberDtos = teamMembers.stream()
+            .map(member -> new TeamMemberDto(
+                member.getId(),
+                member.getName(),
+                member.getRole(),
+                member.getDailyCapacity(),
+                member.getEmail(),
+                member.getLocation(),
+                member.getActive(),
+                List.of(), // Leave days not needed for sprint DTO
+                true // Assigned to current sprint
+            ))
+            .collect(Collectors.toList());
+        
         return new SprintDto(
             sprint.getId(),
             sprint.getStartDate(),
@@ -158,9 +178,9 @@ public class SprintServiceImpl implements SprintService {
             sprint.getDuration(),
             sprint.getFreezeDate(),
             sprint.getStatus(),
-            events != null ? events : List.of(), // Actual events from database
-            List.of(), // Team members - load separately if needed
-            List.of()  // Tasks - load separately if needed
+            events != null ? events : List.of(),
+            teamMemberDtos,
+            tasks != null ? tasks : List.of()
         );
     }
     

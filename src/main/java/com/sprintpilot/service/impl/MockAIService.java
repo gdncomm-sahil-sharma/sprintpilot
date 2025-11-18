@@ -125,60 +125,6 @@ public class MockAIService implements AIService {
     }
     
     @Override
-    public String generateConfluencePage(List<TeamMemberDto> team, SprintDto sprint, 
-                                        List<TaskDto> tasks, List<CapacitySummaryDto> workload) {
-        return String.format("""
-            h1. Sprint Plan: %s to %s
-            
-            h2. Sprint Goals
-            * Deliver core features for Q4 release
-            * Complete technical debt reduction initiative
-            * Improve system performance by 20%%
-            * Fix all P1 production issues
-            
-            h2. Team Capacity
-            ||Team Member||Role||Capacity (hours)||Assigned (hours)||Status||
-            |Alice|Frontend|60|51|OK|
-            |Bob|Backend|70|66|OK|
-            |Charlie|QA|50|40|Underutilized|
-            |David|Backend|70|63|OK|
-            
-            h2. Sprint Metrics
-            * Total Story Points: 125
-            * Team Velocity (3-sprint avg): 110
-            * Sprint Duration: %d working days
-            * Total Capacity: 250 hours
-            * Committed Work: 220 hours
-            
-            h2. Work Items
-            
-            h3. Features (60%%)
-            * [PROJ-201] Implement new dashboard - 40h (Alice)
-            * [PROJ-202] API v2 endpoints - 32h (Bob)
-            * [PROJ-203] Mobile responsive design - 24h (Alice)
-            
-            h3. Technical Debt (25%%)
-            * [PROJ-210] Refactor authentication module - 20h (David)
-            * [PROJ-211] Database query optimization - 16h (Bob)
-            
-            h3. Bug Fixes (15%%)
-            * [PROJ-220] Fix payment gateway timeout - 12h (David)
-            * [PROJ-221] Resolve UI rendering issues - 8h (Alice)
-            
-            h2. Dependencies and Risks
-            * External API integration pending vendor confirmation
-            * New framework version requires team training
-            * Production deployment window limited to weekends
-            
-            h2. Success Criteria
-            * All committed stories completed and tested
-            * Zero P1 bugs in production
-            * Performance metrics meet target thresholds
-            * Team satisfaction score > 4.0
-            """, sprint.startDate(), sprint.endDate(), sprint.duration());
-    }
-    
-    @Override
     public String generateTeamsMessage(List<TeamMemberDto> team, SprintDto sprint, 
                                       List<TaskDto> tasks, List<CapacitySummaryDto> workload) {
         return String.format("""

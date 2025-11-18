@@ -2,6 +2,7 @@ package com.sprintpilot.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -20,6 +21,7 @@ public class Task {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sprint_id", nullable = false)
+    @ToString.Exclude
     private Sprint sprint;
     
     @Column(name = "task_key", nullable = false)
@@ -74,6 +76,7 @@ public class Task {
         joinColumns = @JoinColumn(name = "task_id"),
         inverseJoinColumns = @JoinColumn(name = "member_id")
     )
+    @ToString.Exclude
     private List<TeamMember> assignees = new ArrayList<>();
     
     @PrePersist

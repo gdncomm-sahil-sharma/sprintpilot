@@ -288,33 +288,6 @@ public class GeminiAIService implements AIService {
     }
     
     /**
-     * Generates Confluence page content with wiki markup formatting
-     */
-    @Override
-    public String generateConfluencePage(List<TeamMemberDto> team, SprintDto sprint, 
-                                        List<TaskDto> tasks, List<CapacitySummaryDto> workload) {
-        if (!aiEnabled) {
-            return "AI features are disabled";
-        }
-        
-        String prompt = buildSprintDataPrompt(team, sprint, tasks, workload) + "\n\n" +
-                       """
-                       Based on the sprint data above, generate a Confluence page content using Confluence wiki markup.
-                       
-                       Create a well-structured Confluence page with these sections:
-                       1. A main title (h1.) for the sprint plan including the dates
-                       2. A "Sprint Goals" section (h2.) with 2-3 plausible, high-level goals
-                       3. A "Team Capacity" section (h2.) with a table showing team members and their capacity
-                       4. A "Work Items" section (h2.) listing all tasks using bullet points (*)
-                       5. A "Dependencies and Risks" section (h2.) if applicable
-                       
-                       Use proper Confluence wiki markup syntax.
-                       """;
-        
-        return callAI(prompt, "Confluence Page");
-    }
-    
-    /**
      * Generates an engaging Microsoft Teams announcement message
      */
     @Override
