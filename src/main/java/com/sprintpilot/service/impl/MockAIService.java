@@ -22,6 +22,9 @@ public class MockAIService implements AIService {
     @Autowired
     private RiskSummaryHelper riskSummaryHelper;
     
+    @Autowired
+    private PerformanceInsightsHelper performanceInsightsHelper;
+    
     @Override
     public String generateSprintSummary(List<TeamMemberDto> team, SprintDto sprint, 
                                        List<TaskDto> tasks, List<CapacitySummaryDto> workload) {
@@ -325,5 +328,18 @@ public class MockAIService implements AIService {
         details.put("body", generateMeetingInvite(meeting, sprint));
         
         return details;
+    }
+    
+    @Override
+    public String generatePerformanceInsightsFromHistory() {
+        // Use helper to fetch sprints and calculate metrics
+        PerformanceInsightsHelper.PerformanceData data = performanceInsightsHelper.preparePerformanceData();
+        
+        if (data == null) {
+            return "No completed sprints found. Please complete at least one sprint to generate performance insights.";
+        }
+        
+        // Call existing analyzeHistoricalPerformance method with prepared data
+        return analyzeHistoricalPerformance(data.sprints(), data.velocityTrend(), data.workMixTrend(), data.roleUtilization());
     }
 }
