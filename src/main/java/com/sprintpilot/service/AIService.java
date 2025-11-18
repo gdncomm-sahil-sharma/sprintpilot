@@ -13,6 +13,13 @@ public interface AIService {
     
     String generateRiskSummary(List<TaskDto> tasks, List<TaskRiskDto> risks);
     
+    /**
+     * Generate risk summary for a sprint by fetching tasks from database
+     * @param sprintId The sprint ID
+     * @return AI-generated risk summary
+     */
+    String generateRiskSummaryForSprint(String sprintId);
+    
     String generateConfluencePage(List<TeamMemberDto> team, SprintDto sprint, 
                                  List<TaskDto> tasks, List<CapacitySummaryDto> workload);
     
