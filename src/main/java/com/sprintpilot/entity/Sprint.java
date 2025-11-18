@@ -42,7 +42,7 @@ public class Sprint {
     
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private SprintStatus status = SprintStatus.PLANNING;
+    private SprintStatus status = SprintStatus.ACTIVE;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -79,10 +79,13 @@ public class Sprint {
         updatedAt = LocalDateTime.now();
     }
     
+    /**
+     * Sprint Status Lifecycle:
+     * - ACTIVE: Current sprint in progress (default)
+     * - ARCHIVED: Historical sprint for reference and analytics
+     */
     public enum SprintStatus {
-        PLANNING,
         ACTIVE,
-        COMPLETED,
         ARCHIVED
     }
 }

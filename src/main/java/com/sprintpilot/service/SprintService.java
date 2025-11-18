@@ -19,11 +19,7 @@ public interface SprintService {
     
     List<SprintDto> getActiveSprints();
     
-    List<SprintDto> getCompletedSprints();
-    
-    SprintDto startSprint(String id);
-    
-    SprintDto completeSprint(String id);
+    List<SprintDto> getArchivedSprints();
     
     SprintDto archiveSprint(String id);
     

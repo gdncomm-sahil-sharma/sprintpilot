@@ -63,7 +63,7 @@ public class SprintServiceImpl implements SprintService {
             endDate,
             sprintDto.duration(),
             freezeDate,
-            Sprint.SprintStatus.PLANNING,
+            Sprint.SprintStatus.ACTIVE,
             sprintDto.events() != null ? sprintDto.events() : List.of(),
             sprintDto.teamMembers() != null ? sprintDto.teamMembers() : List.of(),
             sprintDto.tasks() != null ? sprintDto.tasks() : List.of()
@@ -124,8 +124,10 @@ public class SprintServiceImpl implements SprintService {
     @Override
     @Transactional(readOnly = true)
     public List<SprintDto> getActiveSprints() {
-        // Query actual database for active sprints using repository query
-        List<Sprint> activeSprints = sprintRepository.findActiveSprints();
+        // Query actual database for active sprints (only ACTIVE status)
+        List<Sprint> activeSprints = sprintRepository.findAll().stream()
+            .filter(s -> s.getStatus() == Sprint.SprintStatus.ACTIVE)
+            .collect(Collectors.toList());
         
         // Convert to DTOs
         return activeSprints.stream()
@@ -134,13 +136,14 @@ public class SprintServiceImpl implements SprintService {
     }
     
     @Override
-    @Transactional(readOnly = true)
-    public List<SprintDto> getCompletedSprints() {
-        // Query actual database for completed sprints using repository query
-        List<Sprint> completedSprints = sprintRepository.findCompletedSprints();
+    public List<SprintDto> getArchivedSprints() {
+        // Query actual database for archived sprints
+        List<Sprint> archivedSprints = sprintRepository.findAll().stream()
+            .filter(s -> s.getStatus() == Sprint.SprintStatus.ARCHIVED)
+            .collect(Collectors.toList());
         
         // Convert to DTOs
-        return completedSprints.stream()
+        return archivedSprints.stream()
             .map(this::convertToDto)
             .collect(Collectors.toList());
     }
@@ -179,42 +182,6 @@ public class SprintServiceImpl implements SprintService {
             teamMemberDtos,
             tasks != null ? tasks : List.of()
         );
-    }
-    
-    @Override
-    @Transactional
-    public SprintDto startSprint(String id) {
-        SprintDto sprint = getSprintById(id);
-        SprintDto updatedSprint = new SprintDto(
-            sprint.id(),
-            sprint.startDate(),
-            sprint.endDate(),
-            sprint.duration(),
-            sprint.freezeDate(),
-            Sprint.SprintStatus.ACTIVE,
-            sprint.events(),
-            sprint.teamMembers(),
-            sprint.tasks()
-        );
-        return updateSprint(id, updatedSprint);
-    }
-    
-    @Override
-    @Transactional
-    public SprintDto completeSprint(String id) {
-        SprintDto sprint = getSprintById(id);
-        SprintDto updatedSprint = new SprintDto(
-            sprint.id(),
-            sprint.startDate(),
-            sprint.endDate(),
-            sprint.duration(),
-            sprint.freezeDate(),
-            Sprint.SprintStatus.COMPLETED,
-            sprint.events(),
-            sprint.teamMembers(),
-            sprint.tasks()
-        );
-        return updateSprint(id, updatedSprint);
     }
     
     @Override
@@ -309,7 +276,7 @@ public class SprintServiceImpl implements SprintService {
             endDate,
             duration,
             freezeDate,
-            Sprint.SprintStatus.PLANNING,
+            Sprint.SprintStatus.ACTIVE,
             List.of(),
             List.of(),
             List.of()
@@ -331,7 +298,7 @@ public class SprintServiceImpl implements SprintService {
             .endDate(endDate)
             .duration(source.duration())
             .freezeDate(null)
-            .status(Sprint.SprintStatus.PLANNING)
+            .status(Sprint.SprintStatus.ACTIVE)
             .build();
         
         sprintRepository.save(sprint);
@@ -358,8 +325,8 @@ public class SprintServiceImpl implements SprintService {
     
     @Override
     public List<SprintDto> getSprintTemplates() {
-        // Return completed sprints as templates, limited to last 10
-        return getCompletedSprints().stream()
+        // Return archived sprints as templates, limited to last 10
+        return getArchivedSprints().stream()
             .limit(10)
             .collect(Collectors.toList());
     }
@@ -381,7 +348,7 @@ public class SprintServiceImpl implements SprintService {
             .endDate(newEndDate)
             .duration(template.duration())
             .freezeDate(newFreezeDate)
-            .status(Sprint.SprintStatus.PLANNING)
+            .status(Sprint.SprintStatus.ACTIVE)
             .build();
         
         sprintRepository.save(sprint);

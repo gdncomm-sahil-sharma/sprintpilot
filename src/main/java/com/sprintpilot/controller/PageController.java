@@ -34,7 +34,7 @@ public class PageController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("activeSprints", sprintService.getActiveSprints());
-        model.addAttribute("completedSprints", sprintService.getCompletedSprints());
+        model.addAttribute("archivedSprints", sprintService.getArchivedSprints());
         model.addAttribute("pageTitle", "Dashboard");
         return "dashboard/index";
     }
@@ -109,13 +109,13 @@ public class PageController {
     @GetMapping("/analytics")
     public String analytics(Model model) {
         model.addAttribute("pageTitle", "Analytics");
-        model.addAttribute("completedSprints", sprintService.getCompletedSprints());
+        model.addAttribute("archivedSprints", sprintService.getArchivedSprints());
         return "analytics/index";
     }
     
     @GetMapping("/history")
     public String history(Model model) {
-        model.addAttribute("completedSprints", sprintService.getCompletedSprints());
+        model.addAttribute("archivedSprints", sprintService.getArchivedSprints());
         model.addAttribute("pageTitle", "Sprint History");
         return "history/index";
     }

@@ -26,13 +26,13 @@ public class PerformanceInsightsHelper {
     }
     
     /**
-     * Fetch completed sprints and calculate performance metrics
+     * Fetch archived sprints and calculate performance metrics
      * 
      * @return PerformanceData containing sprints and calculated metrics, or null if no sprints found
      */
     public PerformanceData preparePerformanceData() {
-        // Fetch completed sprints from database
-        List<SprintDto> completedSprints = sprintService.getCompletedSprints();
+        // Fetch archived sprints from database
+        List<SprintDto> completedSprints = sprintService.getArchivedSprints();
         
         if (completedSprints.isEmpty()) {
             return null;
