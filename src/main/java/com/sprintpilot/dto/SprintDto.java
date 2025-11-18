@@ -24,7 +24,7 @@ public record SprintDto(
             throw new IllegalArgumentException("Duration must be positive");
         }
         if (status == null) {
-            status = Sprint.SprintStatus.PLANNING;
+            status = Sprint.SprintStatus.ACTIVE;
         }
         if (events == null) {
             events = List.of();

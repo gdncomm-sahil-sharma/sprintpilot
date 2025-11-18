@@ -83,36 +83,14 @@ public class SprintController {
         }
     }
     
-    @GetMapping("/completed")
-    public ResponseEntity<ApiResponse<List<SprintDto>>> getCompletedSprints() {
+    @GetMapping("/archived")
+    public ResponseEntity<ApiResponse<List<SprintDto>>> getArchivedSprints() {
         try {
-            List<SprintDto> sprints = sprintService.getCompletedSprints();
+            List<SprintDto> sprints = sprintService.getArchivedSprints();
             return ResponseEntity.ok(ApiResponse.success(sprints));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Failed to fetch completed sprints", e.getMessage()));
-        }
-    }
-    
-    @PostMapping("/{id}/start")
-    public ResponseEntity<ApiResponse<SprintDto>> startSprint(@PathVariable String id) {
-        try {
-            SprintDto sprint = sprintService.startSprint(id);
-            return ResponseEntity.ok(ApiResponse.success("Sprint started successfully", sprint));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Failed to start sprint", e.getMessage()));
-        }
-    }
-    
-    @PostMapping("/{id}/complete")
-    public ResponseEntity<ApiResponse<SprintDto>> completeSprint(@PathVariable String id) {
-        try {
-            SprintDto sprint = sprintService.completeSprint(id);
-            return ResponseEntity.ok(ApiResponse.success("Sprint completed successfully", sprint));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Failed to complete sprint", e.getMessage()));
+                .body(ApiResponse.error("Failed to fetch archived sprints", e.getMessage()));
         }
     }
     
