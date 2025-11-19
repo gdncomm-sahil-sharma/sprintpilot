@@ -32,6 +32,89 @@
                 </div>
             </div>
 
+            <!-- Sprint Metrics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- Sprint Progress -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-5">
+                            <p class="text-sm font-medium text-gray-500">Sprint Progress</p>
+                            <p id="sprintProgressValue" class="text-2xl font-bold text-gray-900">--<span class="text-sm font-normal text-gray-500">%</span></p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div id="sprintProgressDays" class="text-sm text-gray-500 font-medium">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Work Remaining -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-warning/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-5">
+                            <p class="text-sm font-medium text-gray-500">Work Remaining</p>
+                            <p id="workRemainingValue" class="text-2xl font-bold text-gray-900">--<span class="text-sm font-normal text-gray-500">hrs</span></p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div id="workRemainingDays" class="text-sm text-gray-500 font-medium">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Tasks Completed -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-success/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-5">
+                            <p class="text-sm font-medium text-gray-500">Tasks Completed</p>
+                            <p id="tasksCompletedValue" class="text-2xl font-bold text-gray-900">--/--</p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div id="tasksCompletedPercent" class="text-sm text-gray-500 font-medium">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Team Utilization -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="ml-5">
+                            <p class="text-sm font-medium text-gray-500">Team Utilization</p>
+                            <p id="teamUtilizationValue" class="text-2xl font-bold text-gray-900">--<span class="text-sm font-normal text-gray-500">%</span></p>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div id="teamUtilizationStatus" class="text-sm text-gray-500 font-medium">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Tabs Navigation -->
             <div class="mb-6">
                 <div class="border-b border-gray-200">
@@ -427,13 +510,90 @@
                 console.log('Sprint ID changed to:', currentSprintId);
             }
 
+            // Load current sprint metrics
+            async function loadCurrentSprintMetrics() {
+                if (!currentSprintId) {
+                    console.error('No sprint ID available for metrics');
+                    return;
+                }
+
+                console.log('Loading current sprint metrics for sprint:', currentSprintId);
+
+                try {
+                    const response = await fetch('/api/sprints/metrics/current', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sprintId: currentSprintId
+                        })
+                    });
+                    const data = await response.json();
+
+                    console.log('Current sprint metrics response:', data);
+
+                    if (data.success && data.data) {
+                        updateMetricCards(data.data);
+                    } else {
+                        console.error('Failed to load current sprint metrics:', data.message);
+                    }
+                } catch (error) {
+                    console.error('Error loading current sprint metrics:', error);
+                }
+            }
+
+            function updateMetricCards(metrics) {
+                console.log('Updating metric cards with:', metrics);
+                
+                // Update Sprint Progress card
+                if (metrics.sprintProgress) {
+                    const progressValue = document.getElementById('sprintProgressValue');
+                    const progressDays = document.getElementById('sprintProgressDays');
+                    progressValue.innerHTML = `${parseFloat(metrics.sprintProgress.percentComplete).toFixed(1)}<span class="text-sm font-normal text-gray-500">%</span>`;
+                    progressDays.textContent = `Day ${metrics.sprintProgress.currentDay} of ${metrics.sprintProgress.totalDays}`;
+                }
+                
+                // Update Work Remaining card
+                if (metrics.workRemaining) {
+                    const workValue = document.getElementById('workRemainingValue');
+                    const workDays = document.getElementById('workRemainingDays');
+                    workValue.innerHTML = `${parseFloat(metrics.workRemaining.hoursRemaining).toFixed(1)}<span class="text-sm font-normal text-gray-500">hrs</span>`;
+                    const daysText = metrics.workRemaining.daysLeft === 1 ? 'day' : 'days';
+                    workDays.textContent = `${metrics.workRemaining.daysLeft} ${daysText} left`;
+                }
+                
+                // Update Tasks Completed card
+                if (metrics.tasksCompleted) {
+                    const tasksValue = document.getElementById('tasksCompletedValue');
+                    const tasksPercent = document.getElementById('tasksCompletedPercent');
+                    tasksValue.textContent = `${metrics.tasksCompleted.completedTasks}/${metrics.tasksCompleted.totalTasks}`;
+                    tasksPercent.textContent = `${parseFloat(metrics.tasksCompleted.percentComplete).toFixed(1)}% done`;
+                }
+                
+                // Update Team Utilization card
+                if (metrics.utilization) {
+                    const utilizationValue = document.getElementById('teamUtilizationValue');
+                    const utilizationStatus = document.getElementById('teamUtilizationStatus');
+                    utilizationValue.innerHTML = `${parseFloat(metrics.utilization.average).toFixed(1)}<span class="text-sm font-normal text-gray-500">%</span>`;
+                    
+                    const statusText = metrics.utilization.status === 'optimal' ? 'Optimal range' :
+                                      metrics.utilization.status === 'over' ? 'Over-utilized' :
+                                      'Under-utilized';
+                    const statusClass = metrics.utilization.status === 'optimal' ? 'text-success' :
+                                       metrics.utilization.status === 'over' ? 'text-danger' : 'text-warning';
+                    utilizationStatus.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
+                }
+            }
+
             // Load tasks when page loads - wait for sprint ID to be set
             document.addEventListener('DOMContentLoaded', function() {
                 initializeSprintId();
                 
-                // If sprint ID is available, load tasks immediately
+                // If sprint ID is available, load tasks and metrics immediately
                 if (currentSprintId) {
                     loadTasks();
+                    loadCurrentSprintMetrics();
                 } else {
                     // Wait a bit for app.js to fetch and set the cookie
                     console.log('Waiting for sprint ID to be set by app.js...');
@@ -441,6 +601,7 @@
                         initializeSprintId(); // Try again
                         if (currentSprintId) {
                             loadTasks();
+                            loadCurrentSprintMetrics();
                         } else {
                             console.error('Sprint ID not available after waiting. Cannot load tasks.');
                             showToast('Error: Sprint ID not found. Please refresh the page.', 'error');

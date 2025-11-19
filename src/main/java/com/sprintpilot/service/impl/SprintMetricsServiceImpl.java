@@ -1,13 +1,20 @@
 package com.sprintpilot.service.impl;
 
+import com.sprintpilot.dto.CurrentSprintMetricsDto;
+import com.sprintpilot.dto.MemberUtilizationDto;
 import com.sprintpilot.dto.SprintMetricsDto;
+import com.sprintpilot.dto.SprintSummaryMetricsDto;
 import com.sprintpilot.dto.VelocityTrendDto;
 import com.sprintpilot.dto.WorkDistributionDto;
 import com.sprintpilot.entity.Sprint;
+import com.sprintpilot.entity.SprintEvent;
 import com.sprintpilot.entity.Task;
 import com.sprintpilot.entity.TeamMember;
+import com.sprintpilot.repository.HolidayRepository;
+import com.sprintpilot.repository.SprintEventRepository;
 import com.sprintpilot.repository.SprintRepository;
 import com.sprintpilot.repository.TaskRepository;
+import com.sprintpilot.service.MemberService;
 import com.sprintpilot.service.SprintMetricsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +42,15 @@ public class SprintMetricsServiceImpl implements SprintMetricsService {
 
     @Autowired
     private TaskRepository taskRepository;
+
+    @Autowired
+    private MemberService memberService;
+
+    @Autowired
+    private HolidayRepository holidayRepository;
+
+    @Autowired
+    private SprintEventRepository sprintEventRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -389,6 +405,481 @@ public class SprintMetricsServiceImpl implements SprintMetricsService {
                 sprintVelocities.size(), averageVelocity);
         
         return new VelocityTrendDto(sprintVelocities, averageVelocity);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SprintSummaryMetricsDto getSummaryMetrics(String currentSprintId) {
+        log.info("Calculating summary metrics for sprint: {}", currentSprintId);
+        
+        // Verify sprint exists
+        sprintRepository.findById(currentSprintId)
+                .orElseThrow(() -> new RuntimeException("Sprint not found: " + currentSprintId));
+        
+        // Get velocity trend data (includes current + last 5 sprints)
+        VelocityTrendDto velocityTrend = getVelocityTrend(currentSprintId);
+        
+        // Calculate velocity metric
+        SprintSummaryMetricsDto.VelocityMetric velocityMetric = calculateVelocityMetric(
+                currentSprintId, velocityTrend);
+        
+        // Calculate success rate metric
+        SprintSummaryMetricsDto.SuccessRateMetric successRateMetric = calculateSuccessRateMetric(
+                currentSprintId);
+        
+        // Calculate cycle time metric
+        SprintSummaryMetricsDto.CycleTimeMetric cycleTimeMetric = calculateCycleTimeMetric(
+                currentSprintId);
+        
+        // Calculate utilization metric
+        SprintSummaryMetricsDto.UtilizationMetric utilizationMetric = calculateUtilizationMetric(
+                currentSprintId);
+        
+        log.info("Summary metrics calculated successfully for sprint: {}", currentSprintId);
+        
+        return new SprintSummaryMetricsDto(
+                velocityMetric,
+                successRateMetric,
+                cycleTimeMetric,
+                utilizationMetric
+        );
+    }
+
+    private SprintSummaryMetricsDto.VelocityMetric calculateVelocityMetric(
+            String currentSprintId, VelocityTrendDto velocityTrend) {
+        
+        List<VelocityTrendDto.SprintVelocityData> sprints = velocityTrend.sprints();
+        if (sprints.isEmpty()) {
+            return new SprintSummaryMetricsDto.VelocityMetric(
+                    BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, "neutral");
+        }
+        
+        // Current sprint is the last one in the list
+        VelocityTrendDto.SprintVelocityData currentSprintData = sprints.get(sprints.size() - 1);
+        BigDecimal currentVelocity = currentSprintData.completedPoints();
+        BigDecimal averageVelocity = velocityTrend.averageVelocity();
+        
+        // Calculate percentage change from previous sprint
+        BigDecimal percentageChange = BigDecimal.ZERO;
+        String trend = "neutral";
+        
+        if (sprints.size() > 1) {
+            VelocityTrendDto.SprintVelocityData previousSprintData = sprints.get(sprints.size() - 2);
+            BigDecimal previousVelocity = previousSprintData.completedPoints();
+            
+            if (previousVelocity.compareTo(BigDecimal.ZERO) > 0) {
+                percentageChange = currentVelocity
+                        .subtract(previousVelocity)
+                        .divide(previousVelocity, 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                        .setScale(1, RoundingMode.HALF_UP);
+                
+                if (percentageChange.compareTo(BigDecimal.ZERO) > 0) {
+                    trend = "up";
+                } else if (percentageChange.compareTo(BigDecimal.ZERO) < 0) {
+                    trend = "down";
+                }
+            }
+        }
+        
+        log.debug("Velocity metric: current={}, average={}, change={}%, trend={}", 
+                currentVelocity, averageVelocity, percentageChange, trend);
+        
+        return new SprintSummaryMetricsDto.VelocityMetric(
+                currentVelocity, averageVelocity, percentageChange, trend);
+    }
+
+    private SprintSummaryMetricsDto.SuccessRateMetric calculateSuccessRateMetric(
+            String currentSprintId) {
+        
+        List<Task> currentTasks = taskRepository.findBySprintId(currentSprintId);
+        
+        if (currentTasks.isEmpty()) {
+            return new SprintSummaryMetricsDto.SuccessRateMetric(
+                    BigDecimal.ZERO, BigDecimal.ZERO, "neutral");
+        }
+        
+        // Calculate current success rate
+        long completedTasks = currentTasks.stream()
+                .filter(task -> task.getStatus() == Task.TaskStatus.DONE)
+                .count();
+        
+        BigDecimal currentSuccessRate = BigDecimal.valueOf(completedTasks)
+                .divide(BigDecimal.valueOf(currentTasks.size()), 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(1, RoundingMode.HALF_UP);
+        
+        // Get previous sprint for comparison
+        List<Sprint> archivedSprints = sprintRepository.findArchivedSprintsOrderByEndDateDesc();
+        BigDecimal percentageChange = BigDecimal.ZERO;
+        String trend = "neutral";
+        
+        if (!archivedSprints.isEmpty()) {
+            Sprint previousSprint = archivedSprints.get(0); // Most recent archived sprint
+            List<Task> previousTasks = taskRepository.findBySprintId(previousSprint.getId());
+            
+            if (!previousTasks.isEmpty()) {
+                long previousCompletedTasks = previousTasks.stream()
+                        .filter(task -> task.getStatus() == Task.TaskStatus.DONE)
+                        .count();
+                
+                BigDecimal previousSuccessRate = BigDecimal.valueOf(previousCompletedTasks)
+                        .divide(BigDecimal.valueOf(previousTasks.size()), 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100));
+                
+                percentageChange = currentSuccessRate.subtract(previousSuccessRate)
+                        .setScale(1, RoundingMode.HALF_UP);
+                
+                if (percentageChange.compareTo(BigDecimal.ZERO) > 0) {
+                    trend = "up";
+                } else if (percentageChange.compareTo(BigDecimal.ZERO) < 0) {
+                    trend = "down";
+                }
+            }
+        }
+        
+        log.debug("Success rate metric: current={}%, change={}%, trend={}", 
+                currentSuccessRate, percentageChange, trend);
+        
+        return new SprintSummaryMetricsDto.SuccessRateMetric(
+                currentSuccessRate, percentageChange, trend);
+    }
+
+    private SprintSummaryMetricsDto.CycleTimeMetric calculateCycleTimeMetric(
+            String currentSprintId) {
+        
+        List<Task> currentTasks = taskRepository.findBySprintId(currentSprintId);
+        
+        // Calculate current average cycle time (for completed tasks)
+        List<Task> completedTasks = currentTasks.stream()
+                .filter(task -> task.getStatus() == Task.TaskStatus.DONE)
+                .filter(task -> task.getCreatedAt() != null && task.getUpdatedAt() != null)
+                .collect(Collectors.toList());
+        
+        BigDecimal currentCycleTime = BigDecimal.ZERO;
+        if (!completedTasks.isEmpty()) {
+            long totalDays = completedTasks.stream()
+                    .mapToLong(task -> ChronoUnit.DAYS.between(
+                            task.getCreatedAt().toLocalDate(), 
+                            task.getUpdatedAt().toLocalDate()))
+                    .sum();
+            
+            currentCycleTime = BigDecimal.valueOf(totalDays)
+                    .divide(BigDecimal.valueOf(completedTasks.size()), 1, RoundingMode.HALF_UP);
+        }
+        
+        // Calculate baseline (average from all archived sprints)
+        List<Sprint> archivedSprints = sprintRepository.findArchivedSprintsOrderByEndDateDesc();
+        BigDecimal baseline = BigDecimal.ZERO;
+        int totalCompletedTasksInArchive = 0;
+        long totalCycleTimeDays = 0;
+        
+        for (Sprint sprint : archivedSprints) {
+            List<Task> sprintTasks = taskRepository.findBySprintId(sprint.getId());
+            List<Task> sprintCompletedTasks = sprintTasks.stream()
+                    .filter(task -> task.getStatus() == Task.TaskStatus.DONE)
+                    .filter(task -> task.getCreatedAt() != null && task.getUpdatedAt() != null)
+                    .collect(Collectors.toList());
+            
+            for (Task task : sprintCompletedTasks) {
+                totalCycleTimeDays += ChronoUnit.DAYS.between(
+                        task.getCreatedAt().toLocalDate(), 
+                        task.getUpdatedAt().toLocalDate());
+            }
+            
+            totalCompletedTasksInArchive += sprintCompletedTasks.size();
+        }
+        
+        if (totalCompletedTasksInArchive > 0) {
+            baseline = BigDecimal.valueOf(totalCycleTimeDays)
+                    .divide(BigDecimal.valueOf(totalCompletedTasksInArchive), 1, RoundingMode.HALF_UP);
+        }
+        
+        BigDecimal difference = currentCycleTime.subtract(baseline);
+        String trend = "neutral";
+        if (difference.compareTo(BigDecimal.ZERO) > 0) {
+            trend = "up"; // Higher cycle time is worse
+        } else if (difference.compareTo(BigDecimal.ZERO) < 0) {
+            trend = "down"; // Lower cycle time is better
+        }
+        
+        log.debug("Cycle time metric: current={} days, baseline={} days, difference={}, trend={}", 
+                currentCycleTime, baseline, difference, trend);
+        
+        return new SprintSummaryMetricsDto.CycleTimeMetric(
+                currentCycleTime, baseline, difference, trend);
+    }
+
+    private SprintSummaryMetricsDto.UtilizationMetric calculateUtilizationMetric(
+            String currentSprintId) {
+        
+        List<MemberUtilizationDto> utilizations = memberService.getMemberUtilizationBySprintId(currentSprintId);
+        
+        if (utilizations.isEmpty()) {
+            return new SprintSummaryMetricsDto.UtilizationMetric(BigDecimal.ZERO, "under");
+        }
+        
+        // Calculate average utilization across all team members
+        BigDecimal totalUtilization = BigDecimal.ZERO;
+        
+        for (MemberUtilizationDto util : utilizations) {
+            // Calculate utilization % = (assigned work / capacity) * 100
+            if (util.capacity().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal memberUtilization = util.remainingEstimate()
+                        .divide(util.capacity(), 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100));
+                totalUtilization = totalUtilization.add(memberUtilization);
+            }
+        }
+        
+        BigDecimal averageUtilization = totalUtilization
+                .divide(BigDecimal.valueOf(utilizations.size()), 1, RoundingMode.HALF_UP);
+        
+        // Determine status based on utilization percentage
+        String status;
+        if (averageUtilization.compareTo(BigDecimal.valueOf(90)) > 0) {
+            status = "over"; // Over 90% - overutilized
+        } else if (averageUtilization.compareTo(BigDecimal.valueOf(70)) < 0) {
+            status = "under"; // Under 70% - underutilized
+        } else {
+            status = "optimal"; // 70-90% - optimal range
+        }
+        
+        log.debug("Utilization metric: average={}%, status={}", averageUtilization, status);
+        
+        return new SprintSummaryMetricsDto.UtilizationMetric(averageUtilization, status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CurrentSprintMetricsDto getCurrentSprintMetrics(String currentSprintId) {
+        log.info("Calculating current sprint metrics for sprint: {}", currentSprintId);
+        
+        // Get sprint details
+        Sprint sprint = sprintRepository.findById(currentSprintId)
+                .orElseThrow(() -> new RuntimeException("Sprint not found: " + currentSprintId));
+        
+        // Get all tasks in sprint
+        List<Task> tasks = taskRepository.findBySprintId(currentSprintId);
+        
+        // Calculate Sprint Progress
+        CurrentSprintMetricsDto.SprintProgressMetric sprintProgress = calculateSprintProgress(sprint);
+        
+        // Calculate Work Remaining
+        CurrentSprintMetricsDto.WorkRemainingMetric workRemaining = calculateWorkRemaining(tasks, sprint);
+        
+        // Calculate Tasks Completed
+        CurrentSprintMetricsDto.TasksCompletedMetric tasksCompleted = calculateTasksCompleted(tasks);
+        
+        // Calculate Team Utilization (reuse existing logic)
+        CurrentSprintMetricsDto.UtilizationMetric utilization = calculateCurrentUtilizationMetric(currentSprintId);
+        
+        log.info("Current sprint metrics calculated successfully for sprint: {}", currentSprintId);
+        
+        return new CurrentSprintMetricsDto(sprintProgress, workRemaining, tasksCompleted, utilization);
+    }
+
+    private CurrentSprintMetricsDto.SprintProgressMetric calculateSprintProgress(Sprint sprint) {
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = sprint.getStartDate();
+        LocalDate endDate = sprint.getEndDate();
+        
+        // Collect all unique holiday dates (from both holidays table and sprint events)
+        java.util.Set<LocalDate> uniqueHolidayDates = new java.util.HashSet<>();
+        holidayRepository.findByDateRange(startDate, endDate)
+                .forEach(holiday -> uniqueHolidayDates.add(holiday.getHolidayDate()));
+        sprintEventRepository.findBySprintIdAndEventTypeOrderByEventDate(
+                sprint.getId(), 
+                SprintEvent.EventType.HOLIDAY
+        ).forEach(event -> uniqueHolidayDates.add(event.getEventDate()));
+        
+        // Calculate total working days in sprint (business days - holidays)
+        long totalBusinessDays = countBusinessDays(startDate, endDate);
+        long businessDayHolidays = uniqueHolidayDates.stream()
+                .filter(this::isBusinessDay)
+                .count();
+        long totalWorkingDays = totalBusinessDays - businessDayHolidays;
+        totalWorkingDays = Math.max(0, totalWorkingDays); // Ensure not negative
+        
+        // Calculate working days elapsed (from start to today, capped at sprint end)
+        long workingDaysElapsed;
+        if (today.isBefore(startDate)) {
+            workingDaysElapsed = 0;
+        } else {
+            LocalDate cappedToday = today.isAfter(endDate) ? endDate : today;
+            long businessDaysElapsed = countBusinessDays(startDate, cappedToday);
+            
+            // Count holidays that fall on business days within elapsed period
+            long businessDayHolidaysElapsed = uniqueHolidayDates.stream()
+                    .filter(date -> !date.isBefore(startDate) && !date.isAfter(cappedToday))
+                    .filter(this::isBusinessDay)
+                    .count();
+            
+            workingDaysElapsed = businessDaysElapsed - businessDayHolidaysElapsed;
+            workingDaysElapsed = Math.max(0, workingDaysElapsed);
+        }
+        
+        // Calculate percentage complete
+        BigDecimal percentComplete = BigDecimal.ZERO;
+        if (totalWorkingDays > 0) {
+            percentComplete = BigDecimal.valueOf(workingDaysElapsed)
+                    .divide(BigDecimal.valueOf(totalWorkingDays), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(1, RoundingMode.HALF_UP);
+        }
+        
+        log.debug("Sprint progress: {}% complete, working day {} of {} (excluding weekends and holidays)", 
+                percentComplete, workingDaysElapsed, totalWorkingDays);
+        
+        return new CurrentSprintMetricsDto.SprintProgressMetric(
+                percentComplete,
+                (int) workingDaysElapsed,
+                (int) totalWorkingDays
+        );
+    }
+
+    private CurrentSprintMetricsDto.WorkRemainingMetric calculateWorkRemaining(List<Task> tasks, Sprint sprint) {
+        // Calculate total remaining work (original estimate - time spent)
+        BigDecimal totalRemaining = BigDecimal.ZERO;
+        
+        for (Task task : tasks) {
+            BigDecimal originalEstimate = resolveOriginalEstimate(task);
+            BigDecimal timeSpent = task.getTimeSpent() != null ? task.getTimeSpent() : BigDecimal.ZERO;
+            BigDecimal remaining = originalEstimate.subtract(timeSpent);
+            
+            if (remaining.compareTo(BigDecimal.ZERO) > 0) {
+                totalRemaining = totalRemaining.add(remaining);
+            }
+        }
+        
+        // Calculate working days left in sprint (excluding weekends and holidays)
+        // Include current day since people typically log work at end of day
+        LocalDate today = LocalDate.now();
+        LocalDate endDate = sprint.getEndDate();
+        
+        int workingDaysLeft;
+        if (today.isAfter(endDate)) {
+            workingDaysLeft = 0;
+        } else {
+            // Collect all unique holiday dates
+            java.util.Set<LocalDate> uniqueHolidayDates = new java.util.HashSet<>();
+            holidayRepository.findByDateRange(today, endDate)
+                    .forEach(holiday -> uniqueHolidayDates.add(holiday.getHolidayDate()));
+            sprintEventRepository.findBySprintIdAndEventTypeOrderByEventDate(
+                    sprint.getId(), 
+                    SprintEvent.EventType.HOLIDAY
+            ).forEach(event -> uniqueHolidayDates.add(event.getEventDate()));
+            
+            // Count business days from today (inclusive) to end date
+            long businessDaysRemaining = countBusinessDays(today, endDate);
+            
+            // Count holidays that fall on business days from today onwards
+            long businessDayHolidays = uniqueHolidayDates.stream()
+                    .filter(date -> !date.isBefore(today) && !date.isAfter(endDate))
+                    .filter(this::isBusinessDay)
+                    .count();
+            
+            workingDaysLeft = (int) Math.max(0, businessDaysRemaining - businessDayHolidays);
+        }
+        
+        log.debug("Work remaining: {} hours, {} working days left", totalRemaining, workingDaysLeft);
+        
+        return new CurrentSprintMetricsDto.WorkRemainingMetric(
+                totalRemaining.setScale(1, RoundingMode.HALF_UP),
+                workingDaysLeft
+        );
+    }
+
+    private CurrentSprintMetricsDto.TasksCompletedMetric calculateTasksCompleted(List<Task> tasks) {
+        int totalTasks = tasks.size();
+        
+        long completedTasks = tasks.stream()
+                .filter(task -> task.getStatus() == Task.TaskStatus.DONE)
+                .count();
+        
+        BigDecimal percentComplete = BigDecimal.ZERO;
+        if (totalTasks > 0) {
+            percentComplete = BigDecimal.valueOf(completedTasks)
+                    .divide(BigDecimal.valueOf(totalTasks), 4, RoundingMode.HALF_UP)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(1, RoundingMode.HALF_UP);
+        }
+        
+        log.debug("Tasks completed: {} of {} ({}%)", completedTasks, totalTasks, percentComplete);
+        
+        return new CurrentSprintMetricsDto.TasksCompletedMetric(
+                (int) completedTasks,
+                totalTasks,
+                percentComplete
+        );
+    }
+
+    private CurrentSprintMetricsDto.UtilizationMetric calculateCurrentUtilizationMetric(String currentSprintId) {
+        List<MemberUtilizationDto> utilizations = memberService.getMemberUtilizationBySprintId(currentSprintId);
+        
+        if (utilizations.isEmpty()) {
+            return new CurrentSprintMetricsDto.UtilizationMetric(BigDecimal.ZERO, "under");
+        }
+        
+        // Calculate average utilization across all team members
+        BigDecimal totalUtilization = BigDecimal.ZERO;
+        
+        for (MemberUtilizationDto util : utilizations) {
+            // Calculate utilization % = (assigned work / capacity) * 100
+            if (util.capacity().compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal memberUtilization = util.remainingEstimate()
+                        .divide(util.capacity(), 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100));
+                totalUtilization = totalUtilization.add(memberUtilization);
+            }
+        }
+        
+        BigDecimal averageUtilization = totalUtilization
+                .divide(BigDecimal.valueOf(utilizations.size()), 1, RoundingMode.HALF_UP);
+        
+        // Determine status based on utilization percentage
+        String status;
+        if (averageUtilization.compareTo(BigDecimal.valueOf(90)) > 0) {
+            status = "over"; // Over 90% - overutilized
+        } else if (averageUtilization.compareTo(BigDecimal.valueOf(70)) < 0) {
+            status = "under"; // Under 70% - underutilized
+        } else {
+            status = "optimal"; // 70-90% - optimal range
+        }
+        
+        log.debug("Current utilization metric: average={}%, status={}", averageUtilization, status);
+        
+        return new CurrentSprintMetricsDto.UtilizationMetric(averageUtilization, status);
+    }
+
+    /**
+     * Count business days (Monday-Friday) between two dates (inclusive)
+     */
+    private long countBusinessDays(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            return 0;
+        }
+        
+        long businessDays = 0;
+        LocalDate current = startDate;
+        
+        while (!current.isAfter(endDate)) {
+            if (isBusinessDay(current)) {
+                businessDays++;
+            }
+            current = current.plusDays(1);
+        }
+        
+        return businessDays;
+    }
+
+    /**
+     * Check if a date is a business day (Monday-Friday)
+     */
+    private boolean isBusinessDay(LocalDate date) {
+        java.time.DayOfWeek dayOfWeek = date.getDayOfWeek();
+        return dayOfWeek != java.time.DayOfWeek.SATURDAY && 
+               dayOfWeek != java.time.DayOfWeek.SUNDAY;
     }
 }
 
