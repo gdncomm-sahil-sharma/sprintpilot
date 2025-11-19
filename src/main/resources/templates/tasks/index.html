@@ -388,16 +388,11 @@
 
                             <!-- Jira Configuration Form -->
                             <div class="space-y-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-3">Project Key</label>
-                                    <input type="text" id="jiraProject" placeholder="PROJ" oninput="updateImportButton()" class="w-full px-4 py-3 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-base">
-                            </div>
-
                             <!-- JQL Query -->
                             <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-3">JQL Query (Optional)</label>
-                                    <textarea id="jqlQuery" rows="4" placeholder="project = PROJ AND status != Done" class="w-full px-4 py-3 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-base resize-none"></textarea>
-                                    <p class="text-sm text-gray-500 mt-2">Leave empty to import all issues of current sprint</p>
+                                    <textarea id="jqlQuery" rows="4" placeholder="status != Done" class="w-full px-4 py-3 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 text-base resize-none"></textarea>
+                                    <p class="text-sm text-gray-500 mt-2">Leave empty to import all issues of current sprint. Project is configured in settings.</p>
                             </div>
                             </div>
                         </div>
@@ -408,7 +403,7 @@
                         <button onclick="closeImportModal()" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
                             Cancel
                         </button>
-                        <button id="importButton" onclick="fetchJiraIssues()" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                        <button id="importButton" onclick="fetchJiraIssues()" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed">
                             Import Tasks
                         </button>
                     </div>
@@ -1022,17 +1017,16 @@
             
             function updateImportButton() {
                 const importButton = document.getElementById('importButton');
-                    const projectKey = document.getElementById('jiraProject').value.trim();
-                    importButton.disabled = !projectKey;
+                // No validation needed - project key comes from backend configuration
+                importButton.disabled = false;
             }
 
             function resetImportForm() {
                 // Reset Jira form
-                document.getElementById('jiraProject').value = '';
                 document.getElementById('jqlQuery').value = '';
                 
                 // Reset import button
-                document.getElementById('importButton').disabled = true;
+                document.getElementById('importButton').disabled = false;
             }
 
             // Jira Import Function
@@ -1042,15 +1036,9 @@
                     return;
                 }
 
-                const projectKey = document.getElementById('jiraProject').value.trim();
                 const jqlQuery = document.getElementById('jqlQuery').value.trim();
 
-                if (!projectKey) {
-                    showToast('Please enter a Project Key', 'error');
-                    return;
-                }
-
-                console.log('Fetching Jira issues - Sprint:', currentSprintId, 'Project:', projectKey, 'JQL:', jqlQuery);
+                console.log('Fetching Jira issues - Sprint:', currentSprintId, 'JQL:', jqlQuery);
 
                 try {
                     const response = await fetch('/api/tasks/import/jira', {
@@ -1060,7 +1048,6 @@
                         },
                         body: JSON.stringify({
                             sprintId: currentSprintId,
-                            projectKey: projectKey,
                             jqlQuery: jqlQuery || null
                         })
                     });

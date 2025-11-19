@@ -1,5 +1,6 @@
 package com.sprintpilot.service.impl;
 
+import com.sprintpilot.config.AtlassianConfigProperties;
 import com.sprintpilot.dto.*;
 import com.sprintpilot.entity.Sprint;
 import com.sprintpilot.entity.Task;
@@ -36,6 +37,9 @@ public class TaskImportServiceImpl implements TaskImportService {
     
     @Autowired
     private TeamMemberRepository teamMemberRepository;
+    
+    @Autowired
+    private AtlassianConfigProperties atlassianConfig;
     
     @Override
     public TaskImportResponse importFromCSV(TaskImportRequest request) {
@@ -128,8 +132,10 @@ public class TaskImportServiceImpl implements TaskImportService {
                 return TaskImportResponse.failure("Sprint ID is required");
             }
             
-            if (!StringUtils.hasText(request.projectKey())) {
-                return TaskImportResponse.failure("Project key is required for Jira import");
+            // Get project key from configuration
+            String projectKey = atlassianConfig.getJiraProjectName();
+            if (!StringUtils.hasText(projectKey)) {
+                return TaskImportResponse.failure("Jira project name is not configured in application properties");
             }
             
             // Verify sprint exists
@@ -141,18 +147,18 @@ public class TaskImportServiceImpl implements TaskImportService {
             if (jqlQuery == null || jqlQuery.isBlank()) {
                 // Build JQL query using sprint name from database
                 jqlQuery = String.format("project = %s AND Sprint = \"%s\"", 
-                        request.projectKey(), 
+                        projectKey, 
                         sprint.getSprintName());
                 log.info("Built JQL query from sprint name: {}", jqlQuery);
             } else {
                 log.info("Using provided JQL query: {}", jqlQuery);
             }
             
-            log.info("Fetching tasks from Jira for project: {}", request.projectKey());
+            log.info("Fetching tasks from Jira for project: {}", projectKey);
             
             // Fetch tasks from Jira
             List<TaskImportRequest.TaskImportDto> jiraTasks = jiraClient.fetchTasks(
-                    request.projectKey(),
+                    projectKey,
                     jqlQuery
             );
             
