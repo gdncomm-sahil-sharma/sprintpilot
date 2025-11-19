@@ -256,7 +256,7 @@ public class GeminiAIService implements AIService {
             - **Overall Health:** Brief sprint health assessment
             - **Actionable Recommendations:** Specific steps to mitigate risks
             
-            Use clear, concise markdown bullet points.
+            Use clear, concise markdown bullet points, make sure that each bullet point should not be more than 2 lines.
             """,
             taskDetails
         );
