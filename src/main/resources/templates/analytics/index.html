@@ -30,36 +30,12 @@
                     <span>AI Performance Insights</span>
                 </h3>
                 <div id="insights-content">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="p-4 bg-green-50 rounded-lg border border-green-200">
-                            <div class="flex items-center space-x-2 mb-2">
-                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                                </svg>
-                                <h4 class="font-semibold text-green-800">Trending Up</h4>
-                            </div>
-                            <p class="text-sm text-green-700">Team velocity has improved 15% over the last 3 sprints with consistent delivery patterns.</p>
-                        </div>
-
-                        <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                            <div class="flex items-center space-x-2 mb-2">
-                                <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                                </svg>
-                                <h4 class="font-semibold text-yellow-800">Watch Area</h4>
-                            </div>
-                            <p class="text-sm text-yellow-700">Backend team approaching 95% utilization. Consider load balancing or additional resources.</p>
-                        </div>
-
-                        <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <div class="flex items-center space-x-2 mb-2">
-                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                </svg>
-                                <h4 class="font-semibold text-blue-800">Optimization</h4>
-                            </div>
-                            <p class="text-sm text-blue-700">Good work-life balance maintained with 25% tech debt allocation supporting long-term velocity.</p>
-                        </div>
+                    <!-- Loading state will be shown here initially -->
+                    <div class="flex items-center justify-center py-8 text-gray-500">
+                        <svg class="w-6 h-6 animate-pulse mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                        </svg>
+                        <span>Click "Generate Insights" to analyze sprint performance...</span>
                     </div>
                 </div>
             </div>
@@ -91,25 +67,6 @@
                 </div>
             </div>
 
-            <!-- Performance Insights Modal -->
-            <div id="insightsModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-                <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
-                    <h2 class="text-2xl font-bold text-gray-800 border-b pb-4 mb-4 flex items-center">
-                        <svg class="w-6 h-6 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        AI Performance Insights
-                    </h2>
-                    <div id="modalInsightsContent" class="flex-grow overflow-y-auto pr-2">
-                        <!-- Content will be loaded here -->
-                    </div>
-                    <div class="border-t pt-4 mt-4 flex justify-end">
-                        <button onclick="closeInsightsModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
-                            Close
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <script>
@@ -794,19 +751,17 @@
             }
 
             function generatePerformanceInsights() {
-                const modal = document.getElementById('insightsModal');
-                const content = document.getElementById('modalInsightsContent');
+                const content = document.getElementById('insights-content');
                 
+                // Show loading state
                 content.innerHTML = `
-                    <div class="flex items-center justify-center h-48 text-gray-500">
+                    <div class="flex items-center justify-center py-8 text-gray-500">
                         <svg class="w-6 h-6 animate-pulse mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                         </svg>
-                        Analyzing trends and generating insights...
+                        <span>Analyzing trends and generating insights...</span>
                     </div>
                 `;
-                
-                modal.classList.remove('hidden');
                 
                 // Call backend AI service
                 fetch('/api/ai/performance-insights', {
@@ -818,21 +773,47 @@
                 .then(data => {
                     if (data.success) {
                         const insights = data.data;
-                        // Convert markdown bullet points to HTML
-                        const insightsHtml = insights.split('\n').filter(line => line.trim() !== '').map(line => {
-                            const boldedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900">$1</strong>');
-                            const content = boldedLine.replace(/^- /, '').trim();
+                        
+                        // Parse insights into categories
+                        const categories = parseInsightsIntoCategories(insights);
+                        
+                        // Display as cards with proper Tailwind classes
+                        const cardsHtml = categories.map(category => {
+                            // Get full Tailwind class names based on color
+                            let bgClass, borderClass, textClass, titleClass;
+                            if (category.color === 'green') {
+                                bgClass = 'bg-green-50';
+                                borderClass = 'border-green-200';
+                                textClass = 'text-green-700';
+                                titleClass = 'text-green-800';
+                            } else if (category.color === 'yellow') {
+                                bgClass = 'bg-yellow-50';
+                                borderClass = 'border-yellow-200';
+                                textClass = 'text-yellow-700';
+                                titleClass = 'text-yellow-800';
+                            } else {
+                                bgClass = 'bg-blue-50';
+                                borderClass = 'border-blue-200';
+                                textClass = 'text-blue-700';
+                                titleClass = 'text-blue-800';
+                            }
+                            
                             return `
-                                <li class="flex items-start">
-                                    <span class="text-primary-500 mr-2 mt-1">•</span>
-                                    <span>${content}</span>
-                                </li>
+                                <div class="p-4 ${bgClass} rounded-lg border ${borderClass}">
+                                    <div class="flex items-center space-x-2 mb-3">
+                                        ${category.icon}
+                                        <h4 class="font-semibold ${titleClass}">${category.title}</h4>
+                                    </div>
+                                    <div class="text-sm ${textClass} space-y-2">
+                                        ${category.items.map(item => `<p class="leading-relaxed">• ${item}</p>`).join('')}
+                                    </div>
+                                </div>
                             `;
                         }).join('');
-
+                        
                         content.innerHTML = `
-                            <div class="text-sm text-gray-700 space-y-2 prose prose-sm max-w-none">
-                                <ul class="space-y-2">${insightsHtml}</ul>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                ${cardsHtml}
                             </div>
                         `;
                     } else {
@@ -845,76 +826,107 @@
                 })
                 .catch(error => {
                     console.error('Error generating insights:', error);
-                    // Fallback to mock response if API fails
+                    // Fallback to default cards
                     content.innerHTML = `
-                        <div class="text-sm text-gray-700 space-y-4">
-                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <h4 class="font-semibold text-green-800 mb-2">🎯 Performance Strengths</h4>
-                                <ul class="space-y-1 text-green-700">
-                                    <li>• Consistent velocity improvement over 6 sprints (+18%)</li>
-                                    <li>• High sprint completion rate (94%)</li>
-                                    <li>• Excellent work-life balance maintenance</li>
-                                    <li>• Effective tech debt management (25% allocation)</li>
-                                </ul>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                    </svg>
+                                    <h4 class="font-semibold text-green-800">Trending Up</h4>
+                                </div>
+                                <div class="text-sm text-green-700 space-y-2">
+                                    <p class="leading-relaxed">• Team velocity has improved 15% over the last 3 sprints with consistent delivery patterns</p>
+                                </div>
                             </div>
-                            
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                <h4 class="font-semibold text-yellow-800 mb-2">⚠️ Areas for Improvement</h4>
-                                <ul class="space-y-1 text-yellow-700">
-                                    <li>• Backend team at 95% utilization (burnout risk)</li>
-                                    <li>• QA team underutilized at 70% (growth opportunity)</li>
-                                    <li>• Cycle time increasing for complex features (+0.3 days)</li>
-                                    <li>• Irregular burndown patterns in recent sprints</li>
-                                </ul>
+
+                            <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                    </svg>
+                                    <h4 class="font-semibold text-yellow-800">Watch Area</h4>
+                                </div>
+                                <div class="text-sm text-yellow-700 space-y-2">
+                                    <p class="leading-relaxed">• Backend team approaching 95% utilization. Consider load balancing or additional resources</p>
+                                </div>
                             </div>
-                            
-                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 class="font-semibold text-blue-800 mb-2">📋 Strategic Recommendations</h4>
-                                <ol class="space-y-1 text-blue-700 list-decimal list-inside">
-                                    <li>Add one junior backend developer to reduce load</li>
-                                    <li>Cross-train QA team member in test automation</li>
-                                    <li>Implement feature flagging for incremental delivery</li>
-                                    <li>Schedule dedicated tech debt sprint every 4th iteration</li>
-                                    <li>Establish daily check-ins for complex feature work</li>
-                                </ol>
-                            </div>
-                            
-                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                                <h4 class="font-semibold text-gray-800 mb-2">📊 Key Performance Indicators</h4>
-                                <div class="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                        <p class="text-gray-600">Average Velocity</p>
-                                        <p class="font-bold text-lg">98 story points</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-gray-600">Velocity Variance</p>
-                                        <p class="font-bold text-lg">±8% (Good)</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-gray-600">Sprint Predictability</p>
-                                        <p class="font-bold text-lg">94% (Excellent)</p>
-                                    </div>
-                                    <div>
-                                        <p class="text-gray-600">Team Satisfaction</p>
-                                        <p class="font-bold text-lg">4.2/5 (High)</p>
-                                    </div>
+
+                            <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                    </svg>
+                                    <h4 class="font-semibold text-blue-800">Optimization</h4>
+                                </div>
+                                <div class="text-sm text-blue-700 space-y-2">
+                                    <p class="leading-relaxed">• Good work-life balance maintained with 25% tech debt allocation supporting long-term velocity</p>
                                 </div>
                             </div>
                         </div>
                     `;
                 });
             }
-
-            function closeInsightsModal() {
-                document.getElementById('insightsModal').classList.add('hidden');
+            
+            function parseInsightsIntoCategories(insights) {
+                const lines = insights.split('\n').filter(line => line.trim() !== '');
+                const categories = [];
+                let currentCategory = null;
+                
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    
+                    // Check if this is a category header (bold text)
+                    const headerMatch = trimmedLine.match(/\*\*(.+?)\*\*/);
+                    if (headerMatch && !trimmedLine.startsWith('- ')) {
+                        // Save previous category if exists
+                        if (currentCategory && currentCategory.items.length > 0) {
+                            categories.push(currentCategory);
+                        }
+                        
+                        // Determine category type and styling
+                        const title = headerMatch[1];
+                        let color = 'blue';
+                        let icon = '';
+                        
+                        const lowerTitle = title.toLowerCase();
+                        
+                        // Determine color and icon based on title keywords
+                        if (lowerTitle.includes('strength') || lowerTitle.includes('working well') || lowerTitle.includes('trending') || lowerTitle.includes('positive')) {
+                            color = 'green';
+                            icon = '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>';
+                        } else if (lowerTitle.includes('improvement') || lowerTitle.includes('risk') || lowerTitle.includes('watch') || lowerTitle.includes('bottleneck') || lowerTitle.includes('health') || lowerTitle.includes('issue') || lowerTitle.includes('concern')) {
+                            color = 'yellow';
+                            icon = '<svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>';
+                        } else {
+                            // Default to blue for recommendations, optimization, action items, etc.
+                            color = 'blue';
+                            icon = '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>';
+                        }
+                        
+                        currentCategory = {
+                            title: title,
+                            color: color,
+                            icon: icon,
+                            items: []
+                        };
+                    } else if (trimmedLine.startsWith('- ') && currentCategory) {
+                        // This is a bullet point item
+                        const content = trimmedLine.substring(2).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                        currentCategory.items.push(content);
+                    }
+                }
+                
+                // Add last category
+                if (currentCategory && currentCategory.items.length > 0) {
+                    categories.push(currentCategory);
+                }
+                
+                // If we have more than 3 categories, take the first 3
+                return categories.slice(0, 3);
             }
 
-            // Close modal when clicking outside
-            document.getElementById('insightsModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeInsightsModal();
-                }
-            });
         </script>
     </main>
 </body>
