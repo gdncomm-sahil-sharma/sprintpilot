@@ -376,3 +376,68 @@ main {
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+/* Enhanced Navigation Styles */
+.nav-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+    transition: width 0.3s ease;
+    z-index: -1;
+}
+
+.nav-item:hover::before {
+    width: 100%;
+}
+
+.nav-item svg {
+    transition: transform 0.2s ease;
+}
+
+.nav-item:hover svg {
+    transform: scale(1.1);
+}
+
+/* Active navigation item pulse animation */
+@keyframes navPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0);
+    }
+}
+
+.nav-item.active {
+    animation: navPulse 2s ease-in-out infinite;
+}
+
+/* Mobile menu slide animation */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#mobile-menu:not(.hidden) {
+    animation: slideDown 0.3s ease-out;
+}
+
+/* Navigation separator subtle glow */
+.nav-separator {
+    background: linear-gradient(to bottom, transparent, rgba(156, 163, 175, 0.5), transparent);
+}
