@@ -415,6 +415,58 @@ public class TeamServiceImpl implements TeamService {
     }
     
     @Override
+    @Transactional
+    public void assignSingleMemberToSprint(String memberId, String sprintId) {
+        // Verify sprint exists
+        if (!sprintRepository.existsById(sprintId)) {
+            throw new RuntimeException("Sprint not found: " + sprintId);
+        }
+        
+        // Verify member exists
+        if (!teamMemberRepository.existsById(memberId)) {
+            throw new RuntimeException("Team member not found: " + memberId);
+        }
+        
+        // Check if member is already assigned
+        SprintTeam existingMapping = sprintTeamRepository.findBySprintIdAndMemberId(sprintId, memberId);
+        if (existingMapping != null) {
+            log.info("Member {} is already assigned to sprint {}", memberId, sprintId);
+            return;
+        }
+        
+        // Create new assignment
+        SprintTeam mapping = new SprintTeam();
+        mapping.setSprintId(sprintId);
+        mapping.setMemberId(memberId);
+        sprintTeamRepository.save(mapping);
+        
+        log.info("Assigned member {} to sprint {}", memberId, sprintId);
+    }
+    
+    @Override
+    @Transactional
+    public void unassignMemberFromSprint(String memberId, String sprintId) {
+        // Verify sprint exists
+        if (!sprintRepository.existsById(sprintId)) {
+            throw new RuntimeException("Sprint not found: " + sprintId);
+        }
+        
+        // Verify member exists
+        if (!teamMemberRepository.existsById(memberId)) {
+            throw new RuntimeException("Team member not found: " + memberId);
+        }
+        
+        // Find and delete the sprint-member mapping
+        SprintTeam mapping = sprintTeamRepository.findBySprintIdAndMemberId(sprintId, memberId);
+        if (mapping != null) {
+            sprintTeamRepository.delete(mapping);
+            log.info("Unassigned member {} from sprint {}", memberId, sprintId);
+        } else {
+            log.warn("Member {} was not assigned to sprint {}", memberId, sprintId);
+        }
+    }
+    
+    @Override
     @Transactional(readOnly = true)
     public List<String> getMemberIdsForSprint(String sprintId) {
         List<String> assignedMemberIds = new ArrayList<>();

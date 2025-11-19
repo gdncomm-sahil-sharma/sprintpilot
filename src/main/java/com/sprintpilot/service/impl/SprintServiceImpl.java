@@ -32,6 +32,9 @@ public class SprintServiceImpl implements SprintService {
 
     @Autowired
     private TeamMemberRepository teamMemberRepository;
+    
+    @Autowired
+    private com.sprintpilot.repository.SprintTeamRepository sprintTeamRepository;
 
     @Value("${app.data.mock-data-path}")
     private String mockDataPath;
@@ -94,6 +97,9 @@ public class SprintServiceImpl implements SprintService {
             .build();
         Sprint savedSprint = sprintRepository.save(sprint);
         log.info("Created new sprint: {} '{}' from {} to {}", newId, sprintName, savedSprint.getStartDate(), savedSprint.getEndDate());
+
+        // Auto-assign all active and non-deleted members to this sprint
+        autoAssignActiveMembers(newId);
 
         SprintDto newSprint = convertToDto(savedSprint);
 
@@ -330,8 +336,9 @@ public class SprintServiceImpl implements SprintService {
         }
 
         // Create the new sprint
+        String newSprintId = "sprint-" + System.currentTimeMillis();
         Sprint nextSprint = Sprint.builder()
-            .id("sprint-" + System.currentTimeMillis())
+            .id(newSprintId)
             .sprintName(uniqueName)
             .startDate(nextStartDate)
             .endDate(nextEndDate)
@@ -340,7 +347,12 @@ public class SprintServiceImpl implements SprintService {
             .status(Sprint.SprintStatus.ACTIVE)
             .build();
 
-        return sprintRepository.save(nextSprint);
+        Sprint savedSprint = sprintRepository.save(nextSprint);
+        
+        // Auto-assign all active and non-deleted members to this sprint
+        autoAssignActiveMembers(newSprintId);
+        
+        return savedSprint;
     }
 
     /**
@@ -524,6 +536,10 @@ public class SprintServiceImpl implements SprintService {
             .build();
         
         sprintRepository.save(sprint);
+        
+        // Auto-assign all active and non-deleted members to this sprint
+        autoAssignActiveMembers(newId);
+        
         return convertToDto(sprint);
     }
 
@@ -574,7 +590,38 @@ public class SprintServiceImpl implements SprintService {
             .build();
         
         sprintRepository.save(sprint);
+        
+        // Auto-assign all active and non-deleted members to this sprint
+        autoAssignActiveMembers(newId);
+        
         log.info("Created new sprint from template: {} -> {}", templateSprintId, newId);
         return convertToDto(sprint);
+    }
+    
+    /**
+     * Auto-assign all active and non-deleted team members to a sprint
+     * This is called whenever a new sprint is created
+     * @param sprintId The sprint ID to assign members to
+     */
+    private void autoAssignActiveMembers(String sprintId) {
+        // Get all active and non-deleted team members
+        List<TeamMember> activeMembers = teamMemberRepository.findActiveMembers();
+        
+        int assignedCount = 0;
+        for (TeamMember member : activeMembers) {
+            // Check if member is not deleted (extra safety check)
+            if (member.getDeleted() != null && member.getDeleted()) {
+                continue;
+            }
+            
+            // Create sprint-member mapping
+            com.sprintpilot.entity.SprintTeam mapping = new com.sprintpilot.entity.SprintTeam();
+            mapping.setSprintId(sprintId);
+            mapping.setMemberId(member.getId());
+            sprintTeamRepository.save(mapping);
+            assignedCount++;
+        }
+        
+        log.info("Auto-assigned {} active members to sprint {}", assignedCount, sprintId);
     }
 }

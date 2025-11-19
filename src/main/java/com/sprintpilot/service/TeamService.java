@@ -29,6 +29,10 @@ public interface TeamService {
     
     void assignMembersToSprint(SprintAssignmentRequest request);
     
+    void assignSingleMemberToSprint(String memberId, String sprintId);
+    
+    void unassignMemberFromSprint(String memberId, String sprintId);
+    
     List<String> getMemberIdsForSprint(String sprintId);
     
     List<TeamMemberDto> getTeamMembersForSprint(String sprintId);

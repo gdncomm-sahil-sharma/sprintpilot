@@ -237,6 +237,58 @@ public class TeamMemberController {
     }
     
     /**
+     * Assign a single team member to a sprint (without affecting other members)
+     * POST /api/team-members/{memberId}/sprint/{sprintId}
+     */
+    @PostMapping("/{memberId}/sprint/{sprintId}")
+    public ResponseEntity<ApiResponse<String>> assignSingleMemberToSprint(
+            @Parameter(description = "Team member ID", required = true)
+            @PathVariable String memberId,
+            @Parameter(description = "Sprint ID", required = true)
+            @PathVariable String sprintId) {
+        try {
+            teamService.assignSingleMemberToSprint(memberId, sprintId);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Member assigned to sprint successfully", null));
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.failure(e.getMessage()));
+            }
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.failure("Failed to assign member to sprint: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Unassign a team member from a sprint
+     * DELETE /api/team-members/{memberId}/sprint/{sprintId}
+     */
+    @DeleteMapping("/{memberId}/sprint/{sprintId}")
+    public ResponseEntity<ApiResponse<String>> unassignMemberFromSprint(
+            @Parameter(description = "Team member ID", required = true)
+            @PathVariable String memberId,
+            @Parameter(description = "Sprint ID", required = true)
+            @PathVariable String sprintId) {
+        try {
+            teamService.unassignMemberFromSprint(memberId, sprintId);
+            return ResponseEntity.ok(
+                    ApiResponse.success("Member unassigned from sprint successfully", null));
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("not found")) {
+                return ResponseEntity
+                        .status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.failure(e.getMessage()));
+            }
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.failure("Failed to unassign member from sprint: " + e.getMessage()));
+        }
+    }
+    
+    /**
      * Get team members assigned to a sprint
      * GET /api/team-members/sprint/{sprintId}
      */
