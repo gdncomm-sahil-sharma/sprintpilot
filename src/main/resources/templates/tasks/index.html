@@ -14,22 +14,14 @@
             <div class="flex flex-col md:flex-row justify-between md:items-start gap-4">
                 <div>
                     <h2 class="text-3xl font-bold text-gray-800">Task Planning & Analysis</h2>
-                    <p class="text-gray-500 mt-1">Import tasks, assign them to team members, and analyze potential risks.</p>
+                    <p class="text-gray-500 mt-1">Import tasks, assign them to team members, and view automatically analyzed risks.</p>
                 </div>
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <button onclick="openImportModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white focus:ring-green-500">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-                        </svg>
-                        <span>Import Tasks</span>
-                    </button>
-                    <button onclick="analyzeTaskRisks()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                        </svg>
-                        <span id="analyzeButtonText">Analyze Task Risks</span>
-                    </button>
-                </div>
+                <button onclick="openImportModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 text-white focus:ring-green-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                    </svg>
+                    <span>Import Tasks</span>
+                </button>
             </div>
 
             <!-- Sprint Metrics Cards -->
@@ -816,60 +808,6 @@
                     'Off Track': 'Requires immediate attention'
                 };
                 return tooltips[riskLevel] || '';
-            }
-
-            async function analyzeTaskRisks() {
-                const button = document.getElementById('analyzeButtonText');
-                const buttonElement = button.parentElement;
-                const originalText = button.textContent;
-                
-                // Show loading state
-                button.textContent = 'Analyzing...';
-                buttonElement.disabled = true;
-                
-                try {
-                    // Call backend API to analyze risks
-                    const response = await fetch('/api/tasks/analyze-risks', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        button.textContent = 'Analysis Complete';
-                        buttonElement.classList.remove('bg-primary-600', 'hover:bg-primary-700');
-                        buttonElement.classList.add('bg-gray-400', 'cursor-not-allowed');
-                        
-                        showToast(`Risk analysis completed! ${data.data} task${data.data !== 1 ? 's' : ''} analyzed successfully.`, 'success');
-                        
-                        // Reload tasks to show updated risk factors
-                        await loadTasks();
-                        
-                        // Scroll to top to see grouped results
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        
-                        // Re-enable button after 5 seconds
-                        setTimeout(() => {
-                            button.textContent = originalText;
-                            buttonElement.disabled = false;
-                            buttonElement.classList.remove('bg-gray-400', 'cursor-not-allowed');
-                            buttonElement.classList.add('bg-primary-600', 'hover:bg-primary-700');
-                            console.log('✅ Analyze button re-enabled');
-                        }, 5000); // 10 seconds
-                    } else {
-                        button.textContent = originalText;
-                        buttonElement.disabled = false;
-                        showToast('Analysis failed: ' + (data.message || 'Unknown error'), 'error');
-                    }
-                } catch (error) {
-                    console.error('Failed to analyze risks:', error);
-                    button.textContent = originalText;
-                    buttonElement.disabled = false;
-                    showToast('Failed to analyze risks. Please check your connection and try again.', 'error');
-                }
             }
 
             function generateRiskSummary() {
