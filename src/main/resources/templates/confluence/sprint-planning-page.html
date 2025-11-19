@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
 </head>
 <body>
-    <h1>🚀 Sprint Planning: {{sprintId}}</h1>
+    <h1>🚀 Sprint Planning: {{sprintName}}</h1>
     
     <div class="sprint-overview">
         <h2>📅 Sprint Overview</h2>
         <table>
             <tr>
-                <td><strong>Sprint ID:</strong></td>
-                <td>{{sprintId}}</td>
+                <td><strong>Sprint Name:</strong></td>
+                <td>{{sprintName}}</td>
             </tr>
             <tr>
                 <td><strong>Start Date:</strong></td>
@@ -64,7 +64,6 @@
     <div class="timeline-section">
         <h2>📅 Sprint Timeline</h2>
         <p><strong>Working Days:</strong> {{workingDays}} days</p>
-        <p><strong>Holidays in Sprint:</strong> {{holidayCount}} days</p>
         {{holidaysInfo}}
     </div>
 
@@ -85,7 +84,7 @@
                 <td>{{techDebtStoryPoints}} SP ({{techDebtPercentage}}%)</td>
             </tr>
             <tr>
-                <td><strong>Production Issues:</strong></td>
+                <td><strong>Bug Fixes:</strong></td>
                 <td>{{prodIssueStoryPoints}} SP ({{prodIssuePercentage}}%)</td>
             </tr>
         </table>

@@ -395,17 +395,146 @@
                     if (!aiData.success) throw new Error(aiData.error || aiData.message || 'AI generation failed');
                     
                     const summary = aiData.data;
+                    
+                    // Check if the response contains an error message (even if success: true)
+                    const isErrorResponse = summary && (
+                        summary.includes('AI Service Error') ||
+                        summary.includes('An error occurred') ||
+                        summary.includes('Failed to generate') ||
+                        summary.includes('Error details:')
+                    );
+                    
+                    if (isErrorResponse) {
+                        // Extract error message from the response
+                        let errorMessage = 'Failed to generate AI summary. Please try again.';
+                        if (summary.includes('Error details:')) {
+                            const errorMatch = summary.match(/Error details:\s*(.+)/);
+                            if (errorMatch) {
+                                errorMessage = errorMatch[1].trim();
+                            }
+                        }
+                        throw new Error(errorMessage);
+                    }
+                    
                     const summaryHtml = summary.split('\n').filter(line => line.trim() !== '').map(line => {
                         const boldedLine = line.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900">$1</strong>');
                         const content = boldedLine.replace(/^- /, '').trim();
                         return `<li class="flex items-start"><span class="text-primary-500 mr-2 mt-1">•</span><span>${content}</span></li>`;
                     }).join('');
                     
-                    content.innerHTML = `<div class="text-gray-600 space-y-2 text-sm"><ul class="space-y-2">${summaryHtml}</ul></div>`;
+                    // Store summary text for Teams notification and reset sent flag
+                    window.currentSprintSummary = summary;
+                    window.currentSprintId = activeSprint.id;
+                    window.sprintSummarySentToTeams = false; // Reset flag when new summary is generated
+                    
+                    // Build content with summary and Send to Teams button
+                    const sendToTeamsButton = `
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <button onclick="sendSummaryToTeams()" id="sendToTeamsBtn" class="w-full px-4 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                </svg>
+                                <span>Send to Teams</span>
+                            </button>
+                        </div>
+                    `;
+                    
+                    content.innerHTML = `<div class="text-gray-600 space-y-2 text-sm"><ul class="space-y-2">${summaryHtml}</ul></div>${sendToTeamsButton}`;
                     
                 } catch (error) {
                     console.error('Error:', error);
-                    content.innerHTML = `<div class="text-gray-600 space-y-2 text-sm"><p class="text-amber-600 mb-3 text-xs">⚠️ ${error.message}</p><ul class="space-y-2"><li class="flex items-start"><span class="text-primary-500 mr-2 mt-1">•</span><span><strong class="text-gray-900">Primary Focus:</strong> This sprint focuses on feature development and technical improvements.</span></li><li class="flex items-start"><span class="text-primary-500 mr-2 mt-1">•</span><span><strong class="text-gray-900">Workload Balance:</strong> Team capacity is well-balanced with 85% utilization.</span></li><li class="flex items-start"><span class="text-primary-500 mr-2 mt-1">•</span><span><strong class="text-gray-900">Potential Risks:</strong> One team member is slightly overloaded, consider redistribution.</span></li><li class="flex items-start"><span class="text-primary-500 mr-2 mt-1">•</span><span><strong class="text-gray-900">Overall Assessment:</strong> Sprint is well-planned with achievable goals.</span></li></ul></div>`;
+                    // Clear stored summary on error
+                    window.currentSprintSummary = null;
+                    window.currentSprintId = null;
+                    
+                    // Show error message with regenerate button (no Send to Teams button)
+                    content.innerHTML = `
+                        <div class="text-gray-600 space-y-2 text-sm">
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                <p class="text-red-800 font-semibold mb-2">⚠️ Error Generating Summary</p>
+                                <p class="text-red-600 text-xs">${error.message || 'Failed to generate AI summary. Please try again.'}</p>
+                            </div>
+                            <div class="text-center">
+                                <button onclick="generateSprintSummary()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500 mx-auto">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    <span>Regenerate Summary</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Function to send summary to Teams (make it globally accessible)
+            window.sendSummaryToTeams = async function sendSummaryToTeams() {
+                const button = document.getElementById('sendToTeamsBtn');
+                if (!button) return;
+                
+                // Check if already sent
+                if (window.sprintSummarySentToTeams) {
+                    alert('Summary has already been sent to Teams. Please regenerate the summary if you want to send it again.');
+                    return;
+                }
+                
+                const summary = window.currentSprintSummary;
+                const sprintId = window.currentSprintId;
+                
+                if (!summary || !sprintId) {
+                    alert('No summary available to send. Please generate a summary first.');
+                    return;
+                }
+                
+                // Disable button and show loading state
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = `
+                    <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    <span>Sending...</span>
+                `;
+                
+                try {
+                    const response = await fetch('/api/teams/send-sprint-summary', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            sprintId: sprintId,
+                            summaryText: summary
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Mark as sent and clear stored data to prevent re-sending
+                        window.sprintSummarySentToTeams = true;
+                        window.currentSprintSummary = null;
+                        window.currentSprintId = null;
+                        
+                        // Show success state
+                        button.innerHTML = `
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Sent to Teams!</span>
+                        `;
+                        button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                        button.classList.add('bg-green-600');
+                        button.disabled = true;
+                        
+                        // Keep button in success state permanently (don't reset)
+                        // User can regenerate summary if they want to send again
+                    } else {
+                        throw new Error(data.error || data.message || 'Failed to send to Teams');
+                    }
+                } catch (error) {
+                    console.error('Error sending to Teams:', error);
+                    alert('Failed to send summary to Teams: ' + error.message);
+                    button.innerHTML = originalText;
+                    button.disabled = false;
                 }
             }
         </script>
