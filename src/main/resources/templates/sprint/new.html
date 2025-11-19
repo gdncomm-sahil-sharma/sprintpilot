@@ -146,7 +146,7 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <input type="date" id="planningDate" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
                                     <input type="time" id="planningTime" value="10:00" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                    <input type="number" id="planningDuration" value="120" min="30" placeholder="Duration (min)" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                    <input type="number" id="planningDuration" value="60" min="30" placeholder="Duration (min)" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
                                 </div>
                             </div>
                             
@@ -164,7 +164,7 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <input type="date" id="groomingDate" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
                                     <input type="time" id="groomingTime" value="14:00" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                    <input type="number" id="groomingDuration" value="90" min="30" placeholder="Duration (min)" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                    <input type="number" id="groomingDuration" value="60" min="30" placeholder="Duration (min)" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
                                 </div>
                             </div>
                             
@@ -182,7 +182,7 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <input type="date" id="retrospectiveDate" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
                                     <input type="time" id="retrospectiveTime" value="15:00" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                    <input type="number" id="retrospectiveDuration" value="90" min="30" placeholder="Duration (min)" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                    <input type="number" id="retrospectiveDuration" value="60" min="30" placeholder="Duration (min)" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
                                 </div>
                             </div>
                         </div>
@@ -1110,12 +1110,12 @@
                     });
                 });
                 
-                // 8. Sprint End (if set)
+                // 8. Sprint End (if set) - Always last with sortOrder 99
                 if (endDate) {
                     allEvents.push({
                         date: new Date(endDate),
                         time: null,
-                        sortOrder: 7,
+                        sortOrder: 99, // ✅ Highest value ensures Sprint End is always last on its day
                         type: 'sprint-end',
                         title: 'Sprint End',
                         icon: 'sprint-end',
