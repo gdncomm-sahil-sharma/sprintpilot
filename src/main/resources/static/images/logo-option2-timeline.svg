@@ -1,0 +1,29 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Option 2: Sprint Timeline/Gantt Chart Inspired -->
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4f46e5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6366f1;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded square background -->
+  <rect x="10" y="10" width="180" height="180" rx="40" fill="url(#bgGrad2)"/>
+  
+  <!-- Sprint timeline bars (representing sprints) -->
+  <rect x="40" y="60" width="60" height="12" rx="6" fill="#10b981" opacity="0.9"/>
+  <rect x="40" y="85" width="80" height="12" rx="6" fill="#10b981" opacity="0.9"/>
+  <rect x="40" y="110" width="100" height="12" rx="6" fill="#fbbf24" opacity="0.9"/>
+  <rect x="40" y="135" width="40" height="12" rx="6" fill="#ffffff" opacity="0.9"/>
+  
+  <!-- Forward arrow (sprint direction) -->
+  <path d="M130 70 L160 100 L130 130" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <line x1="50" y1="100" x2="130" y2="100" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Sprint cycle dots -->
+  <circle cx="40" cy="66" r="5" fill="#ffffff"/>
+  <circle cx="40" cy="91" r="5" fill="#ffffff"/>
+  <circle cx="40" cy="116" r="5" fill="#ffffff"/>
+  <circle cx="40" cy="141" r="5" fill="#ffffff"/>
+</svg>
+
