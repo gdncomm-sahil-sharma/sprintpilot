@@ -13,25 +13,18 @@
         
         <div class="space-y-6">
             
-            <!-- Enhanced Professional Header -->
-            <div class="bg-gradient-to-r from-primary-600 to-indigo-700 rounded-2xl shadow-xl p-6 mb-8">
-                <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
-                    <div>
-                        <h2 class="text-3xl font-extrabold text-white flex items-center gap-3">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                            </svg>
-                            Sprint Setup & Configuration
-                        </h2>
-                        <p class="text-primary-100 mt-1 text-sm">Configure sprint dates, meetings, and key events for your team</p>
-                    </div>
-                    <button onclick="saveSprintSettings()" class="px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-white/30 flex items-center justify-center space-x-2 bg-white text-primary-700 hover:bg-primary-50 transform hover:scale-105">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        <span>Save Configuration</span>
-                    </button>
+            <!-- Header Section - Consistent with Dashboard & History -->
+            <div class="flex flex-col md:flex-row justify-between md:items-start gap-4 mb-6">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-800">Sprint Setup & Configuration</h2>
+                    <p class="text-gray-600 mt-2">Configure sprint dates, meetings, and key events for your team</p>
                 </div>
+                <button onclick="saveSprintSettings()" class="px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-green-300 flex items-center justify-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white transform hover:scale-105">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span>Save Configuration</span>
+                </button>
             </div>
 
             <!-- Sprint Name Input (Top of Form) -->
