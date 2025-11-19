@@ -323,6 +323,31 @@ public class SprintController {
     }
 
     /**
+     * Get quick stats for dashboard (team members, sprint dates, assigned vs capacity)
+     *
+     * @param request Map containing sprintId
+     * @return Quick stats for the dashboard
+     */
+    @PostMapping("/metrics/quickStats")
+    public ResponseEntity<ApiResponse<com.sprintpilot.dto.QuickStatsDto>> getQuickStats(@RequestBody Map<String, String> request) {
+        String sprintId = request.get("sprintId");
+        
+        if (!StringUtils.hasText(sprintId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("sprintId is required", null));
+        }
+        
+        try {
+            com.sprintpilot.dto.QuickStatsDto quickStats = sprintMetricsService.getQuickStats(sprintId);
+            return ResponseEntity.ok(ApiResponse.success("Quick stats calculated successfully", quickStats));
+        } catch (Exception e) {
+            log.error("Failed to calculate quick stats", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Failed to calculate quick stats", e.getMessage()));
+        }
+    }
+
+    /**
      * Get velocity trend data for current sprint and last 5 completed sprints
      *
      * @param request Map containing currentSprintId

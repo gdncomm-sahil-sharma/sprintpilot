@@ -1,6 +1,7 @@
 package com.sprintpilot.service;
 
 import com.sprintpilot.dto.CurrentSprintMetricsDto;
+import com.sprintpilot.dto.QuickStatsDto;
 import com.sprintpilot.dto.SprintMetricsDto;
 import com.sprintpilot.dto.SprintSummaryMetricsDto;
 import com.sprintpilot.dto.VelocityTrendDto;
@@ -52,5 +53,13 @@ public interface SprintMetricsService {
      * @return Current sprint metrics for the tasks page.
      */
     CurrentSprintMetricsDto getCurrentSprintMetrics(String currentSprintId);
+    
+    /**
+     * Get quick stats for dashboard (team members, sprint dates, assigned vs capacity).
+     *
+     * @param sprintId Sprint identifier.
+     * @return Quick stats for the dashboard.
+     */
+    QuickStatsDto getQuickStats(String sprintId);
 }
 

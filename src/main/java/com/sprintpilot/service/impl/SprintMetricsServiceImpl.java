@@ -2,15 +2,19 @@ package com.sprintpilot.service.impl;
 
 import com.sprintpilot.dto.CurrentSprintMetricsDto;
 import com.sprintpilot.dto.MemberUtilizationDto;
+import com.sprintpilot.dto.QuickStatsDto;
 import com.sprintpilot.dto.SprintMetricsDto;
 import com.sprintpilot.dto.SprintSummaryMetricsDto;
 import com.sprintpilot.dto.VelocityTrendDto;
 import com.sprintpilot.dto.WorkDistributionDto;
+import com.sprintpilot.entity.Holiday;
+import com.sprintpilot.entity.LeaveDay;
 import com.sprintpilot.entity.Sprint;
 import com.sprintpilot.entity.SprintEvent;
 import com.sprintpilot.entity.Task;
 import com.sprintpilot.entity.TeamMember;
 import com.sprintpilot.repository.HolidayRepository;
+import com.sprintpilot.repository.LeaveDayRepository;
 import com.sprintpilot.repository.SprintEventRepository;
 import com.sprintpilot.repository.SprintRepository;
 import com.sprintpilot.repository.TaskRepository;
@@ -26,10 +30,13 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -51,6 +58,9 @@ public class SprintMetricsServiceImpl implements SprintMetricsService {
 
     @Autowired
     private SprintEventRepository sprintEventRepository;
+    
+    @Autowired
+    private LeaveDayRepository leaveDayRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -880,6 +890,118 @@ public class SprintMetricsServiceImpl implements SprintMetricsService {
         java.time.DayOfWeek dayOfWeek = date.getDayOfWeek();
         return dayOfWeek != java.time.DayOfWeek.SATURDAY && 
                dayOfWeek != java.time.DayOfWeek.SUNDAY;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public QuickStatsDto getQuickStats(String sprintId) {
+        log.info("Calculating quick stats for sprint: {}", sprintId);
+        
+        // Get sprint with team members
+        Sprint sprint = sprintRepository.findByIdWithTeamMembers(sprintId)
+                .orElseThrow(() -> new RuntimeException("Sprint not found: " + sprintId));
+        
+        // Get team members assigned to this sprint
+        List<TeamMember> sprintMembers = sprint.getTeamMembers();
+        int teamMembersCount = sprintMembers != null ? sprintMembers.size() : 0;
+        
+        // Format dates
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd");
+        String startDate = sprint.getStartDate() != null ? sprint.getStartDate().format(formatter) : "";
+        String endDate = sprint.getEndDate() != null ? sprint.getEndDate().format(formatter) : "";
+        
+        // Calculate assigned hours: sum of original estimates of all tasks
+        List<Task> sprintTasks = taskRepository.findBySprintId(sprintId);
+        BigDecimal assignedHours = sprintTasks.stream()
+                .map(this::resolveOriginalEstimate)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
+        
+        // Calculate capacity hours: sum of total capacity of all sprint members
+        BigDecimal capacityHours = BigDecimal.ZERO;
+        
+        if (sprintMembers != null && !sprintMembers.isEmpty()) {
+            for (TeamMember member : sprintMembers) {
+                BigDecimal memberCapacity = calculateMemberCapacityForSprint(member, sprint);
+                capacityHours = capacityHours.add(memberCapacity);
+            }
+        }
+        
+        capacityHours = capacityHours.setScale(2, RoundingMode.HALF_UP);
+        
+        log.info("Quick Stats - Sprint: {}, Members: {}, Dates: {} → {}, Assigned: {}h, Capacity: {}h", 
+                sprint.getSprintName(), teamMembersCount, startDate, endDate, assignedHours, capacityHours);
+        
+        return new QuickStatsDto(
+                sprint.getSprintName(),
+                teamMembersCount,
+                startDate,
+                endDate,
+                assignedHours,
+                capacityHours
+        );
+    }
+    
+    /**
+     * Calculate total capacity for a team member in a sprint (accounting for holidays and leave days)
+     * Uses the same working day logic as utilization calculation
+     */
+    private BigDecimal calculateMemberCapacityForSprint(TeamMember member, Sprint sprint) {
+        // Calculate total BUSINESS days in sprint (excluding weekends)
+        long businessDays = countBusinessDays(sprint.getStartDate(), sprint.getEndDate());
+        
+        // Get unique holiday dates to avoid double-counting
+        Set<LocalDate> uniqueHolidayDates = new HashSet<>();
+        
+        // Add holidays from holidays table
+        List<Holiday> holidays = holidayRepository.findByDateRange(
+                sprint.getStartDate(), 
+                sprint.getEndDate()
+        );
+        holidays.forEach(holiday -> uniqueHolidayDates.add(holiday.getHolidayDate()));
+        
+        // Add holidays from sprint events
+        List<SprintEvent> sprintHolidays = sprintEventRepository.findBySprintIdAndEventTypeOrderByEventDate(
+                sprint.getId(), 
+                SprintEvent.EventType.HOLIDAY
+        );
+        sprintHolidays.forEach(event -> uniqueHolidayDates.add(event.getEventDate()));
+        
+        // Count only holidays that fall on business days (not weekends)
+        long businessDayHolidays = uniqueHolidayDates.stream()
+                .filter(this::isBusinessDay)
+                .count();
+        
+        // Get leave days during sprint for this member
+        List<LeaveDay> leaveDays = leaveDayRepository.findByMemberIdAndSprintId(
+                member.getId(),
+                sprint.getId()
+        );
+        
+        // Count only leave days that fall on business days (not weekends)
+        long businessDayLeaves = leaveDays.stream()
+                .map(LeaveDay::getLeaveDate)
+                .filter(this::isBusinessDay)
+                .count();
+        
+        // Calculate available days (business days - holidays - leaves)
+        long availableDays = businessDays - businessDayHolidays - businessDayLeaves;
+        
+        // Ensure availableDays is not negative
+        availableDays = Math.max(0, availableDays);
+        
+        // Calculate total capacity
+        BigDecimal dailyCapacity = member.getDailyCapacity() != null ? 
+                member.getDailyCapacity() : BigDecimal.ZERO;
+        BigDecimal totalCapacity = dailyCapacity
+                .multiply(BigDecimal.valueOf(availableDays))
+                .setScale(2, RoundingMode.HALF_UP);
+        
+        log.debug("Capacity for {}: businessDays={}, holidays={}, leaves={}, availableDays={}, capacity={}h",
+                member.getName(), businessDays, businessDayHolidays, businessDayLeaves, 
+                availableDays, totalCapacity);
+        
+        return totalCapacity;
     }
 }
 

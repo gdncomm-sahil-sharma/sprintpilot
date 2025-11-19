@@ -8,9 +8,26 @@
     <main>
         <div class="space-y-10">
             <!-- Header Section -->
-            <div class="text-left">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-800">Dashboard</h2>
-                <p class="text-gray-500 mt-2 text-lg">Your command center for the current sprint. Manage sprint completion from Sprint Setup page.</p>
+            <div class="flex items-start justify-between">
+                <div class="text-left">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-gray-800">Dashboard</h2>
+                    <p class="text-gray-500 mt-2 text-lg">Your command center for the current sprint. Manage sprint completion from Sprint Setup page.</p>
+                </div>
+                <!-- Sprint Info Badge -->
+                <div id="sprintInfoBadge" class="bg-gradient-to-br from-blue-50 to-indigo-100 border border-indigo-200 rounded-xl shadow-sm p-4 min-w-[280px] hidden">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-indigo-500 rounded-lg p-2">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-indigo-600 text-xs font-medium uppercase tracking-wide">Current Sprint</p>
+                            <h3 id="sprintName" class="text-lg font-bold text-gray-800 mt-0.5">Loading...</h3>
+                            <p id="sprintDateRange" class="text-indigo-600 text-xs mt-0.5">-- → --</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Action Cards Grid - Exact React ActionCard Component -->
@@ -86,16 +103,16 @@
                         <h3 class="text-2xl font-bold mb-4 border-b pb-3 text-gray-700">Quick Stats</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
                             <div class="text-center p-4 bg-gray-100/70 rounded-lg">
-                                <p class="text-4xl font-bold text-primary-600">4</p>
+                                <p id="teamMembersCount" class="text-4xl font-bold text-primary-600">--</p>
                                 <p class="text-gray-600 mt-1">Team Members</p>
                             </div>
                             <div class="text-center p-4 bg-gray-100/70 rounded-lg">
-                                <p class="text-lg font-bold text-primary-600">Nov 15 → Nov 29</p>
+                                <p id="sprintDates" class="text-lg font-bold text-primary-600">-- → --</p>
                                 <p class="text-gray-600 mt-1">Sprint Dates</p>
                             </div>
                             <div class="text-center p-4 bg-gray-100/70 rounded-lg">
                                 <p class="text-2xl font-bold">
-                                    <span class="text-success">204h</span> / 240h
+                                    <span id="assignedHours" class="text-success">--</span> / <span id="capacityHours">--</span>
                                 </p>
                                 <p class="text-gray-600 mt-1">Assigned vs. Capacity</p>
                             </div>
@@ -148,6 +165,7 @@
                     console.log('Dashboard - Current Sprint ID:', currentSprintId);
                     
                     if (currentSprintId) {
+                        loadQuickStats();
                         loadDashboardWorkDistribution();
                     } else {
                         console.warn('No current sprint ID found');
@@ -155,6 +173,67 @@
                     }
                 }, 100);
             });
+            
+            async function loadQuickStats() {
+                if (!currentSprintId) {
+                    console.error('No sprint ID available for quick stats');
+                    return;
+                }
+                
+                console.log('Loading quick stats for sprint:', currentSprintId);
+                
+                try {
+                    const response = await fetch('/api/sprints/metrics/quickStats', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sprintId: currentSprintId
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    console.log('Quick stats response:', data);
+                    
+                    if (data.success && data.data) {
+                        updateQuickStats(data.data);
+                    } else {
+                        console.error('Failed to load quick stats:', data.message);
+                    }
+                } catch (error) {
+                    console.error('Error loading quick stats:', error);
+                }
+            }
+            
+            function updateQuickStats(stats) {
+                // Update sprint info badge in header
+                if (stats.sprintName) {
+                    const sprintInfoBadge = document.getElementById('sprintInfoBadge');
+                    const sprintName = document.getElementById('sprintName');
+                    const sprintDateRange = document.getElementById('sprintDateRange');
+                    
+                    sprintName.textContent = stats.sprintName;
+                    sprintDateRange.textContent = `${stats.sprintStartDate} → ${stats.sprintEndDate}`;
+                    sprintInfoBadge.classList.remove('hidden');
+                }
+                
+                // Update team members count
+                document.getElementById('teamMembersCount').textContent = stats.teamMembersCount || 0;
+                
+                // Update sprint dates
+                const sprintDates = `${stats.sprintStartDate} → ${stats.sprintEndDate}`;
+                document.getElementById('sprintDates').textContent = sprintDates;
+                
+                // Update assigned vs capacity
+                const assignedHours = stats.assignedHours ? Math.round(stats.assignedHours) : 0;
+                const capacityHours = stats.capacityHours ? Math.round(stats.capacityHours) : 0;
+                
+                document.getElementById('assignedHours').textContent = `${assignedHours}h`;
+                document.getElementById('capacityHours').textContent = `${capacityHours}h`;
+                
+                console.log('Quick stats updated:', stats);
+            }
 
             async function loadDashboardWorkDistribution() {
                 if (!currentSprintId) {
