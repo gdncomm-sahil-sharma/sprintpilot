@@ -3,17 +3,17 @@ package com.sprintpilot.service.impl;
 import com.sprintpilot.confluence.ConfluencePageBuilder;
 import com.sprintpilot.dto.HolidayDto;
 import com.sprintpilot.dto.SprintDto;
-import com.sprintpilot.repository.SprintRepository;
+import com.sprintpilot.dto.WorkDistributionDto;
 import com.sprintpilot.service.ConfluenceClient;
 import com.sprintpilot.service.ConfluenceService;
 import com.sprintpilot.service.HolidayService;
+import com.sprintpilot.service.SprintMetricsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +32,7 @@ public class ConfluenceServiceImpl implements ConfluenceService {
     private final ConfluencePageBuilder pageBuilder;
     private final String defaultSpaceKey;
     private final HolidayService holidayService;
-    private final SprintRepository sprintRepository;
+    private final SprintMetricsService sprintMetricsService;
     
     @Autowired
     public ConfluenceServiceImpl(
@@ -40,12 +40,12 @@ public class ConfluenceServiceImpl implements ConfluenceService {
             ConfluencePageBuilder pageBuilder,
             @Value("${confluence.space-key:SP}") String defaultSpaceKey,
             HolidayService holidayService,
-            SprintRepository sprintRepository) {
+            SprintMetricsService sprintMetricsService) {
         this.confluenceClient = confluenceClient;
         this.pageBuilder = pageBuilder;
         this.defaultSpaceKey = defaultSpaceKey;
         this.holidayService = holidayService;
-        this.sprintRepository = sprintRepository;
+        this.sprintMetricsService = sprintMetricsService;
     }
     
     @Override
@@ -145,45 +145,17 @@ public class ConfluenceServiceImpl implements ConfluenceService {
     }
     
     /**
-     * Builds page title in format: "SP{number}-{month}-{year}"
-     * Example: SP01-Nov-2025, SP01-Dec-2025, SP02-Dec-2026
+     * Builds page title using sprint name from Sprint entity
      */
     private String buildSprintPageTitle(SprintDto sprintDto) {
-        if (sprintDto.startDate() == null) {
-            return "SP01-Unknown-Unknown";
+        if (sprintDto.sprintName() != null && !sprintDto.sprintName().trim().isEmpty()) {
+            return sprintDto.sprintName().trim();
         }
-        
-        int year = sprintDto.startDate().getYear();
-        String month = sprintDto.startDate().format(DateTimeFormatter.ofPattern("MMM"));
-        
-        // Calculate sprint number: count sprints in the same year with start date <= current sprint's start date
-        // Exclude the current sprint itself, then add 1
-        long sprintNumber = 1; // Default to 1 if no other sprints found
-        try {
-            List<Object[]> sprintDates = sprintRepository.findAllSprintDates();
-            long countBefore = sprintDates.stream()
-                .filter(row -> {
-                    java.time.LocalDate startDate = (java.time.LocalDate) row[1];
-                    return startDate != null && startDate.getYear() == year;
-                })
-                .filter(row -> {
-                    String sprintId = (String) row[0];
-                    return sprintDto.id() == null || !sprintId.equals(sprintDto.id()); // Exclude current sprint
-                })
-                .filter(row -> {
-                    java.time.LocalDate startDate = (java.time.LocalDate) row[1];
-                    return startDate.isBefore(sprintDto.startDate()) || 
-                           (startDate.isEqual(sprintDto.startDate()) && 
-                            row[2] != null); // createdAt check
-                })
-                .count();
-            
-            sprintNumber = countBefore + 1;
-        } catch (Exception e) {
-            log.warn("Failed to calculate sprint number for sprint {}: {}", sprintDto.id(), e.getMessage());
+        // Fallback if sprint name is not available
+        if (sprintDto.id() != null) {
+            return "Sprint " + sprintDto.id();
         }
-        
-        return String.format("SP%02d-%s-%d", sprintNumber, month, year);
+        return "Sprint Planning";
     }
     
     private String ensureSprintPlanningPage(SprintDto sprintDto, String spaceKey) throws Exception {
@@ -231,7 +203,10 @@ public class ConfluenceServiceImpl implements ConfluenceService {
         Map<String, String> variables = new HashMap<>();
         
         // Basic sprint information
-        variables.put("sprintId", sprintDto.id() != null ? sprintDto.id() : "");
+        String sprintName = sprintDto.sprintName() != null && !sprintDto.sprintName().trim().isEmpty() 
+            ? sprintDto.sprintName().trim() 
+            : "Sprint " + (sprintDto.id() != null ? sprintDto.id() : "Unknown");
+        variables.put("sprintName", sprintName);
         variables.put("startDate", sprintDto.startDate() != null ? sprintDto.startDate().toString() : "");
         variables.put("endDate", sprintDto.endDate() != null ? sprintDto.endDate().toString() : "");
         variables.put("duration", sprintDto.duration() != null ? String.valueOf(sprintDto.duration()) : "0");
@@ -290,25 +265,24 @@ public class ConfluenceServiceImpl implements ConfluenceService {
             }
         }
         
-        variables.put("holidayCount", String.valueOf(holidays.size()));
         if (holidays.isEmpty()) {
-            variables.put("holidays", "");
-            variables.put("holidaysInfo", "<p><em>No holidays during this sprint period.</em></p>");
+            variables.put("holidaysInfo", "<p><strong>Holidays during sprint:</strong> <em>No holidays during this sprint period.</em></p>");
         } else {
-            // Format holidays as HTML list
+            // Format holidays as HTML list with names
             StringBuilder holidaysList = new StringBuilder();
-            holidaysList.append("<ul>");
+            holidaysList.append("<p><strong>Holidays during sprint:</strong></p><ul>");
             for (HolidayDto holiday : holidays) {
-                holidaysList.append("<li><strong>").append(escapeHtml(holiday.name())).append("</strong> - ");
-                holidaysList.append(holiday.holidayDate() != null ? holiday.holidayDate().toString() : "");
+                holidaysList.append("<li><strong>").append(escapeHtml(holiday.name())).append("</strong>");
+                if (holiday.holidayDate() != null) {
+                    holidaysList.append(" - ").append(holiday.holidayDate().toString());
+                }
                 if (holiday.location() != null && !holiday.location().isEmpty()) {
                     holidaysList.append(" (Locations: ").append(String.join(", ", holiday.location())).append(")");
                 }
                 holidaysList.append("</li>");
             }
             holidaysList.append("</ul>");
-            variables.put("holidays", holidaysList.toString());
-            variables.put("holidaysInfo", "<p><strong>Holidays during sprint:</strong></p>" + holidaysList.toString());
+            variables.put("holidaysInfo", holidaysList.toString());
         }
         
         // Sprint goals (if available in future)
@@ -477,38 +451,75 @@ public class ConfluenceServiceImpl implements ConfluenceService {
     private Map<String, String> calculateCategoryBreakdown(SprintDto sprintDto) {
         Map<String, String> breakdown = new HashMap<>();
         
-        if (sprintDto.tasks() == null || sprintDto.tasks().isEmpty()) {
-            breakdown.put("featureStoryPoints", "0");
-            breakdown.put("featurePercentage", "0");
-            breakdown.put("techDebtStoryPoints", "0");
-            breakdown.put("techDebtPercentage", "0");
-            breakdown.put("prodIssueStoryPoints", "0");
-            breakdown.put("prodIssuePercentage", "0");
+        // Initialize with defaults
+        breakdown.put("featureStoryPoints", "0");
+        breakdown.put("featurePercentage", "0");
+        breakdown.put("techDebtStoryPoints", "0");
+        breakdown.put("techDebtPercentage", "0");
+        breakdown.put("prodIssueStoryPoints", "0");
+        breakdown.put("prodIssuePercentage", "0");
+        
+        if (sprintDto.id() == null) {
             return breakdown;
         }
         
+        // Calculate story points by category (for display)
         double featureSP = 0, techDebtSP = 0, prodIssueSP = 0;
         
-        for (var task : sprintDto.tasks()) {
-            double sp = task.storyPoints() != null ? task.storyPoints().doubleValue() : 0;
-            if (task.category() != null) {
-                switch (task.category()) {
-                    case FEATURE -> featureSP += sp;
-                    case TECH_DEBT -> techDebtSP += sp;
-                    case PROD_ISSUE -> prodIssueSP += sp;
-                    default -> {}
+        if (sprintDto.tasks() != null && !sprintDto.tasks().isEmpty()) {
+            for (var task : sprintDto.tasks()) {
+                double sp = task.storyPoints() != null ? task.storyPoints().doubleValue() : 0;
+                if (task.category() != null) {
+                    switch (task.category()) {
+                        case FEATURE -> featureSP += sp;
+                        case TECH_DEBT -> techDebtSP += sp;
+                        case PROD_ISSUE -> prodIssueSP += sp;
+                        default -> {}
+                    }
                 }
             }
         }
         
-        double totalSP = featureSP + techDebtSP + prodIssueSP;
-        
         breakdown.put("featureStoryPoints", String.format("%.1f", featureSP));
-        breakdown.put("featurePercentage", totalSP > 0 ? String.format("%.1f", (featureSP * 100 / totalSP)) : "0");
         breakdown.put("techDebtStoryPoints", String.format("%.1f", techDebtSP));
-        breakdown.put("techDebtPercentage", totalSP > 0 ? String.format("%.1f", (techDebtSP * 100 / totalSP)) : "0");
         breakdown.put("prodIssueStoryPoints", String.format("%.1f", prodIssueSP));
-        breakdown.put("prodIssuePercentage", totalSP > 0 ? String.format("%.1f", (prodIssueSP * 100 / totalSP)) : "0");
+        
+        // Get work distribution percentages from SprintMetricsService (based on task counts)
+        try {
+            WorkDistributionDto workDistribution = sprintMetricsService.getWorkDistribution(
+                sprintDto.id(), 
+                null // projectName is optional
+            );
+            
+            if (workDistribution != null && workDistribution.getLabels() != null 
+                && workDistribution.getPercentages() != null) {
+                
+                // Map the work distribution percentages to our categories
+                for (int i = 0; i < workDistribution.getLabels().size(); i++) {
+                    String label = workDistribution.getLabels().get(i);
+                    java.math.BigDecimal percentage = workDistribution.getPercentages().get(i);
+                    
+                    switch (label) {
+                        case "Features" -> breakdown.put("featurePercentage", 
+                            String.format("%.1f", percentage.doubleValue()));
+                        case "Tech Debt" -> breakdown.put("techDebtPercentage", 
+                            String.format("%.1f", percentage.doubleValue()));
+                        case "Bug Fixes" -> breakdown.put("prodIssuePercentage", 
+                            String.format("%.1f", percentage.doubleValue()));
+                        // "Support" category is not displayed in the template, so we skip it
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to get work distribution for sprint {}: {}", sprintDto.id(), e.getMessage());
+            // If work distribution fails, calculate percentages based on story points as fallback
+            double totalSP = featureSP + techDebtSP + prodIssueSP;
+            if (totalSP > 0) {
+                breakdown.put("featurePercentage", String.format("%.1f", (featureSP * 100 / totalSP)));
+                breakdown.put("techDebtPercentage", String.format("%.1f", (techDebtSP * 100 / totalSP)));
+                breakdown.put("prodIssuePercentage", String.format("%.1f", (prodIssueSP * 100 / totalSP)));
+            }
+        }
         
         return breakdown;
     }
