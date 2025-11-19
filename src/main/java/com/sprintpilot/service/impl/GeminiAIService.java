@@ -386,11 +386,33 @@ public class GeminiAIService implements AIService {
         prompt.append("""
             
             **Your Task:**
-            Provide actionable insights based on these trends for an engineering manager. Use markdown bullet points.
-            - **Overall Performance:** Summarize velocity and delivery consistency. Is it improving, declining, or erratic?
-            - **Strategic Focus:** Comment on work mix. Is there a healthy balance between features, tech debt, and production issues?
-            - **Team Health & Bottlenecks:** Identify roles that are consistently overloaded (>100%) or underutilized (<70%). What are the risks?
-            - **Recommendations:** Suggest 1-2 concrete, actionable steps to address issues and improve in the next sprint.
+            Provide actionable insights based on these trends for an engineering manager. 
+            
+            **IMPORTANT FORMATTING REQUIREMENTS:**
+            1. Generate EXACTLY 3 sections with these specific headers (use ** for bold):
+               - **Performance Strengths:** (or similar positive title like "Trending Up", "What's Working Well")
+               - **Areas for Improvement:** (or similar warning title like "Watch Area", "Team Health & Bottlenecks")
+               - **Strategic Recommendations:** (or similar optimization title like "Optimization", "Action Items")
+            
+            2. Each section should have 2-3 bullet points using markdown format (- bullet point)
+            3. Each bullet point should be concise (max 2 lines)
+            4. Focus on:
+               - Performance Strengths: Velocity trends, completion rates, positive patterns
+               - Areas for Improvement: Overloaded/underutilized roles, bottlenecks, risks
+               - Strategic Recommendations: Concrete, actionable steps to improve
+            
+            Example format:
+            **Performance Strengths:**
+            - Team velocity has improved 15% over the last 3 sprints with consistent delivery patterns
+            - High sprint completion rate (94%) demonstrates good planning
+            
+            **Areas for Improvement:**
+            - Backend team at 95% utilization (burnout risk)
+            - QA team underutilized at 70% (growth opportunity)
+            
+            **Strategic Recommendations:**
+            - Add one junior backend developer to reduce load
+            - Cross-train QA team member in test automation
             """);
         
         return callAI(prompt.toString(), "Performance Insights");

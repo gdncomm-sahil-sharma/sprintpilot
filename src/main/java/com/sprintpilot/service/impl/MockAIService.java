@@ -221,43 +221,20 @@ public class MockAIService implements AIService {
                                               List<Map<String, Object>> workMixTrend,
                                               List<Map<String, Object>> roleUtilization) {
         return """
-            **Historical Performance Analysis (Mock Response)**
+            **Performance Strengths:**
+            - Team velocity has increased by 18% over the last 5 sprints with consistent delivery
+            - Sprint completion rate at 92% demonstrates excellent planning and execution
+            - Healthy work mix maintained: 60% features, 25% tech debt, 15% bug fixes
             
-            **📈 Overall Performance:**
-            - Team velocity has increased by 18% over the last 5 sprints
-            - Consistent delivery with 92% sprint completion rate
-            - Velocity stabilizing around 115-125 story points per sprint
-            - Sprint predictability improved from 75% to 88%
-            
-            **🎯 Strategic Focus:**
-            - Healthy work mix: 60% features, 25% tech debt, 15% bugs
-            - Technical debt reduction initiative showing positive results
-            - Feature delivery aligned with product roadmap
-            - Bug count decreasing sprint-over-sprint
-            
-            **👥 Team Health & Bottlenecks:**
-            - Backend team consistently at 95% utilization (risk of burnout)
-            - Frontend team at optimal 85% utilization
+            **Areas for Improvement:**
+            - Backend team consistently at 95% utilization (burnout risk)
             - QA team underutilized at 70% (opportunity for cross-training)
             - DevOps capacity constraint affecting deployment frequency
             
-            **💡 Recommendations:**
-            1. **Immediate Actions:**
-               - Add 1 backend engineer to distribute workload
-               - Implement pair programming to share knowledge
-               - Schedule technical debt sprints quarterly
-            
-            2. **Long-term Improvements:**
-               - Invest in test automation to optimize QA capacity
-               - Cross-train team members for better flexibility
-               - Implement continuous deployment to reduce DevOps bottleneck
-               - Consider 15% buffer for unplanned work
-            
-            **🎊 Achievements:**
-            - Zero production incidents in last 2 sprints
-            - Customer satisfaction score increased to 4.5/5
-            - Team morale at all-time high (4.6/5)
-            - Knowledge sharing sessions proving effective
+            **Strategic Recommendations:**
+            - Add one backend engineer to distribute workload and reduce burnout risk
+            - Invest in test automation to optimize QA capacity and enable cross-training
+            - Implement continuous deployment to reduce DevOps bottleneck
             """;
     }
     
