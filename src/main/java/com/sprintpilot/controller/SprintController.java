@@ -321,6 +321,81 @@ public class SprintController {
                 .body(ApiResponse.error("Failed to calculate work distribution", e.getMessage()));
         }
     }
+
+    /**
+     * Get velocity trend data for current sprint and last 5 completed sprints
+     *
+     * @param request Map containing currentSprintId
+     * @return Velocity trend data across multiple sprints
+     */
+    @PostMapping("/metrics/velocityTrend")
+    public ResponseEntity<ApiResponse<com.sprintpilot.dto.VelocityTrendDto>> getVelocityTrend(@RequestBody Map<String, String> request) {
+        String currentSprintId = request.get("sprintId");
+
+        if (!StringUtils.hasText(currentSprintId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("sprintId is required", null));
+        }
+
+        try {
+            com.sprintpilot.dto.VelocityTrendDto velocityTrend = sprintMetricsService.getVelocityTrend(currentSprintId);
+            return ResponseEntity.ok(ApiResponse.success("Velocity trend calculated successfully", velocityTrend));
+        } catch (Exception e) {
+            log.error("Failed to calculate velocity trend", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Failed to calculate velocity trend", e.getMessage()));
+        }
+    }
+
+    /**
+     * Get summary metrics for analytics dashboard (velocity, success rate, cycle time, utilization)
+     *
+     * @param request Map containing currentSprintId
+     * @return Summary metrics for the analytics page
+     */
+    @PostMapping("/metrics/summary")
+    public ResponseEntity<ApiResponse<com.sprintpilot.dto.SprintSummaryMetricsDto>> getSummaryMetrics(@RequestBody Map<String, String> request) {
+        String currentSprintId = request.get("sprintId");
+
+        if (!StringUtils.hasText(currentSprintId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("sprintId is required", null));
+        }
+
+        try {
+            com.sprintpilot.dto.SprintSummaryMetricsDto summaryMetrics = sprintMetricsService.getSummaryMetrics(currentSprintId);
+            return ResponseEntity.ok(ApiResponse.success("Summary metrics calculated successfully", summaryMetrics));
+        } catch (Exception e) {
+            log.error("Failed to calculate summary metrics", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Failed to calculate summary metrics", e.getMessage()));
+        }
+    }
+
+    /**
+     * Get current sprint metrics for tasks page (progress, work remaining, tasks completed, utilization)
+     *
+     * @param request Map containing currentSprintId
+     * @return Current sprint metrics for the tasks page
+     */
+    @PostMapping("/metrics/current")
+    public ResponseEntity<ApiResponse<com.sprintpilot.dto.CurrentSprintMetricsDto>> getCurrentSprintMetrics(@RequestBody Map<String, String> request) {
+        String currentSprintId = request.get("sprintId");
+
+        if (!StringUtils.hasText(currentSprintId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("sprintId is required", null));
+        }
+
+        try {
+            com.sprintpilot.dto.CurrentSprintMetricsDto currentMetrics = sprintMetricsService.getCurrentSprintMetrics(currentSprintId);
+            return ResponseEntity.ok(ApiResponse.success("Current sprint metrics calculated successfully", currentMetrics));
+        } catch (Exception e) {
+            log.error("Failed to calculate current sprint metrics", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Failed to calculate current sprint metrics", e.getMessage()));
+        }
+    }
     
     // New endpoints for sprint management starting point
     

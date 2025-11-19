@@ -52,4 +52,10 @@ public interface SprintRepository extends JpaRepository<Sprint, String> {
      */
     @Query("SELECT s.id, s.startDate, s.createdAt FROM Sprint s WHERE s.startDate IS NOT NULL")
     List<Object[]> findAllSprintDates();
+
+    /**
+     * Find last N archived sprints ordered by end date descending (most recent first)
+     */
+    @Query("SELECT s FROM Sprint s WHERE s.status = 'ARCHIVED' ORDER BY s.endDate DESC")
+    List<Sprint> findArchivedSprintsOrderByEndDateDesc();
 }
