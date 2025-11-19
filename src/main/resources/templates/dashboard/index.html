@@ -199,8 +199,18 @@
                     dashboardWorkDistributionChart.destroy();
                 }
 
-                const labels = distributionData.labels;
-                const data = distributionData.values.map(v => parseFloat(v));
+                // Parse data and create array of objects for sorting
+                const combinedData = distributionData.labels.map((label, index) => ({
+                    label: label,
+                    value: parseFloat(distributionData.values[index])
+                }));
+                
+                // Sort by value in descending order
+                combinedData.sort((a, b) => b.value - a.value);
+                
+                // Extract sorted arrays
+                const labels = combinedData.map(item => item.label);
+                const data = combinedData.map(item => item.value);
                 
                 // Assign colors based on category
                 const colors = labels.map(label => {
@@ -227,10 +237,19 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                left: 0,
+                                right: 0,
+                                top: 0,
+                                bottom: 0
+                            }
+                        },
                         plugins: {
                             legend: {
                                 position: 'right',
                                 align: 'center',
+                                onClick: null, // Disable click to hide/show segments
                                 labels: {
                                     padding: 20,
                                     font: {
@@ -286,21 +305,28 @@
                     dashboardWorkDistributionChart.destroy();
                 }
 
-                // Create empty grey circle
+                // Create empty grey circle with text plugin (matching Analytics page)
                 dashboardWorkDistributionChart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['No Data'],
+                        labels: ['No tasks yet'],
                         datasets: [{
                             data: [1],
-                            backgroundColor: ['#d1d5db'],
-                            borderWidth: 2,
-                            borderColor: '#ffffff'
+                            backgroundColor: ['#e5e7eb'],
+                            borderWidth: 0
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        layout: {
+                            padding: {
+                                left: 0,
+                                right: 0,
+                                top: 0,
+                                bottom: 0
+                            }
+                        },
                         plugins: {
                             legend: {
                                 display: false
@@ -309,20 +335,29 @@
                                 enabled: false
                             }
                         }
-                    }
+                    },
+                    plugins: [{
+                        id: 'emptyDoughnutText',
+                        afterDraw: function(chart) {
+                            const ctx = chart.ctx;
+                            const width = chart.width;
+                            const height = chart.height;
+                            
+                            ctx.restore();
+                            ctx.font = 'bold 16px sans-serif';
+                            ctx.fillStyle = '#9ca3af';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            
+                            const text = 'No tasks yet';
+                            const textX = width / 2;
+                            const textY = height / 2;
+                            
+                            ctx.fillText(text, textX, textY);
+                            ctx.save();
+                        }
+                    }]
                 });
-
-                // Add "No data" text in the center
-                const centerText = document.createElement('div');
-                centerText.style.position = 'absolute';
-                centerText.style.top = '50%';
-                centerText.style.left = '50%';
-                centerText.style.transform = 'translate(-50%, -50%)';
-                centerText.style.textAlign = 'center';
-                centerText.style.pointerEvents = 'none';
-                centerText.innerHTML = '<p class="text-gray-400 font-medium">No tasks yet</p>';
-                ctx.parentElement.style.position = 'relative';
-                ctx.parentElement.appendChild(centerText);
             }
 
             // Exact React AI Summary Generation Function

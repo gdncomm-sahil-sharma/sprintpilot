@@ -554,8 +554,19 @@
                 // Check if we have real data
                 if (distributionData && distributionData.labels && distributionData.labels.length > 0) {
                     console.log('Rendering work distribution with real data:', distributionData);
-                    const labels = distributionData.labels;
-                    const data = distributionData.values.map(v => parseFloat(v));
+                    
+                    // Parse data and create array of objects for sorting
+                    const combinedData = distributionData.labels.map((label, index) => ({
+                        label: label,
+                        value: parseFloat(distributionData.values[index])
+                    }));
+                    
+                    // Sort by value in descending order
+                    combinedData.sort((a, b) => b.value - a.value);
+                    
+                    // Extract sorted arrays
+                    const labels = combinedData.map(item => item.label);
+                    const data = combinedData.map(item => item.value);
                     
                     // Assign colors based on category
                     const colors = labels.map(label => {
@@ -590,21 +601,39 @@
                                     bottom: 0
                                 }
                             },
-                            plugins: {
-                                legend: {
-                                    position: 'right',
-                                    align: 'center',
-                                    labels: {
-                                        padding: 20,
-                                        font: {
-                                            size: 13,
-                                            weight: 500
-                                        },
-                                        boxWidth: 20,
-                                        boxHeight: 20,
-                                        usePointStyle: false
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                align: 'center',
+                                onClick: null, // Disable click to hide/show segments
+                                labels: {
+                                    padding: 20,
+                                    font: {
+                                        size: 13,
+                                        weight: 500
+                                    },
+                                    boxWidth: 20,
+                                    boxHeight: 20,
+                                    usePointStyle: false,
+                                    generateLabels: function(chart) {
+                                        const data = chart.data;
+                                        if (data.labels.length && data.datasets.length) {
+                                            const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                            return data.labels.map((label, i) => {
+                                                const value = data.datasets[0].data[i];
+                                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                                return {
+                                                    text: `${label} (${percentage}%)`,
+                                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                                    hidden: false,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
                                     }
-                                },
+                                }
+                            },
                                 tooltip: {
                                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
                                     padding: 12,
