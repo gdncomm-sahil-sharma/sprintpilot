@@ -321,6 +321,31 @@ public class SprintController {
                 .body(ApiResponse.error("Failed to calculate work distribution", e.getMessage()));
         }
     }
+
+    /**
+     * Get velocity trend data for current sprint and last 5 completed sprints
+     *
+     * @param request Map containing currentSprintId
+     * @return Velocity trend data across multiple sprints
+     */
+    @PostMapping("/metrics/velocityTrend")
+    public ResponseEntity<ApiResponse<com.sprintpilot.dto.VelocityTrendDto>> getVelocityTrend(@RequestBody Map<String, String> request) {
+        String currentSprintId = request.get("sprintId");
+
+        if (!StringUtils.hasText(currentSprintId)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("sprintId is required", null));
+        }
+
+        try {
+            com.sprintpilot.dto.VelocityTrendDto velocityTrend = sprintMetricsService.getVelocityTrend(currentSprintId);
+            return ResponseEntity.ok(ApiResponse.success("Velocity trend calculated successfully", velocityTrend));
+        } catch (Exception e) {
+            log.error("Failed to calculate velocity trend", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiResponse.error("Failed to calculate velocity trend", e.getMessage()));
+        }
+    }
     
     // New endpoints for sprint management starting point
     

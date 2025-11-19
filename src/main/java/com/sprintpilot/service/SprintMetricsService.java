@@ -1,6 +1,7 @@
 package com.sprintpilot.service;
 
 import com.sprintpilot.dto.SprintMetricsDto;
+import com.sprintpilot.dto.VelocityTrendDto;
 import com.sprintpilot.dto.WorkDistributionDto;
 
 /**
@@ -25,5 +26,13 @@ public interface SprintMetricsService {
      * @return Work distribution data by category.
      */
     WorkDistributionDto getWorkDistribution(String sprintId, String projectName);
+
+    /**
+     * Get velocity trend data for current sprint and last 5 completed sprints.
+     *
+     * @param currentSprintId Current sprint identifier.
+     * @return Velocity trend data across sprints.
+     */
+    VelocityTrendDto getVelocityTrend(String currentSprintId);
 }
 

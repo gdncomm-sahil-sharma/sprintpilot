@@ -1,6 +1,7 @@
 package com.sprintpilot.service.impl;
 
 import com.sprintpilot.dto.SprintMetricsDto;
+import com.sprintpilot.dto.VelocityTrendDto;
 import com.sprintpilot.dto.WorkDistributionDto;
 import com.sprintpilot.entity.Sprint;
 import com.sprintpilot.entity.Task;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -308,6 +310,85 @@ public class SprintMetricsServiceImpl implements SprintMetricsService {
 
         log.info("Work distribution calculated: Total tasks={}, Categories={}", totalTasks, labels.size());
         return new WorkDistributionDto(labels, values, percentages, totalTasks);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VelocityTrendDto getVelocityTrend(String currentSprintId) {
+        log.info("Calculating velocity trend for current sprint: {}", currentSprintId);
+        
+        // Get current sprint
+        Sprint currentSprint = sprintRepository.findById(currentSprintId)
+                .orElseThrow(() -> new RuntimeException("Sprint not found: " + currentSprintId));
+        
+        // Get last 5 archived (completed) sprints
+        List<Sprint> archivedSprints = sprintRepository.findArchivedSprintsOrderByEndDateDesc();
+        List<Sprint> last5ArchivedSprints = archivedSprints.stream()
+                .limit(5)
+                .collect(Collectors.toList());
+        
+        log.info("Found {} archived sprints, using last 5", archivedSprints.size());
+        
+        // Build list with current sprint + last 5 archived sprints (in chronological order)
+        List<Sprint> allSprints = new ArrayList<>();
+        // Add archived sprints in reverse order (oldest to newest)
+        for (int i = last5ArchivedSprints.size() - 1; i >= 0; i--) {
+            allSprints.add(last5ArchivedSprints.get(i));
+        }
+        // Add current sprint at the end
+        allSprints.add(currentSprint);
+        
+        // Calculate velocity for each sprint
+        List<VelocityTrendDto.SprintVelocityData> sprintVelocities = new ArrayList<>();
+        BigDecimal totalCompletedPoints = BigDecimal.ZERO;
+        int completedSprintCount = 0;
+        
+        for (Sprint sprint : allSprints) {
+            List<Task> tasks = taskRepository.findBySprintId(sprint.getId());
+            
+            // Calculate committed points (original estimates)
+            BigDecimal committedPoints = tasks.stream()
+                    .map(this::resolveOriginalEstimate)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            // Calculate completed points (time spent or completed work)
+            BigDecimal completedPoints = tasks.stream()
+                    .map(task -> task.getTimeSpent() != null ? task.getTimeSpent() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            
+            VelocityTrendDto.SprintVelocityData velocityData = new VelocityTrendDto.SprintVelocityData(
+                    sprint.getId(),
+                    sprint.getSprintName(),
+                    committedPoints,
+                    completedPoints,
+                    sprint.getStatus().toString()
+            );
+            
+            sprintVelocities.add(velocityData);
+            log.debug("Sprint: {}, Committed: {}, Completed: {}", 
+                    sprint.getSprintName(), committedPoints, completedPoints);
+            
+            // Track completed points for average calculation (only for archived sprints)
+            if (sprint.getStatus() == Sprint.SprintStatus.ARCHIVED) {
+                totalCompletedPoints = totalCompletedPoints.add(completedPoints);
+                completedSprintCount++;
+            }
+        }
+        
+        // Calculate average velocity (only from completed sprints)
+        BigDecimal averageVelocity = BigDecimal.ZERO;
+        if (completedSprintCount > 0) {
+            averageVelocity = totalCompletedPoints.divide(
+                    BigDecimal.valueOf(completedSprintCount), 
+                    2, 
+                    RoundingMode.HALF_UP
+            );
+        }
+        
+        log.info("Velocity trend calculated: {} sprints, Average velocity: {}", 
+                sprintVelocities.size(), averageVelocity);
+        
+        return new VelocityTrendDto(sprintVelocities, averageVelocity);
     }
 }
 
