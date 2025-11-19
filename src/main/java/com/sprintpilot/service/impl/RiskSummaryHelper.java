@@ -8,6 +8,7 @@ import com.sprintpilot.service.TaskService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -67,7 +68,18 @@ public class RiskSummaryHelper {
             ))
             .collect(Collectors.toList());
         
-        return new RiskSummaryData(allTasks, risks);
+        // Extract assignee names for each task
+        Map<String, List<String>> taskAssignees = allTasksResponse.stream()
+            .collect(Collectors.toMap(
+                TaskResponseDto::id,
+                task -> task.assignees() != null && !task.assignees().isEmpty()
+                    ? task.assignees().stream()
+                        .map(assignee -> assignee.name())
+                        .collect(Collectors.toList())
+                    : List.of("Unassigned")
+            ));
+        
+        return new RiskSummaryData(allTasks, risks, taskAssignees);
     }
     
     /**
@@ -103,6 +115,10 @@ public class RiskSummaryHelper {
     /**
      * Data class to hold tasks and risks for risk summary generation
      */
-    public record RiskSummaryData(List<TaskDto> tasks, List<TaskRiskDto> risks) {}
+    public record RiskSummaryData(
+        List<TaskDto> tasks, 
+        List<TaskRiskDto> risks,
+        Map<String, List<String>> taskAssignees  // taskId -> list of assignee names
+    ) {}
 }
 

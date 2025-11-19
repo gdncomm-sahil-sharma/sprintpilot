@@ -465,33 +465,83 @@
                     const activeSprint = sprints.data[0];
                     
                     // Fetch team members
-                    const teamResponse = await fetch('/api/team');
+                    const teamResponse = await fetch('/api/team-members');
                     const teamData = await teamResponse.json();
                     const team = teamData.data || [];
                     
-                    // Fetch tasks for the sprint
-                    const tasksResponse = await fetch(`/api/tasks?sprintId=${activeSprint.id}`);
-                    const tasksData = await tasksResponse.json();
-                    const tasks = tasksData.data || [];
+                    // Fetch tasks for the sprint (need to get all tasks regardless of risk factor)
+                    // Make multiple calls to get all risk factors and combine them
+                    const riskFactors = ['ON_TRACK', 'AT_RISK', 'OFF_TRACK'];
+                    const allTasksPromises = riskFactors.map(riskFactor => 
+                        fetch(`/api/tasks/sprint/${activeSprint.id}?riskFactor=${riskFactor}&page=0&size=1000`)
+                            .then(res => res.json())
+                            .then(data => data.data && data.data.tasks ? data.data.tasks : [])
+                            .catch(err => {
+                                console.warn(`Failed to fetch tasks for risk factor ${riskFactor}:`, err);
+                                return [];
+                            })
+                    );
                     
-                    // Calculate workload
+                    const allTasksArrays = await Promise.all(allTasksPromises);
+                    // Flatten and deduplicate tasks by ID
+                    const tasksMap = new Map();
+                    allTasksArrays.flat().forEach(task => {
+                        if (task.id && !tasksMap.has(task.id)) {
+                            tasksMap.set(task.id, task);
+                        }
+                    });
+                    const tasks = Array.from(tasksMap.values());
+                    
+                    // Calculate workload - transform to CapacitySummaryDto format
                     const workload = team.map(member => {
-                        const assignedTasks = tasks.filter(task => task.assigneeId === member.id);
-                        const assignedHours = assignedTasks.reduce((sum, task) => sum + (task.storyPoints || 0), 0);
-                        const totalCapacity = member.dailyCapacity * activeSprint.duration;
+                        // TaskResponseDto has assignees array, check if member is in assignees
+                        const assignedTasks = tasks.filter(task => {
+                            if (!task.assignees || task.assignees.length === 0) return false;
+                            return task.assignees.some(assignee => assignee.id === member.id);
+                        });
+                        const assignedHours = assignedTasks.reduce((sum, task) => sum + (task.storyPoints ? parseFloat(task.storyPoints) : 0), 0);
+                        const totalCapacity = (member.dailyCapacity || 0) * (activeSprint.duration || 0);
+                        const remainingHours = totalCapacity - assignedHours;
                         const utilization = totalCapacity > 0 ? (assignedHours / totalCapacity) * 100 : 0;
+                        
+                        // Map to CapacitySummaryDto format (exclude availableHours, utilization)
+                        let status = 'OK';
+                        if (utilization > 100) {
+                            status = 'OVERLOADED';
+                        } else if (utilization < 70) {
+                            status = 'UNDERUTILIZED';
+                        }
+                        
                         return {
                             memberId: member.id,
                             memberName: member.name,
                             totalCapacity: totalCapacity,
                             assignedHours: assignedHours,
-                            availableHours: totalCapacity - assignedHours,
-                            utilization: utilization,
-                            status: utilization > 100 ? 'OVERLOADED' : utilization < 70 ? 'UNDERUTILIZED' : 'OK'
+                            remainingHours: remainingHours,  // Use remainingHours instead of availableHours
+                            status: status
+                            // Exclude: availableHours, utilization
                         };
                     });
                     
                     content.innerHTML = `<div class="flex items-center justify-center h-32 text-gray-500"><svg class="w-5 h-5 animate-pulse mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>Analyzing with AI...</div>`;
+                    
+                    // Transform TaskResponseDto to TaskDto format (remove fields not in TaskDto)
+                    const tasksForAI = tasks.map(task => ({
+                        id: task.id,
+                        sprintId: task.sprintId,
+                        taskKey: task.taskKey,
+                        summary: task.summary,
+                        description: task.description,
+                        storyPoints: task.storyPoints,
+                        category: task.category,
+                        priority: task.priority,
+                        status: task.status,
+                        startDate: task.startDate,
+                        dueDate: task.dueDate,
+                        timeSpent: task.timeSpent,
+                        assigneeId: task.assignees && task.assignees.length > 0 ? task.assignees[0].id : null
+                        // Exclude: originalEstimate, riskFactor, assignees, assigneeName
+                    }));
                     
                     // Call backend AI service with proper parameters
                     const aiResponse = await fetch('/api/ai/sprint-summary', {
@@ -500,7 +550,7 @@
                         body: JSON.stringify({
                             team: team,
                             sprint: activeSprint,
-                            tasks: tasks,
+                            tasks: tasksForAI,
                             workload: workload
                         })
                     });

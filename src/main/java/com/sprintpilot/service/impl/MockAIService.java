@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @ConditionalOnProperty(name = "app.ai.mock-mode", havingValue = "true")
@@ -86,29 +87,92 @@ public class MockAIService implements AIService {
     
     @Override
     public String generateRiskSummary(List<TaskDto> tasks, List<TaskRiskDto> risks) {
-        return """
+        return generateRiskSummary(tasks, risks, Map.of());
+    }
+    
+    /**
+     * Analyzes sprint tasks and generates risk summary with actionable insights, including assignee information
+     * 
+     * @param tasks List of tasks
+     * @param risks List of risk assessments
+     * @param taskAssignees Map of taskId -> list of assignee names
+     * @return AI-generated risk summary
+     */
+    public String generateRiskSummary(List<TaskDto> tasks, List<TaskRiskDto> risks, Map<String, List<String>> taskAssignees) {
+        // Build assignee information for mock response
+        Map<String, TaskRiskDto> riskMap = risks.stream()
+            .collect(Collectors.toMap(TaskRiskDto::taskId, r -> r));
+        
+        // Find off-track tasks with assignees
+        StringBuilder offTrackTasks = new StringBuilder();
+        StringBuilder atRiskTasks = new StringBuilder();
+        
+        for (TaskDto task : tasks) {
+            TaskRiskDto risk = riskMap.get(task.id());
+            if (risk != null) {
+                List<String> assignees = taskAssignees.getOrDefault(task.id(), List.of("Unassigned"));
+                String assigneeStr = String.join(", ", assignees);
+                
+                if (risk.riskLevel() == TaskRiskDto.RiskLevel.OFF_TRACK) {
+                    offTrackTasks.append(String.format("- %s assigned to %s: %s - Immediate attention required\n",
+                        task.taskKey(), assigneeStr, task.summary()));
+                } else if (risk.riskLevel() == TaskRiskDto.RiskLevel.AT_RISK) {
+                    atRiskTasks.append(String.format("- %s assigned to %s: %s\n",
+                        task.taskKey(), assigneeStr, task.summary()));
+                }
+            }
+        }
+        
+        String offTrackSection = offTrackTasks.length() > 0 
+            ? offTrackTasks.toString().trim() 
+            : "- No off-track items currently";
+        
+        String atRiskSection = atRiskTasks.length() > 0 
+            ? atRiskTasks.toString().trim() 
+            : "- No at-risk items currently";
+        
+        // Build pattern analysis with assignee information
+        Map<String, Integer> assigneeRiskCount = new HashMap<>();
+        for (TaskDto task : tasks) {
+            TaskRiskDto risk = riskMap.get(task.id());
+            if (risk != null && (risk.riskLevel() == TaskRiskDto.RiskLevel.AT_RISK || risk.riskLevel() == TaskRiskDto.RiskLevel.OFF_TRACK)) {
+                List<String> assignees = taskAssignees.getOrDefault(task.id(), List.of("Unassigned"));
+                for (String assignee : assignees) {
+                    assigneeRiskCount.put(assignee, assigneeRiskCount.getOrDefault(assignee, 0) + 1);
+                }
+            }
+        }
+        
+        StringBuilder patternAnalysis = new StringBuilder();
+        if (!assigneeRiskCount.isEmpty()) {
+            assigneeRiskCount.entrySet().stream()
+                .filter(e -> e.getValue() > 1)
+                .forEach(e -> patternAnalysis.append(String.format("- %s has %d at-risk/off-track tasks\n", e.getKey(), e.getValue())));
+        }
+        if (patternAnalysis.length() == 0) {
+            patternAnalysis.append("- Multiple backend tasks are at risk due to shared dependencies\n");
+            patternAnalysis.append("- QA tasks are blocked waiting for development completion\n");
+            patternAnalysis.append("- Technical debt items are being deprioritized");
+        }
+        
+        return String.format("""
             **Risk Analysis Summary (Mock Response)**
             
             **Critical Issues (Off Track):**
-            - PROJ-105: Database migration script failing - Immediate attention required
-            - PROJ-108: Production API timeout issues - Blocking downstream tasks
+            %s
             
             **At Risk Items:**
-            - PROJ-110: UI components delayed due to design changes
-            - PROJ-112: Integration testing blocked by environment issues
-            - PROJ-115: Performance optimization needs additional resources
+            %s
             
             **Pattern Analysis:**
-            - Multiple backend tasks are at risk due to shared dependencies
-            - QA tasks are blocked waiting for development completion
-            - Technical debt items are being deprioritized
+            %s
             
             **Recommendations:**
-            1. Schedule emergency meeting for PROJ-105 resolution
+            1. Schedule emergency meeting for off-track items resolution
             2. Allocate additional backend resources to unblock dependencies
             3. Consider moving non-critical features to next sprint
             4. Daily standup focus on at-risk items until resolved
-            """;
+            """, offTrackSection, atRiskSection, patternAnalysis.toString().trim());
     }
     
     @Override
@@ -120,8 +184,8 @@ public class MockAIService implements AIService {
             return "No tasks found for this sprint. Please import tasks first.";
         }
         
-        // Call existing generateRiskSummary method with prepared data
-        return generateRiskSummary(data.tasks(), data.risks());
+        // Call generateRiskSummary method with prepared data including assignees
+        return generateRiskSummary(data.tasks(), data.risks(), data.taskAssignees());
     }
     
     @Override

@@ -220,9 +220,22 @@ public class GeminiAIService implements AIService {
     
     /**
      * Analyzes sprint tasks and generates risk summary with actionable insights
+     * This method maintains backward compatibility by calling the overloaded version with empty assignee map
      */
     @Override
     public String generateRiskSummary(List<TaskDto> tasks, List<TaskRiskDto> risks) {
+        return generateRiskSummary(tasks, risks, Map.of());
+    }
+    
+    /**
+     * Analyzes sprint tasks and generates risk summary with actionable insights, including assignee information
+     * 
+     * @param tasks List of tasks
+     * @param risks List of risk assessments
+     * @param taskAssignees Map of taskId -> list of assignee names
+     * @return AI-generated risk summary
+     */
+    public String generateRiskSummary(List<TaskDto> tasks, List<TaskRiskDto> risks, Map<String, List<String>> taskAssignees) {
         if (!aiEnabled) {
             return "AI features are disabled";
         }
@@ -231,13 +244,17 @@ public class GeminiAIService implements AIService {
         Map<String, TaskRiskDto> riskMap = risks.stream()
             .collect(Collectors.toMap(TaskRiskDto::taskId, r -> r));
         
-        // Build task details with risk information
+        // Build task details with risk information and assignee names
         StringBuilder taskDetails = new StringBuilder();
         for (TaskDto task : tasks) {
             TaskRiskDto risk = riskMap.get(task.id());
-            taskDetails.append(String.format("- %s: %s (%s points) - Risk: %s - Reason: %s\n",
+            List<String> assignees = taskAssignees.getOrDefault(task.id(), List.of("Unassigned"));
+            String assigneeStr = String.join(", ", assignees);
+            
+            taskDetails.append(String.format("- %s: %s (%s points) - Risk: %s - Assigned to: %s - Reason: %s\n",
                 task.taskKey(), task.summary(), task.storyPoints(),
                 risk != null ? risk.riskLevel().getDisplayName() : "Unknown",
+                assigneeStr,
                 risk != null ? risk.reason() : "Not analyzed"
             ));
         }
@@ -250,13 +267,24 @@ public class GeminiAIService implements AIService {
             Tasks and Risks:
             %s
             
-            Your analysis should include:
-            - **Critical Issues:** Point out the most severe blockers ('Off Track' items)
-            - **Pattern Analysis:** Identify bottlenecks or patterns in 'At Risk' items (e.g., multiple at-risk tasks assigned to one person)
-            - **Overall Health:** Brief sprint health assessment
-            - **Actionable Recommendations:** Specific steps to mitigate risks
+            IMPORTANT FORMATTING REQUIREMENTS:
+            - Section headings like "**Critical Issues:**" should NOT have a leading dash (they are headings, not list items)
+            - Under each heading, list items should use a single dash. Do NOT add extra dashes or dots
+            - For EVERY 'Off Track' task, you MUST include the task key, assignee name(s), and issue description
+            - Format: "- [TASK-KEY] assigned to [ASSIGNEE NAME(S)]: [Issue description]" (one dash per item, no duplication)
+            - For 'At Risk' tasks, also include assignee names when relevant
+            - Always mention assignee names when identifying patterns (e.g., "Multiple tasks assigned to [Name] are at risk")
             
-            Use clear, concise markdown bullet points, make sure that each bullet point should not be more than 2 lines.
+            Your analysis should include:
+            - **Critical Issues:** List ALL 'Off Track' items. Each item should start with a single dash. Example output format:
+              **Critical Issues:**
+              - PROJ-105 assigned to John Doe: Database migration script failing - Immediate attention required
+              - PROJ-108 assigned to Jane Smith: Production API timeout issues - Blocking downstream tasks
+            - **Pattern Analysis:** Identify bottlenecks or patterns in 'At Risk' items. Always mention assignee names when multiple tasks are assigned to the same person (e.g., "John Doe has 3 at-risk tasks: PROJ-110, PROJ-112, PROJ-115")
+            - **Overall Health:** Brief sprint health assessment
+            - **Actionable Recommendations:** Specific steps to mitigate risks, considering task assignments and mentioning specific assignees when relevant
+            
+            Use clear, concise markdown formatting. Section headings should be plain text (no dash), and list items under headings should have ONE dash each. Make sure that each bullet point should not be more than 2 lines.
             """,
             taskDetails
         );
@@ -283,8 +311,8 @@ public class GeminiAIService implements AIService {
             return "No tasks found for this sprint. Please import tasks first.";
         }
         
-        // Call existing generateRiskSummary method with prepared data
-        return generateRiskSummary(data.tasks(), data.risks());
+        // Call generateRiskSummary method with prepared data including assignees
+        return generateRiskSummary(data.tasks(), data.risks(), data.taskAssignees());
     }
     
     /**
