@@ -300,20 +300,37 @@
                     if (data.success && data.data) {
                         const sprint = data.data;
                         
-                        // Populate modal
-                        document.getElementById('modalSprintName').textContent = `Sprint ${sprintId.substring(7, 17)}`;
+                        // Populate modal - Use sprint name if available, otherwise format the ID
+                        const displayName = sprint.sprintName && sprint.sprintName.trim() 
+                            ? sprint.sprintName 
+                            : `Sprint ${sprintId.substring(7, 17)}`;
+                        document.getElementById('modalSprintName').textContent = displayName;
                         document.getElementById('modalStartDate').textContent = formatDate(sprint.startDate);
                         document.getElementById('modalEndDate').textContent = formatDate(sprint.endDate);
                         document.getElementById('modalDuration').textContent = `${sprint.duration} working days`;
                         
-                        // Render timeline
-                        renderTimeline(sprint.events || []);
+                        // Filter events to only include those within sprint date range
+                        // Parse dates and compare only the date part (ignore time)
+                        const sprintStart = new Date(sprint.startDate);
+                        sprintStart.setHours(0, 0, 0, 0);
+                        const sprintEnd = new Date(sprint.endDate);
+                        sprintEnd.setHours(23, 59, 59, 999);
                         
-                        // Count events by type
-                        const meetings = (sprint.events || []).filter(e => e.eventType === 'MEETING').length;
-                        const holidays = (sprint.events || []).filter(e => e.eventType === 'HOLIDAY').length;
-                        const deployments = (sprint.events || []).filter(e => e.eventType === 'DEPLOYMENT').length;
-                        const codeFreezes = (sprint.events || []).filter(e => e.eventType === 'CODE_FREEZE').length;
+                        const filteredEvents = (sprint.events || []).filter(event => {
+                            if (!event.eventDate) return false;
+                            const eventDate = new Date(event.eventDate);
+                            eventDate.setHours(0, 0, 0, 0);
+                            return eventDate >= sprintStart && eventDate <= sprintEnd;
+                        });
+                        
+                        // Render timeline with filtered events
+                        renderTimeline(filteredEvents);
+                        
+                        // Count events by type using filtered events
+                        const meetings = filteredEvents.filter(e => e.eventType === 'MEETING').length;
+                        const holidays = filteredEvents.filter(e => e.eventType === 'HOLIDAY').length;
+                        const deployments = filteredEvents.filter(e => e.eventType === 'DEPLOYMENT').length;
+                        const codeFreezes = filteredEvents.filter(e => e.eventType === 'CODE_FREEZE').length;
                         
                         document.getElementById('modalMeetingsCount').textContent = meetings;
                         document.getElementById('modalHolidaysCount').textContent = holidays;
