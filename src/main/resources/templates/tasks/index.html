@@ -564,9 +564,9 @@
                     const utilizationStatus = document.getElementById('teamUtilizationStatus');
                     utilizationValue.innerHTML = `${parseFloat(metrics.utilization.average).toFixed(1)}<span class="text-sm font-normal text-gray-500">%</span>`;
                     
-                    const statusText = metrics.utilization.status === 'optimal' ? 'Optimal range' :
-                                      metrics.utilization.status === 'over' ? 'Over-utilized' :
-                                      'Under-utilized';
+                    const statusText = metrics.utilization.status === 'optimal' ? 'Properly Utilized' :
+                                      metrics.utilization.status === 'over' ? 'Over-Utilized' :
+                                      'Under-Utilized';
                     const statusClass = metrics.utilization.status === 'optimal' ? 'text-success' :
                                        metrics.utilization.status === 'over' ? 'text-danger' : 'text-warning';
                     utilizationStatus.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
