@@ -36,7 +36,7 @@
     <div class="team-section">
         <h2>👥 Team Members</h2>
         <p><strong>Team Size:</strong> {{teamSize}} members</p>
-        {{teamMembers}}
+        {{teamMembersTable}}
     </div>
 
     <div class="capacity-section">
@@ -64,7 +64,8 @@
     <div class="timeline-section">
         <h2>📅 Sprint Timeline</h2>
         <p><strong>Working Days:</strong> {{workingDays}} days</p>
-        {{holidaysInfo}}
+        <h3>Holidays</h3>
+        {{holidaysTable}}
     </div>
 
     <div class="goals-section">
@@ -97,7 +98,17 @@
 
     <div class="events-section">
         <h2>📅 Sprint Events</h2>
-        {{events}}
+        {{eventsTable}}
+    </div>
+
+    <div class="deployment-section">
+        <h2>🚀 Deployment Plan</h2>
+        {{deploymentPlanTable}}
+    </div>
+
+    <div class="retro-section">
+        <h2>🔄 Retro Action Items</h2>
+        {{retroActionItemsTable}}
     </div>
 
     <hr>
