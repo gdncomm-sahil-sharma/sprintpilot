@@ -74,31 +74,7 @@
             <!-- Sprint Configuration Form -->
             <div id="sprintConfigForm">
             
-            <!-- Sprint Name Input (Top of Form) -->
-            <div class="bg-white rounded-2xl shadow-lg border-2 border-primary-100 p-6 mb-6">
-                <label for="sprintName" class="block text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                    </svg>
-                    Sprint Name
-                    <span class="text-xs text-gray-500 font-normal ml-2">(Leave blank to auto-generate "Sprint YYYY-MM-DD")</span>
-                </label>
-                <input 
-                    type="text" 
-                    id="sprintName" 
-                    name="sprintName" 
-                    placeholder="e.g., Q4 2025 Sprint 1, November Sprint, Release 2.0" 
-                    maxlength="100"
-                    pattern="^[a-zA-Z0-9\s\-_]+$"
-                    class="block w-full border-2 border-gray-200 rounded-xl shadow-sm p-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-colors"
-                    title="Sprint name can only contain letters, numbers, spaces, hyphens, and underscores"
-                />
-                <p class="text-xs text-gray-600 mt-2">
-                    <span class="font-semibold">Max 100 characters.</span> Allowed: letters, numbers, spaces, hyphens, underscores.
-                </p>
-            </div>
-
-            <!-- Progress Stepper -->
+            <!-- Progress Stepper (at the top) -->
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
                 <h4 class="text-sm font-semibold text-gray-700 mb-5 flex items-center gap-2">
                     <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,55 +83,73 @@
                     Configuration Progress
                 </h4>
                 <div class="flex items-center justify-between">
-                    <!-- Step 1: Core Configuration -->
+                    <!-- Step 1: Sprint Name -->
                     <div class="flex flex-col items-center flex-1">
                         <div class="relative">
                             <div id="step1Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
                                 <svg id="step1Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <p class="text-sm font-semibold text-gray-700">Sprint Name</p>
+                            <p id="step1Status" class="text-xs text-gray-500 mt-1">Required</p>
+                        </div>
+                    </div>
+
+                    <!-- Connector Line 1 -->
+                    <div id="connector1" class="flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300"></div>
+
+                    <!-- Step 2: Core Configuration -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="relative">
+                            <div id="step2Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
+                                <svg id="step2Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 </svg>
                             </div>
                         </div>
                         <div class="text-center mt-3">
-                            <p class="text-sm font-semibold text-gray-700">Core Configuration</p>
-                            <p id="step1Status" class="text-xs text-gray-500 mt-1">Required</p>
+                            <p class="text-sm font-semibold text-gray-700">Core Config</p>
+                            <p id="step2Status" class="text-xs text-gray-500 mt-1">Required</p>
                         </div>
                     </div>
 
-                    <!-- Connector Line 1 -->
-                    <div id="connector1" class="flex-1 h-0.5 bg-gray-200 mx-4 -mt-8 transition-all duration-300"></div>
+                    <!-- Connector Line 2 -->
+                    <div id="connector2" class="flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300"></div>
 
-                    <!-- Step 2: Sprint Meetings -->
+                    <!-- Step 3: Sprint Meetings -->
                     <div class="flex flex-col items-center flex-1">
                         <div class="relative">
-                            <div id="step2Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
-                                <svg id="step2Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div id="step3Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
+                                <svg id="step3Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
                             </div>
                         </div>
                         <div class="text-center mt-3">
-                            <p class="text-sm font-semibold text-gray-700">Sprint Meetings</p>
-                            <p id="step2Status" class="text-xs text-gray-500 mt-1">Optional</p>
+                            <p class="text-sm font-semibold text-gray-700">Meetings</p>
+                            <p id="step3Status" class="text-xs text-gray-500 mt-1">Optional</p>
                         </div>
                     </div>
 
-                    <!-- Connector Line 2 -->
-                    <div id="connector2" class="flex-1 h-0.5 bg-gray-200 mx-4 -mt-8 transition-all duration-300"></div>
+                    <!-- Connector Line 3 -->
+                    <div id="connector3" class="flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300"></div>
 
-                    <!-- Step 3: Sprint Events -->
+                    <!-- Step 4: Sprint Events -->
                     <div class="flex flex-col items-center flex-1">
                         <div class="relative">
-                            <div id="step3Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
-                                <svg id="step3Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div id="step4Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
+                                <svg id="step4Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                             </div>
                         </div>
                         <div class="text-center mt-3">
-                            <p class="text-sm font-semibold text-gray-700">Sprint Events</p>
-                            <p id="step3Status" class="text-xs text-gray-500 mt-1">Optional</p>
+                            <p class="text-sm font-semibold text-gray-700">Events</p>
+                            <p id="step4Status" class="text-xs text-gray-500 mt-1">Optional</p>
                         </div>
                     </div>
                 </div>
@@ -165,6 +159,58 @@
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 <!-- Left Column - Configuration Cards -->
                 <div class="lg:col-span-3 space-y-6">
+                    
+                    <!-- Sprint Name Card - Collapsible -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200/50 cursor-pointer hover:from-purple-100 hover:to-pink-100 transition-colors" onclick="toggleSection('sprintNameContent')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                        </svg>
+                                        Sprint Name
+                                        <span id="sprintNameStatus" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-red-100 text-red-600">Required</span>
+                                    </h3>
+                                    <p class="text-sm text-gray-600 mt-1">Give your sprint a unique identifier</p>
+                                </div>
+                                <svg id="sprintNameContent-icon" class="w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div id="sprintNameContent" class="hidden transition-all duration-300">
+                        <div class="p-6">
+                            <div>
+                                <label for="sprintName" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                    </svg>
+                                    Sprint Name
+                                    <span class="text-red-500 ml-1">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="sprintName" 
+                                    name="sprintName" 
+                                    placeholder="e.g., Q4 2025 Sprint 1, November Sprint, Release 2.0" 
+                                    maxlength="100"
+                                    pattern="^[a-zA-Z0-9\s\-_]+$"
+                                    required
+                                    onchange="updateCompletionStatus()"
+                                    class="block w-full border-2 border-gray-200 rounded-xl shadow-sm p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 hover:border-purple-300 transition-colors"
+                                    title="Sprint name can only contain letters, numbers, spaces, hyphens, and underscores"
+                                />
+                                <p class="text-xs text-gray-600 mt-2 flex items-start gap-1.5">
+                                    <svg class="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <span><span class="font-semibold">Max 100 characters.</span> Allowed: letters, numbers, spaces, hyphens, underscores.</span>
+                                </p>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
                     
                     <!-- Enhanced Core Configuration Card - Collapsible -->
                     <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
@@ -935,15 +981,16 @@
                 document.getElementById('sprintConfigForm').classList.remove('hidden');
                 document.getElementById('saveConfigBtn').classList.remove('hidden'); // Show save button
                 
-                // Auto-expand Core Configuration section for new sprint
-                const coreConfigContent = document.getElementById('coreConfigContent');
-                if (coreConfigContent && coreConfigContent.classList.contains('hidden')) {
-                    toggleSection('coreConfigContent');
+                // Auto-expand Sprint Name section for new sprint
+                const sprintNameContent = document.getElementById('sprintNameContent');
+                if (sprintNameContent && sprintNameContent.classList.contains('hidden')) {
+                    toggleSection('sprintNameContent');
                 }
             }
             
             // Smart Checklist System - Track Completion Status
             let completionState = {
+                sprintName: false,
                 coreConfig: false,
                 sprintMeetings: false,
                 sprintEvents: false
@@ -951,6 +998,12 @@
             
             let isNewSprint = true; // Will be set based on whether sprint exists
             let autoSaveDebounceTimer = null;
+            
+            // Check if Sprint Name is complete
+            function isSprintNameComplete() {
+                const sprintName = document.getElementById('sprintName').value.trim();
+                return !!sprintName;
+            }
             
             // Check if Core Configuration is complete
             function isCoreConfigComplete() {
@@ -975,11 +1028,21 @@
             // Update completion status and UI
             function updateCompletionStatus() {
                 // Update state
+                completionState.sprintName = isSprintNameComplete();
                 completionState.coreConfig = isCoreConfigComplete();
                 completionState.sprintMeetings = hasSprintMeetings();
                 completionState.sprintEvents = hasSprintEvents();
                 
                 // Update section badges (in collapsed headers)
+                const sprintNameStatus = document.getElementById('sprintNameStatus');
+                if (completionState.sprintName) {
+                    sprintNameStatus.textContent = '✓ Complete';
+                    sprintNameStatus.className = 'ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-green-100 text-green-600';
+                } else {
+                    sprintNameStatus.textContent = 'Required';
+                    sprintNameStatus.className = 'ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-red-100 text-red-600';
+                }
+                
                 const coreConfigStatus = document.getElementById('coreConfigStatus');
                 if (completionState.coreConfig) {
                     coreConfigStatus.textContent = '✓ Complete';
@@ -1013,86 +1076,123 @@
             
             // Update visual progress stepper
             function updateProgressStepper() {
-                // Step 1: Core Configuration
+                const checkmarkSvg = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>';
+                
+                // Step 1: Sprint Name
                 const step1Circle = document.getElementById('step1Circle');
                 const step1Icon = document.getElementById('step1Icon');
                 const step1Status = document.getElementById('step1Status');
                 const connector1 = document.getElementById('connector1');
                 
-                if (completionState.coreConfig) {
+                if (completionState.sprintName) {
                     step1Circle.className = 'w-12 h-12 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center transition-all duration-300';
-                    step1Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 6L9 17l-5-5"></path>';
-                    step1Icon.className = 'w-7 h-7 text-white';
+                    step1Icon.outerHTML = '<div id="step1Icon" class="w-7 h-7 text-white">' + checkmarkSvg + '</div>';
                     step1Status.textContent = 'Complete';
                     step1Status.className = 'text-xs text-green-600 font-medium mt-1';
-                    connector1.className = 'flex-1 h-0.5 bg-green-500 mx-4 -mt-8 transition-all duration-300';
+                    connector1.className = 'flex-1 h-0.5 bg-green-500 mx-2 -mt-8 transition-all duration-300';
                 } else {
                     step1Circle.className = 'w-12 h-12 rounded-full border-2 border-primary-500 bg-primary-50 flex items-center justify-center transition-all duration-300';
-                    step1Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>';
-                    step1Icon.className = 'w-6 h-6 text-primary-600';
-                    step1Status.textContent = 'Required - In Progress';
+                    step1Icon.outerHTML = '<svg id="step1Icon" class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>';
+                    step1Status.textContent = 'Required';
                     step1Status.className = 'text-xs text-primary-600 font-medium mt-1';
-                    connector1.className = 'flex-1 h-0.5 bg-gray-200 mx-4 -mt-8 transition-all duration-300';
+                    connector1.className = 'flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300';
                 }
                 
-                // Step 2: Sprint Meetings
+                // Step 2: Core Configuration
                 const step2Circle = document.getElementById('step2Circle');
                 const step2Icon = document.getElementById('step2Icon');
                 const step2Status = document.getElementById('step2Status');
                 const connector2 = document.getElementById('connector2');
                 
-                if (completionState.sprintMeetings) {
+                if (completionState.coreConfig) {
                     step2Circle.className = 'w-12 h-12 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center transition-all duration-300';
-                    step2Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 6L9 17l-5-5"></path>';
-                    step2Icon.className = 'w-7 h-7 text-white';
+                    step2Icon.outerHTML = '<div id="step2Icon" class="w-7 h-7 text-white">' + checkmarkSvg + '</div>';
                     step2Status.textContent = 'Complete';
                     step2Status.className = 'text-xs text-green-600 font-medium mt-1';
-                    connector2.className = 'flex-1 h-0.5 bg-green-500 mx-4 -mt-8 transition-all duration-300';
-                } else if (completionState.coreConfig) {
+                    connector2.className = 'flex-1 h-0.5 bg-green-500 mx-2 -mt-8 transition-all duration-300';
+                } else if (completionState.sprintName) {
                     step2Circle.className = 'w-12 h-12 rounded-full border-2 border-primary-500 bg-white flex items-center justify-center transition-all duration-300';
-                    step2Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>';
-                    step2Icon.className = 'w-6 h-6 text-primary-600';
-                    step2Status.textContent = 'Optional - Ready';
+                    step2Icon.outerHTML = '<svg id="step2Icon" class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>';
+                    step2Status.textContent = 'Required';
                     step2Status.className = 'text-xs text-primary-600 font-medium mt-1';
-                    connector2.className = 'flex-1 h-0.5 bg-gray-200 mx-4 -mt-8 transition-all duration-300';
+                    connector2.className = 'flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300';
                 } else {
                     step2Circle.className = 'w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300';
-                    step2Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>';
-                    step2Icon.className = 'w-6 h-6 text-gray-400';
-                    step2Status.textContent = 'Optional - Pending';
+                    step2Icon.outerHTML = '<svg id="step2Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>';
+                    step2Status.textContent = 'Required';
                     step2Status.className = 'text-xs text-gray-500 mt-1';
-                    connector2.className = 'flex-1 h-0.5 bg-gray-200 mx-4 -mt-8 transition-all duration-300';
+                    connector2.className = 'flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300';
                 }
                 
-                // Step 3: Sprint Events
+                // Step 3: Sprint Meetings
                 const step3Circle = document.getElementById('step3Circle');
                 const step3Icon = document.getElementById('step3Icon');
                 const step3Status = document.getElementById('step3Status');
+                const connector3 = document.getElementById('connector3');
                 
-                if (completionState.sprintEvents) {
+                if (completionState.sprintMeetings) {
                     step3Circle.className = 'w-12 h-12 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center transition-all duration-300';
-                    step3Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 6L9 17l-5-5"></path>';
-                    step3Icon.className = 'w-7 h-7 text-white';
+                    step3Icon.outerHTML = '<div id="step3Icon" class="w-7 h-7 text-white">' + checkmarkSvg + '</div>';
                     step3Status.textContent = 'Complete';
                     step3Status.className = 'text-xs text-green-600 font-medium mt-1';
-                } else if (completionState.coreConfig) {
+                    connector3.className = 'flex-1 h-0.5 bg-green-500 mx-2 -mt-8 transition-all duration-300';
+                } else if (completionState.sprintName && completionState.coreConfig) {
                     step3Circle.className = 'w-12 h-12 rounded-full border-2 border-primary-500 bg-white flex items-center justify-center transition-all duration-300';
-                    step3Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>';
-                    step3Icon.className = 'w-6 h-6 text-primary-600';
+                    step3Icon.outerHTML = '<svg id="step3Icon" class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>';
                     step3Status.textContent = 'Optional - Ready';
                     step3Status.className = 'text-xs text-primary-600 font-medium mt-1';
+                    connector3.className = 'flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300';
                 } else {
                     step3Circle.className = 'w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300';
-                    step3Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>';
-                    step3Icon.className = 'w-6 h-6 text-gray-400';
-                    step3Status.textContent = 'Optional - Pending';
+                    step3Icon.outerHTML = '<svg id="step3Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>';
+                    step3Status.textContent = 'Optional';
                     step3Status.className = 'text-xs text-gray-500 mt-1';
+                    connector3.className = 'flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300';
+                }
+                
+                // Step 4: Sprint Events
+                const step4Circle = document.getElementById('step4Circle');
+                const step4Icon = document.getElementById('step4Icon');
+                const step4Status = document.getElementById('step4Status');
+                
+                if (completionState.sprintEvents) {
+                    step4Circle.className = 'w-12 h-12 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center transition-all duration-300';
+                    step4Icon.outerHTML = '<div id="step4Icon" class="w-7 h-7 text-white">' + checkmarkSvg + '</div>';
+                    step4Status.textContent = 'Complete';
+                    step4Status.className = 'text-xs text-green-600 font-medium mt-1';
+                } else if (completionState.sprintName && completionState.coreConfig) {
+                    step4Circle.className = 'w-12 h-12 rounded-full border-2 border-primary-500 bg-white flex items-center justify-center transition-all duration-300';
+                    step4Icon.outerHTML = '<svg id="step4Icon" class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
+                    step4Status.textContent = 'Optional - Ready';
+                    step4Status.className = 'text-xs text-primary-600 font-medium mt-1';
+                } else {
+                    step4Circle.className = 'w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300';
+                    step4Icon.outerHTML = '<svg id="step4Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
+                    step4Status.textContent = 'Optional';
+                    step4Status.className = 'text-xs text-gray-500 mt-1';
                 }
             }
             
             // Auto-expand next section when current is complete
             function smartAutoExpand(completedSection) {
                 if (!isNewSprint) return; // Only for new sprints
+                
+                // If Sprint Name just completed, auto-expand Core Configuration
+                if (completedSection === 'sprintName' && !completionState.coreConfig) {
+                    const sprintNameContent = document.getElementById('sprintNameContent');
+                    const coreConfigContent = document.getElementById('coreConfigContent');
+                    
+                    // Collapse sprint name (with delay for smooth UX)
+                    setTimeout(() => {
+                        if (!sprintNameContent.classList.contains('hidden')) {
+                            toggleSection('sprintNameContent');
+                        }
+                        // Expand Core Configuration
+                        if (coreConfigContent.classList.contains('hidden')) {
+                            toggleSection('coreConfigContent');
+                        }
+                    }, 800);
+                }
                 
                 // If Core Config just completed, auto-expand Sprint Meetings
                 if (completedSection === 'coreConfig' && !completionState.sprintMeetings) {
@@ -1129,13 +1229,14 @@
             
             // Auto-save with debounce
             function triggerAutoSave(completedSection, showPendingMessage = false) {
-                if (!completionState.coreConfig) {
-                    // Show helpful message for events added before Core Config is complete
+                if (!completionState.sprintName || !completionState.coreConfig) {
+                    // Show helpful message for events added before required fields are complete
                     if (showPendingMessage) {
-                        console.log('⏳ Event added locally. Complete Core Configuration to save.');
-                        showWarning('Event added. Complete Core Configuration to save changes.');
+                        const missingField = !completionState.sprintName ? 'Sprint Name' : 'Core Configuration';
+                        console.log(`⏳ Event added locally. Complete ${missingField} to save.`);
+                        showWarning(`Event added. Complete ${missingField} to save changes.`);
                     }
-                    return; // Don't auto-save until core config is complete
+                    return; // Don't auto-save until sprint name and core config are complete
                 }
                 
                 clearTimeout(autoSaveDebounceTimer);
@@ -1727,9 +1828,16 @@
             }
             
             function saveSprintSettings() {
+                const sprintName = document.getElementById('sprintName').value.trim();
                 const startDate = document.getElementById('startDate').value;
                 const duration = parseInt(document.getElementById('duration').value);
                 const endDate = document.getElementById('endDate').value;
+                
+                // Validate required fields
+                if (!sprintName) {
+                    showError('Sprint name is required');
+                    return;
+                }
                 
                 if (!startDate || !duration) {
                     showError('Please fill in start date and duration first');
@@ -1749,8 +1857,14 @@
             }
             
             function createNewSprintAndSaveSettings(startDate, duration, isAutoSave = false) {
-                // Get sprint name from input (can be null/empty for auto-generation)
-                const sprintName = document.getElementById('sprintName').value.trim() || null;
+                // Get sprint name from input (required field)
+                const sprintName = document.getElementById('sprintName').value.trim();
+                
+                // Validate sprint name is provided
+                if (!sprintName) {
+                    showError('Sprint name is required');
+                    return;
+                }
                 
                 // Create new sprint first
                 fetch('/api/sprints/create', {
@@ -1794,8 +1908,14 @@
             }
             
             function updateSprintConfiguration(sprintId, startDate, duration, isAutoSave = false) {
-                // Get sprint name from input (can be null/empty for keeping current or auto-generation)
-                const sprintName = document.getElementById('sprintName').value.trim() || null;
+                // Get sprint name from input (required field)
+                const sprintName = document.getElementById('sprintName').value.trim();
+                
+                // Validate sprint name is provided
+                if (!sprintName) {
+                    showError('Sprint name is required');
+                    return;
+                }
                 
                 // Collect all meeting data
                 const meetings = {
@@ -2533,16 +2653,9 @@
                     initializeSmartChecklist();
                 }, 100);
                 
-                // Set defaults if no sprint data loaded
+                // Update completion status
                 setTimeout(() => {
-                    if (!document.getElementById('startDate').value) {
-                        console.log('Setting default start date:', today);
-                        document.getElementById('startDate').value = today;
-                        document.getElementById('duration').value = '10'; // Default to 10 days
-                        calculateEndDate(); // This should work even without sprint ID
-                    }
-                    
-                    updateCompletionStatus(); // Update completion status after defaults
+                    updateCompletionStatus();
                     console.log('✅ Sprint Setup initialization complete');
                 }, 500);
                 

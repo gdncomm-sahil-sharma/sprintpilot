@@ -59,11 +59,10 @@ public class SprintServiceImpl implements SprintService {
             );
         }
 
-        // Auto-generate sprint name if not provided (format: "Sprint YYYY-MM-DD")
+        // Validate sprint name is provided (mandatory field)
         String sprintName = sprintDto.sprintName();
         if (sprintName == null || sprintName.isBlank()) {
-            sprintName = "Sprint " + sprintDto.startDate().toString();
-            log.info("Auto-generated sprint name: {}", sprintName);
+            throw new RuntimeException("Sprint name is required. Please provide a sprint name.");
         }
 
         // Check for uniqueness
