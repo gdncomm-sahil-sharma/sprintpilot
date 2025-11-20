@@ -10,6 +10,7 @@ import com.sprintpilot.repository.TaskRepository;
 import com.sprintpilot.repository.TeamMemberRepository;
 import com.sprintpilot.service.JiraClient;
 import com.sprintpilot.service.TaskImportService;
+import com.sprintpilot.service.TaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,6 +41,9 @@ public class TaskImportServiceImpl implements TaskImportService {
     
     @Autowired
     private AtlassianConfigProperties atlassianConfig;
+    
+    @Autowired
+    private TaskService taskService;
     
     @Override
     public TaskImportResponse importFromCSV(TaskImportRequest request) {
@@ -307,6 +311,19 @@ public class TaskImportServiceImpl implements TaskImportService {
             }
             
             log.info("Jira import complete: {} created, {} updated, {} errors", createdCount, updatedCount, errors.size());
+            
+            // Automatically analyze risks for all imported/updated tasks
+            if (processedTasks.size() > 0) {
+                try {
+                    log.info("Automatically analyzing risks for {} tasks in sprint {}", processedTasks.size(), request.sprintId());
+                    int tasksAnalyzed = taskService.analyzeSprintRisks(request.sprintId());
+                    log.info("Successfully analyzed {} tasks", tasksAnalyzed);
+                    warnings.add(String.format("✅ Automatically analyzed %d task(s) for risk factors", tasksAnalyzed));
+                } catch (Exception e) {
+                    log.error("Failed to analyze task risks after import", e);
+                    warnings.add("⚠️ Task import successful but automatic risk analysis failed. Please run manual analysis.");
+                }
+            }
             
             // Add summary warnings
             if (createdCount > 0) {

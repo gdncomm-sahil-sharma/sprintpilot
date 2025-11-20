@@ -1,6 +1,5 @@
 package com.sprintpilot.service;
 
-import com.sprintpilot.dto.CompleteSprintResponse;
 import com.sprintpilot.dto.SprintDto;
 import com.sprintpilot.dto.SprintEventDto;
 import java.time.LocalDate;
@@ -28,7 +27,7 @@ public interface SprintService {
     
     boolean canCompleteSprint(String id);
     
-    CompleteSprintResponse completeAndArchiveSprint(String id);
+    SprintDto completeAndArchiveSprint(String id);
     
     void deleteSprint(String id);
     

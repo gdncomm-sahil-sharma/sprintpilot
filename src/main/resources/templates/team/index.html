@@ -39,47 +39,57 @@
             </div>
         </div>
         
-        <!-- Assign to Sprint Modal -->
-        <div id="assignSprintModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-            <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <h3 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        <!-- Unassign Confirmation Modal -->
+        <div id="unassignConfirmModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path>
                         </svg>
                     </div>
-                    Assign Members to Sprint
-                </h3>
-                
-                <!-- Members Selection -->
-                <div class="mb-6">
-                    <div class="flex items-center justify-between mb-3">
-                        <label class="block text-sm font-medium text-gray-700">Select Team Members</label>
-                        <div class="flex gap-2">
-                            <button type="button" onclick="selectAllMembers()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
-                                Select All
-                            </button>
-                            <span class="text-gray-400">|</span>
-                            <button type="button" onclick="deselectAllMembers()" class="text-xs text-gray-600 hover:text-gray-800 font-medium">
-                                Deselect All
-                            </button>
-                        </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Unassign from Sprint</h3>
+                        <p class="text-sm text-gray-600 mt-1">Remove member from current sprint</p>
                     </div>
-                    <div id="memberSelectionList" class="border border-gray-300 rounded-lg p-4 max-h-96 overflow-y-auto bg-gray-50">
-                        <p class="text-gray-500 text-sm">Loading team members...</p>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-2">
-                        <span id="selectedCount">0</span> member(s) selected
-                    </p>
                 </div>
-                
-                <!-- Action Buttons -->
-                <div class="flex justify-end space-x-3 pt-4 border-t">
-                    <button onclick="closeAssignSprintModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
+                <p class="text-gray-700 mb-6">
+                    Are you sure you want to unassign <strong id="unassignMemberName"></strong> from the current sprint? They will no longer be part of this sprint's team.
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeUnassignConfirm()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
                         Cancel
                     </button>
-                    <button onclick="assignMembersToSprint()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500">
-                        Assign to Sprint
+                    <button onclick="confirmUnassign()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-amber-600 hover:bg-amber-700 text-white focus:ring-amber-500">
+                        Unassign Member
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Assign Confirmation Modal -->
+        <div id="assignConfirmModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+            <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="flex-shrink-0 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Assign to Sprint</h3>
+                        <p class="text-sm text-gray-600 mt-1">Add member to current sprint</p>
+                    </div>
+                </div>
+                <p class="text-gray-700 mb-6">
+                    Are you sure you want to assign <strong id="assignMemberName"></strong> to the current sprint? They will become part of this sprint's team.
+                </p>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeAssignConfirm()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400">
+                        Cancel
+                    </button>
+                    <button onclick="confirmAssign()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 bg-green-600 hover:bg-green-700 text-white focus:ring-green-500">
+                        Assign Member
                     </button>
                 </div>
             </div>
@@ -208,36 +218,13 @@
                         <span class="text-sm font-medium text-primary-800">Members with a blue highlight are assigned to the current sprint</span>
                     </div>
                 </div>
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                    <!-- Sprint Filter Toggle - Beautiful Version -->
-                    <div id="sprintFilterContainer" class="hidden">
-                        <label class="relative inline-flex items-center cursor-pointer group">
-                            <input type="checkbox" id="filterCurrentSprint" 
-                                   class="sr-only peer"
-                                   onchange="toggleSprintFilter()">
-                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-                            <span class="ml-3 text-sm font-medium text-gray-700 group-hover:text-gray-900">
-                                Current Sprint Only
-                            </span>
-                        </label>
-                    </div>
-                    
-                    <!-- Assign to Sprint Button -->
-                    <button onclick="openAssignToSprintModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        <span>Assign to Sprint</span>
-                    </button>
-                    
-                    <!-- Add Member Button -->
+                <!-- Add Member Button -->
                 <button onclick="openAddModal()" class="px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     <span>Add Member</span>
                 </button>
-                </div>
             </div>
             
             <!-- Team Table - Exact React Implementation -->
@@ -312,8 +299,6 @@
                 
                 if (currentSprintId) {
                     console.log('Current sprint ID:', currentSprintId);
-                    // Show the filter toggle since we have an active sprint
-                    document.getElementById('sprintFilterContainer').classList.remove('hidden');
                     
                     // Fetch sprint details to get dates for calendar restrictions
                     try {
@@ -334,8 +319,6 @@
                     }
                 } else {
                     console.log('No active sprint found in cookie');
-                    // Hide the filter toggle since there's no active sprint
-                    document.getElementById('sprintFilterContainer').classList.add('hidden');
                 }
                 
                 // Load team members (with or without sprint context)
@@ -390,26 +373,26 @@
                 }
             }
             
-            // Toggle sprint filter
-            function toggleSprintFilter() {
-                showOnlyCurrentSprint = document.getElementById('filterCurrentSprint').checked;
-                renderTeamTable();
-            }
-            
             // Render team members table
             function renderTeamTable() {
                 const tbody = document.getElementById('teamTableBody');
                 
-                // Apply filter if enabled
                 let filteredMembers = teamMembers;
-                if (showOnlyCurrentSprint && currentSprintId) {
-                    filteredMembers = teamMembers.filter(member => member.assignedToCurrentSprint);
+                
+                // Sort members: assigned to current sprint first, then unassigned
+                if (currentSprintId) {
+                    filteredMembers = filteredMembers.sort((a, b) => {
+                        // If both assigned or both unassigned, maintain original order
+                        if (a.assignedToCurrentSprint === b.assignedToCurrentSprint) {
+                            return 0;
+                        }
+                        // Assigned members come first
+                        return a.assignedToCurrentSprint ? -1 : 1;
+                    });
                 }
                 
                 if (filteredMembers.length === 0) {
-                    const message = showOnlyCurrentSprint 
-                        ? 'No team members found in the current sprint.'
-                        : 'No team members found. Click "Add Member" to create one.';
+                    const message = 'No team members found. Click "Add Member" to create one.';
                     tbody.innerHTML = `
                         <tr>
                             <td colspan="6" class="py-8 px-4 text-center text-gray-500">
@@ -501,12 +484,25 @@
                             </td>
                             <td class="py-3 px-4">
                                 <div class="flex space-x-3">
-                                    <button type="button" onclick="editMember('${member.id}')" class="text-primary-600 hover:text-primary-800 transition-colors">
+                                    <button type="button" onclick="editMember('${member.id}')" class="text-primary-600 hover:text-primary-800 transition-colors" title="Edit Member">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </button>
-                                    <button type="button" onclick="deleteMember('${member.id}')" class="text-danger hover:text-red-700 transition-colors">
+                                    ${currentSprintId ? (member.assignedToCurrentSprint ? `
+                                    <button type="button" onclick="openUnassignConfirm('${member.id}', '${escapeHtml(member.name)}')" class="text-amber-600 hover:text-amber-800 transition-colors" title="Unassign from Current Sprint">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"></path>
+                                        </svg>
+                                    </button>
+                                    ` : `
+                                    <button type="button" onclick="openAssignConfirm('${member.id}', '${escapeHtml(member.name)}')" class="text-green-600 hover:text-green-800 transition-colors" title="Assign to Current Sprint">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                        </svg>
+                                    </button>
+                                    `) : ''}
+                                    <button type="button" onclick="deleteMember('${member.id}')" class="text-danger hover:text-red-700 transition-colors" title="Delete Member">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>
@@ -1029,6 +1025,94 @@
                 } catch (error) {
                     console.error('Error assigning members to sprint:', error);
                     showError('Failed to assign members to sprint');
+                }
+            }
+            
+            // Unassign confirmation modal functions
+            let memberToUnassign = null;
+            
+            function openUnassignConfirm(memberId, memberName) {
+                if (!currentSprintId) {
+                    showError('No active sprint found');
+                    return;
+                }
+                
+                memberToUnassign = { id: memberId, name: memberName };
+                document.getElementById('unassignMemberName').textContent = memberName;
+                document.getElementById('unassignConfirmModal').classList.remove('hidden');
+            }
+            
+            function closeUnassignConfirm() {
+                memberToUnassign = null;
+                document.getElementById('unassignConfirmModal').classList.add('hidden');
+            }
+            
+            async function confirmUnassign() {
+                if (!memberToUnassign) return;
+                
+                const { id, name } = memberToUnassign;
+                closeUnassignConfirm();
+                
+                try {
+                    const response = await fetch(`/api/team-members/${id}/sprint/${currentSprintId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showSuccess(`Successfully unassigned ${name} from sprint`);
+                        await loadCurrentSprintAndMembers();
+                    } else {
+                        showError(data.message || 'Failed to unassign member from sprint');
+                    }
+                } catch (error) {
+                    console.error('Error unassigning member from sprint:', error);
+                    showError('Failed to unassign member from sprint');
+                }
+            }
+            
+            // Assign confirmation modal functions
+            let memberToAssign = null;
+            
+            function openAssignConfirm(memberId, memberName) {
+                if (!currentSprintId) {
+                    showError('No active sprint found');
+                    return;
+                }
+                
+                memberToAssign = { id: memberId, name: memberName };
+                document.getElementById('assignMemberName').textContent = memberName;
+                document.getElementById('assignConfirmModal').classList.remove('hidden');
+            }
+            
+            function closeAssignConfirm() {
+                memberToAssign = null;
+                document.getElementById('assignConfirmModal').classList.add('hidden');
+            }
+            
+            async function confirmAssign() {
+                if (!memberToAssign) return;
+                
+                const { id, name } = memberToAssign;
+                closeAssignConfirm();
+                
+                try {
+                    const response = await fetch(`/api/team-members/${id}/sprint/${currentSprintId}`, {
+                        method: 'POST'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        showSuccess(`Successfully assigned ${name} to sprint`);
+                        await loadCurrentSprintAndMembers();
+                    } else {
+                        showError(data.message || 'Failed to assign member to sprint');
+                    }
+                } catch (error) {
+                    console.error('Error assigning member to sprint:', error);
+                    showError('Failed to assign member to sprint');
                 }
             }
         </script>
