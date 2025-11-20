@@ -674,22 +674,22 @@
 
 
             function initializeChartsWithMockData() {
-                // Velocity Trend Chart with mock data
+                // Velocity Trend Chart - empty state
                 const velocityCtx = document.getElementById('velocityChart');
                 new Chart(velocityCtx, {
                     type: 'line',
                     data: {
-                        labels: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4', 'Sprint 5', 'Sprint 6'],
+                        labels: [],
                         datasets: [{
-                            label: 'Completed Story Points',
-                            data: [85, 92, 88, 95, 110, 125],
+                            label: 'Completed Hours',
+                            data: [],
                             borderColor: '#4f46e5',
                             backgroundColor: 'rgba(79, 70, 229, 0.1)',
                             tension: 0.3,
                             fill: true
                         }, {
-                            label: 'Planned Story Points',
-                            data: [90, 95, 100, 105, 115, 130],
+                            label: 'Committed Hours',
+                            data: [],
                             borderColor: '#f59e0b',
                             backgroundColor: 'rgba(245, 158, 11, 0.1)',
                             tension: 0.3,
@@ -704,28 +704,33 @@
                                 beginAtZero: true,
                                 title: {
                                     display: true,
-                                    text: 'Story Points'
+                                    text: 'Hours'
                                 }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true
                             }
                         }
                     }
                 });
 
-                // Burndown Chart with mock data
+                // Burndown Chart - start at (0,0)
                 const burndownCtx = document.getElementById('burndownChart');
                 new Chart(burndownCtx, {
                     type: 'line',
                     data: {
-                        labels: ['Day 1', 'Day 3', 'Day 5', 'Day 7', 'Day 9', 'Day 11', 'Day 13', 'Day 15'],
+                        labels: ['Start'],
                         datasets: [{
                             label: 'Ideal Burndown',
-                            data: [125, 109, 94, 78, 63, 47, 31, 16, 0],
+                            data: [0],
                             borderColor: 'rgba(128, 128, 128, 0.5)',
                             borderDash: [5, 5],
                             fill: false
                         }, {
                             label: 'Actual Burndown',
-                            data: [125, 115, 98, 85, 72, 58, 45, 28, 15],
+                            data: [0],
                             borderColor: '#4f46e5',
                             backgroundColor: 'rgba(79, 70, 229, 0.1)',
                             fill: true
@@ -742,11 +747,16 @@
                                     text: 'Remaining Story Points'
                                 }
                             }
+                        },
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
                         }
                     }
                 });
 
-                // Render other charts with mock data
+                // Render other charts with empty state
                 renderWorkDistributionChart(null);
             }
 

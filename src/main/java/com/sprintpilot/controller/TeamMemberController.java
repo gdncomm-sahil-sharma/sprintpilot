@@ -2,13 +2,17 @@ package com.sprintpilot.controller;
 
 import com.sprintpilot.dto.ApiResponse;
 import com.sprintpilot.dto.SprintAssignmentRequest;
+import com.sprintpilot.dto.SprintDto;
 import com.sprintpilot.dto.TeamMemberDto;
 import com.sprintpilot.entity.TeamMember;
+import com.sprintpilot.service.SprintService;
 import com.sprintpilot.service.TeamService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,22 +28,66 @@ import java.util.List;
 @Tag(name = "Team Members", description = "APIs for managing team members, their roles, and leave days")
 public class TeamMemberController {
     
+    private static final Logger log = LoggerFactory.getLogger(TeamMemberController.class);
+    
     @Autowired
     private TeamService teamService;
+    
+    @Autowired
+    private SprintService sprintService;
     
     /**
      * Create a new team member
      * POST /api/team-members
+     * If an active sprint exists, automatically assigns the member to it
      */
     @PostMapping
     public ResponseEntity<ApiResponse<TeamMemberDto>> createTeamMember(
             @Parameter(description = "Team member details to create", required = true)
             @RequestBody TeamMemberDto memberDto) {
         try {
+            // Create the team member
             TeamMemberDto createdMember = teamService.createTeamMember(memberDto);
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("Team member created successfully", createdMember));
+            
+            // Check if there's an active sprint
+            List<SprintDto> activeSprints = sprintService.getActiveSprints();
+            
+            if (!activeSprints.isEmpty()) {
+                // Get the first active sprint (assuming there's typically only one active sprint)
+                SprintDto activeSprint = activeSprints.get(0);
+                log.info("Found active sprint '{}' (ID: {}). Auto-assigning member '{}' to sprint.",
+                        activeSprint.sprintName(), activeSprint.id(), createdMember.name());
+                
+                try {
+                    // Assign the member to the active sprint
+                    teamService.assignSingleMemberToSprint(createdMember.id(), activeSprint.id());
+                    log.info("Successfully auto-assigned member '{}' to active sprint '{}'",
+                            createdMember.name(), activeSprint.sprintName());
+                    
+                    return ResponseEntity
+                            .status(HttpStatus.CREATED)
+                            .body(ApiResponse.success(
+                                    "Team member created and assigned to active sprint '" + activeSprint.sprintName() + "'", 
+                                    createdMember));
+                } catch (Exception e) {
+                    // If auto-assignment fails, log the error but still return success for member creation
+                    log.warn("Failed to auto-assign member '{}' to active sprint '{}': {}",
+                            createdMember.name(), activeSprint.sprintName(), e.getMessage());
+                    
+                    return ResponseEntity
+                            .status(HttpStatus.CREATED)
+                            .body(ApiResponse.success(
+                                    "Team member created successfully, but auto-assignment to sprint failed: " + e.getMessage(), 
+                                    createdMember));
+                }
+            } else {
+                log.info("No active sprint found. Member '{}' created without sprint assignment.",
+                        createdMember.name());
+                
+                return ResponseEntity
+                        .status(HttpStatus.CREATED)
+                        .body(ApiResponse.success("Team member created successfully (no active sprint to assign)", createdMember));
+            }
         } catch (IllegalArgumentException e) {
             return ResponseEntity
                     .badRequest()

@@ -500,7 +500,7 @@
             // Load current sprint metrics
             async function loadCurrentSprintMetrics() {
                 if (!currentSprintId) {
-                    console.error('No sprint ID available for metrics');
+                    console.warn('No sprint ID available for metrics');
                     return;
                 }
 
@@ -572,6 +572,29 @@
                     utilizationStatus.innerHTML = `<span class="${statusClass}">${statusText}</span>`;
                 }
             }
+            
+            // Render empty state for all task sections when no sprint is found
+            function renderEmptyTasksState() {
+                console.log('Rendering empty tasks state (no sprint found)');
+                
+                // Render empty state for all three sections
+                renderTasksInSection('offtrack', []);
+                renderTasksInSection('atrisk', []);
+                renderTasksInSection('ontrack', []);
+                
+                // Set metrics to default values
+                document.getElementById('sprintProgressValue').innerHTML = '--<span class="text-sm font-normal text-gray-500">%</span>';
+                document.getElementById('sprintProgressDays').textContent = 'No active sprint';
+                
+                document.getElementById('workRemainingValue').innerHTML = '--<span class="text-sm font-normal text-gray-500">hrs</span>';
+                document.getElementById('workRemainingDays').textContent = 'No data';
+                
+                document.getElementById('tasksCompletedValue').textContent = '0/0';
+                document.getElementById('tasksCompletedPercent').textContent = '0.0% done';
+                
+                document.getElementById('teamUtilizationValue').innerHTML = '--<span class="text-sm font-normal text-gray-500">%</span>';
+                document.getElementById('teamUtilizationStatus').innerHTML = '<span class="text-gray-500">No data</span>';
+            }
 
             // Load tasks when page loads - wait for sprint ID to be set
             document.addEventListener('DOMContentLoaded', function() {
@@ -590,8 +613,9 @@
                             loadTasks();
                             loadCurrentSprintMetrics();
                         } else {
-                            console.error('Sprint ID not available after waiting. Cannot load tasks.');
-                            showToast('Error: Sprint ID not found. Please refresh the page.', 'error');
+                            console.warn('Sprint ID not available after waiting. Showing empty state.');
+                            // Show empty state for tasks
+                            renderEmptyTasksState();
                         }
                     }, 500); // Wait 500ms for the async fetch to complete
                 }
@@ -609,7 +633,8 @@
                 console.log('loadTasks() called with sprintId:', currentSprintId);
                 
                 if (!currentSprintId) {
-                    console.error('No sprint ID available');
+                    console.warn('No sprint ID available, showing empty state');
+                    renderEmptyTasksState();
                     return;
                 }
                 
@@ -998,6 +1023,8 @@
                         closeImportModal();
                         // Reload tasks to show the new ones
                         await loadTasks();
+                        // Reload metrics to reflect the newly imported tasks
+                        await loadCurrentSprintMetrics();
                     } else {
                         showToast('Failed to import from Jira: ' + (data.message || 'Unknown error'), 'error');
                     }
@@ -1039,8 +1066,7 @@
             // Load Member Utilization
             async function loadMemberUtilization() {
                 if (!currentSprintId) {
-                    console.error('No sprint ID available');
-                    showToast('No active sprint found', 'error');
+                    console.warn('No sprint ID available for utilization');
                     return;
                 }
 
