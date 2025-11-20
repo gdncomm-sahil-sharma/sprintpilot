@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -221,31 +222,13 @@ public class ConfluenceServiceImpl implements ConfluenceService {
             variables.put("freezeDateRow", "");
         }
         
-        // Team information with Confluence user mentions
+        // Team information - format as table grouped by role
         if (sprintDto.teamMembers() != null && !sprintDto.teamMembers().isEmpty()) {
             variables.put("teamSize", String.valueOf(sprintDto.teamMembers().size()));
-            // Format team members list with Confluence user mentions
-            StringBuilder teamMembersList = new StringBuilder();
-            teamMembersList.append("<ul>");
-            for (var member : sprintDto.teamMembers()) {
-                teamMembersList.append("<li>");
-                
-                // Add Confluence user mention using @username format
-                String mention = formatConfluenceUserMention(member.name());
-                teamMembersList.append(mention);
-                
-                teamMembersList.append(" - ");
-                teamMembersList.append(member.role() != null ? member.role().toString() : "");
-                if (member.dailyCapacity() != null) {
-                    teamMembersList.append(" (Daily Capacity: ").append(member.dailyCapacity()).append(" hours)");
-                }
-                teamMembersList.append("</li>");
-            }
-            teamMembersList.append("</ul>");
-            variables.put("teamMembers", teamMembersList.toString());
+            variables.put("teamMembersTable", formatTeamMembersTable(sprintDto.teamMembers()));
         } else {
             variables.put("teamSize", "0");
-            variables.put("teamMembers", "<p><em>No team members assigned.</em></p>");
+            variables.put("teamMembersTable", "<p><em>No team members assigned.</em></p>");
         }
         
         // Capacity and metrics (calculated from sprint data)
@@ -266,23 +249,9 @@ public class ConfluenceServiceImpl implements ConfluenceService {
         }
         
         if (holidays.isEmpty()) {
-            variables.put("holidaysInfo", "<p><strong>Holidays during sprint:</strong> <em>No holidays during this sprint period.</em></p>");
+            variables.put("holidaysTable", "<p><em>No holidays during this sprint period.</em></p>");
         } else {
-            // Format holidays as HTML list with names
-            StringBuilder holidaysList = new StringBuilder();
-            holidaysList.append("<p><strong>Holidays during sprint:</strong></p><ul>");
-            for (HolidayDto holiday : holidays) {
-                holidaysList.append("<li><strong>").append(escapeHtml(holiday.name())).append("</strong>");
-                if (holiday.holidayDate() != null) {
-                    holidaysList.append(" - ").append(holiday.holidayDate().toString());
-                }
-                if (holiday.location() != null && !holiday.location().isEmpty()) {
-                    holidaysList.append(" (Locations: ").append(String.join(", ", holiday.location())).append(")");
-                }
-                holidaysList.append("</li>");
-            }
-            holidaysList.append("</ul>");
-            variables.put("holidaysInfo", holidaysList.toString());
+            variables.put("holidaysTable", formatHolidaysTable(holidays));
         }
         
         // Sprint goals (if available in future)
@@ -297,12 +266,18 @@ public class ConfluenceServiceImpl implements ConfluenceService {
         Map<String, String> categoryBreakdown = calculateCategoryBreakdown(sprintDto);
         variables.putAll(categoryBreakdown);
         
-        // Events
+        // Events - format as table
         if (sprintDto.events() != null && !sprintDto.events().isEmpty()) {
-            variables.put("events", formatEventsForTemplate(new java.util.ArrayList<>(sprintDto.events())));
+            variables.put("eventsTable", formatEventsTable(new java.util.ArrayList<>(sprintDto.events())));
         } else {
-            variables.put("events", "<p><em>Sprint events to be scheduled.</em></p>");
+            variables.put("eventsTable", "<p><em>Sprint events to be scheduled.</em></p>");
         }
+        
+        // Deployment Plan - empty table
+        variables.put("deploymentPlanTable", formatDeploymentPlanTable());
+        
+        // Retro Action Items - empty table
+        variables.put("retroActionItemsTable", formatRetroActionItemsTable());
         
         // Timestamps
         variables.put("createdAt", java.time.LocalDateTime.now().toString());
@@ -552,27 +527,282 @@ public class ConfluenceServiceImpl implements ConfluenceService {
         return html.toString();
     }
     
-    private String formatEventsForTemplate(java.util.List<?> events) {
-        if (events == null || events.isEmpty()) {
-            return "";
+    /**
+     * Formats holidays as a table grouped by location
+     * Locations as top-level headers (JKT, BLR, CMBTR), with Date and Description columns
+     * Holidays with null location appear in all location columns
+     */
+    private String formatHolidaysTable(List<HolidayDto> holidays) {
+        if (holidays == null || holidays.isEmpty()) {
+            return "<p><em>No holidays during this sprint period.</em></p>";
         }
         
-        StringBuilder html = new StringBuilder();
-        html.append("<ul>");
+        // Standard locations to always show (JKT, BLR, CMBTR)
+        List<String> standardLocations = List.of("JAKARTA", "BANGALORE", "COIMBATORE");
         
-        for (Object eventObj : events) {
-            if (eventObj instanceof com.sprintpilot.dto.SprintEventDto event) {
-                html.append("<li><strong>").append(event.eventDate() != null ? event.eventDate().toString() : "").append(":</strong> ");
-                html.append(event.eventType() != null ? event.eventType().toString() : "").append(" - ");
-                html.append(escapeHtml(event.name()));
-                if (event.eventTime() != null) {
-                    html.append(" at ").append(event.eventTime().toString());
+        // Always show all three standard locations
+        List<String> locationsToDisplay = new ArrayList<>(standardLocations);
+        
+        // Group holidays by location
+        Map<String, List<HolidayDto>> holidaysByLocation = new HashMap<>();
+        List<HolidayDto> allLocationHolidays = new ArrayList<>();
+        
+        // Initialize all location columns
+        for (String location : locationsToDisplay) {
+            holidaysByLocation.put(location.toUpperCase(), new ArrayList<>());
+        }
+        
+        // First pass: collect location-specific holidays and all-location holidays
+        for (HolidayDto holiday : holidays) {
+            if (holiday.location() == null || holiday.location().isEmpty()) {
+                // Holiday applies to all locations - collect separately
+                allLocationHolidays.add(holiday);
+            } else {
+                // Holiday applies to specific locations - add to those location columns
+                for (String location : holiday.location()) {
+                    String locationUpper = location.toUpperCase();
+                    // Only add to standard locations (ignore unknown locations)
+                    if (standardLocations.contains(locationUpper)) {
+                        holidaysByLocation.get(locationUpper).add(holiday);
+                    }
                 }
-                html.append("</li>");
             }
         }
         
-        html.append("</ul>");
+        // Add all-location holidays to EVERY location column (JKT, BLR, CMBTR)
+        if (!allLocationHolidays.isEmpty()) {
+            for (String location : locationsToDisplay) {
+                holidaysByLocation.get(location.toUpperCase()).addAll(allLocationHolidays);
+            }
+        }
+        
+        // Sort locations: JKT, BLR, CMBTR, then others
+        locationsToDisplay.sort((a, b) -> {
+            int orderA = getLocationOrder(a);
+            int orderB = getLocationOrder(b);
+            if (orderA != orderB) return Integer.compare(orderA, orderB);
+            return a.compareTo(b);
+        });
+        
+        // Build table HTML
+        StringBuilder html = new StringBuilder();
+        html.append("<table>");
+        html.append("<thead><tr>");
+        
+        // Create header row with location names as top-level headers
+        for (String location : locationsToDisplay) {
+            String displayName = getLocationDisplayName(location);
+            html.append("<th colspan=\"2\"><strong>").append(escapeHtml(displayName)).append("</strong></th>");
+        }
+        html.append("</tr><tr>");
+        
+        // Add Date and Description sub-headers for each location
+        for (@SuppressWarnings("unused") String location : locationsToDisplay) {
+            html.append("<th>Date</th>");
+            html.append("<th>Description</th>");
+        }
+        html.append("</tr></thead><tbody>");
+        
+        // Find max rows needed across all locations
+        int maxRows = locationsToDisplay.stream()
+            .mapToInt(loc -> holidaysByLocation.get(loc.toUpperCase()).size())
+            .max()
+            .orElse(0);
+        
+        // Fill table rows
+        for (int i = 0; i < maxRows; i++) {
+            html.append("<tr>");
+            for (String location : locationsToDisplay) {
+                List<HolidayDto> locationHolidays = holidaysByLocation.get(location.toUpperCase());
+                if (i < locationHolidays.size()) {
+                    HolidayDto holiday = locationHolidays.get(i);
+                    html.append("<td>").append(holiday.holidayDate() != null ? holiday.holidayDate().toString() : "").append("</td>");
+                    html.append("<td>").append(escapeHtml(holiday.name())).append("</td>");
+                } else {
+                    html.append("<td></td><td></td>");
+                }
+            }
+            html.append("</tr>");
+        }
+        
+        html.append("</tbody></table>");
+        return html.toString();
+    }
+    
+    /**
+     * Gets sort order for locations (JKT=1, BLR=2, CMBTR=3, others=99)
+     */
+    private int getLocationOrder(String location) {
+        if (location == null) return 99;
+        String upper = location.toUpperCase();
+        if (upper.contains("JAKARTA") || upper.contains("JKT")) return 1;
+        if (upper.contains("BANGALORE") || upper.contains("BLR")) return 2;
+        if (upper.contains("COIMBATORE") || upper.contains("CMBTR") || upper.contains("COI")) return 3;
+        return 99;
+    }
+    
+    /**
+     * Converts full location name to display abbreviation (JAKARTA -> JKT, BANGALORE -> BLR, COIMBATORE -> CMBTR)
+     */
+    private String getLocationDisplayName(String location) {
+        if (location == null) return "All Locations";
+        String upper = location.toUpperCase();
+        if (upper.contains("JAKARTA") || upper.contains("JKT")) return "JKT";
+        if (upper.contains("BANGALORE") || upper.contains("BLR")) return "BLR";
+        if (upper.contains("COIMBATORE") || upper.contains("CMBTR") || upper.contains("COI")) return "CMBTR";
+        return location; // Return as-is if not recognized
+    }
+    
+    /**
+     * Formats sprint events as a table
+     */
+    private String formatEventsTable(java.util.List<?> events) {
+        if (events == null || events.isEmpty()) {
+            return "<p><em>Sprint events to be scheduled.</em></p>";
+        }
+        
+        StringBuilder html = new StringBuilder();
+        html.append("<table>");
+        html.append("<thead><tr>");
+        html.append("<th>Date</th>");
+        html.append("<th>Event Type</th>");
+        html.append("<th>Name</th>");
+        html.append("<th>Time</th>");
+        html.append("<th>Duration</th>");
+        html.append("<th>Description</th>");
+        html.append("</tr></thead><tbody>");
+        
+        for (Object eventObj : events) {
+            if (eventObj instanceof com.sprintpilot.dto.SprintEventDto event) {
+                html.append("<tr>");
+                html.append("<td>").append(event.eventDate() != null ? event.eventDate().toString() : "").append("</td>");
+                html.append("<td>").append(event.eventType() != null ? escapeHtml(event.eventType().toString()) : "").append("</td>");
+                html.append("<td>").append(escapeHtml(event.name())).append("</td>");
+                html.append("<td>").append(event.eventTime() != null ? event.eventTime().toString() : "").append("</td>");
+                html.append("<td>").append(event.durationMinutes() != null ? event.durationMinutes() + " min" : "").append("</td>");
+                html.append("<td>").append(event.description() != null ? escapeHtml(event.description()) : "").append("</td>");
+                html.append("</tr>");
+            }
+        }
+        
+        html.append("</tbody></table>");
+        return html.toString();
+    }
+    
+    /**
+     * Formats team members as a table grouped by role
+     */
+    private String formatTeamMembersTable(List<com.sprintpilot.dto.TeamMemberDto> teamMembers) {
+        if (teamMembers == null || teamMembers.isEmpty()) {
+            return "<p><em>No team members assigned.</em></p>";
+        }
+        
+        // Group team members by role
+        Map<String, List<com.sprintpilot.dto.TeamMemberDto>> membersByRole = new HashMap<>();
+        for (com.sprintpilot.dto.TeamMemberDto member : teamMembers) {
+            String role = member.role() != null ? member.role().toString() : "Unknown";
+            membersByRole.computeIfAbsent(role, k -> new ArrayList<>()).add(member);
+        }
+        
+        // Build table HTML
+        StringBuilder html = new StringBuilder();
+        html.append("<table>");
+        html.append("<thead><tr>");
+        html.append("<th>Role</th>");
+        html.append("<th>Name</th>");
+        html.append("</tr></thead><tbody>");
+        
+        // Sort roles in a logical order
+        List<String> roles = new ArrayList<>(membersByRole.keySet());
+        roles.sort((a, b) -> {
+            int orderA = getRoleOrder(a);
+            int orderB = getRoleOrder(b);
+            if (orderA != orderB) return Integer.compare(orderA, orderB);
+            return a.compareTo(b);
+        });
+        
+        // Add rows grouped by role
+        for (String role : roles) {
+            List<com.sprintpilot.dto.TeamMemberDto> members = membersByRole.get(role);
+            for (int i = 0; i < members.size(); i++) {
+                com.sprintpilot.dto.TeamMemberDto member = members.get(i);
+                html.append("<tr>");
+                // Only show role in first row of each role group
+                if (i == 0) {
+                    html.append("<td rowspan=\"").append(members.size()).append("\"><strong>").append(escapeHtml(role)).append("</strong></td>");
+                }
+                // Format name with Confluence mention
+                String mention = formatConfluenceUserMention(member.name());
+                html.append("<td>").append(mention).append("</td>");
+                html.append("</tr>");
+            }
+        }
+        
+        html.append("</tbody></table>");
+        return html.toString();
+    }
+    
+    /**
+     * Gets sort order for roles (BA=1, PjM=2, PM=3, UX=4, Dev Lead=5, QA Lead=6, DEV=7, QA=8, QA Automation=9, others=99)
+     */
+    private int getRoleOrder(String role) {
+        if (role == null) return 99;
+        String upper = role.toUpperCase();
+        if (upper.contains("BA")) return 1;
+        if (upper.contains("PJM")) return 2;
+        if (upper.contains("PM") && !upper.contains("PJM")) return 3;
+        if (upper.contains("UX")) return 4;
+        if (upper.contains("DEV LEAD") || upper.contains("DEVLEAD")) return 5;
+        if (upper.contains("QA LEAD") || upper.contains("QALEAD")) return 6;
+        if (upper.contains("DEV") && !upper.contains("LEAD")) return 7;
+        if (upper.contains("QA") && !upper.contains("AUTOMATION") && !upper.contains("LEAD")) return 8;
+        if (upper.contains("QA AUTOMATION") || upper.contains("QAAUTOMATION")) return 9;
+        return 99;
+    }
+    
+    /**
+     * Formats deployment plan as an empty table with empty, PREP, and CRF columns
+     */
+    private String formatDeploymentPlanTable() {
+        StringBuilder html = new StringBuilder();
+        html.append("<table>");
+        html.append("<thead><tr>");
+        html.append("<th></th>"); // Empty column
+        html.append("<th><strong>PREP</strong></th>");
+        html.append("<th><strong>CRF</strong></th>");
+        html.append("</tr></thead><tbody>");
+        // Add 4 empty rows as shown in the image
+        for (int i = 0; i < 4; i++) {
+            html.append("<tr>");
+            html.append("<td></td>");
+            html.append("<td></td>");
+            html.append("<td></td>");
+            html.append("</tr>");
+        }
+        html.append("</tbody></table>");
+        return html.toString();
+    }
+    
+    /**
+     * Formats retro action items as an empty table
+     */
+    private String formatRetroActionItemsTable() {
+        StringBuilder html = new StringBuilder();
+        html.append("<table>");
+        html.append("<thead><tr>");
+        html.append("<th>Action Item</th>");
+        html.append("<th>Owner</th>");
+        html.append("<th>Status</th>");
+        html.append("</tr></thead><tbody>");
+        // Add 3 empty rows
+        for (int i = 0; i < 3; i++) {
+            html.append("<tr>");
+            html.append("<td></td>");
+            html.append("<td></td>");
+            html.append("<td></td>");
+            html.append("</tr>");
+        }
+        html.append("</tbody></table>");
         return html.toString();
     }
     
