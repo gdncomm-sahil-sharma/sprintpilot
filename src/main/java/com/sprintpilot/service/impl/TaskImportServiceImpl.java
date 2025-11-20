@@ -11,6 +11,7 @@ import com.sprintpilot.repository.TeamMemberRepository;
 import com.sprintpilot.service.JiraClient;
 import com.sprintpilot.service.TaskImportService;
 import com.sprintpilot.service.TaskService;
+import com.sprintpilot.service.WorkLogSyncService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,9 @@ public class TaskImportServiceImpl implements TaskImportService {
     
     @Autowired
     private TaskService taskService;
+    
+    @Autowired
+    private WorkLogSyncService workLogSyncService;
     
     @Override
     public TaskImportResponse importFromCSV(TaskImportRequest request) {
@@ -190,6 +194,7 @@ public class TaskImportServiceImpl implements TaskImportService {
             List<String> errors = new ArrayList<>();
             List<String> warnings = new ArrayList<>();
             List<TaskDto> processedTasks = new ArrayList<>();
+            List<Task> savedTasks = new ArrayList<>();  // Track saved tasks for work log fetching
             int createdCount = 0;
             int updatedCount = 0;
             
@@ -272,6 +277,7 @@ public class TaskImportServiceImpl implements TaskImportService {
                     
                     // Save task
                     Task savedTask = taskRepository.save(task);
+                    savedTasks.add(savedTask);  // Track for work log fetching
                     
                     // Convert to DTO
                     TaskDto taskDto = new TaskDto(
@@ -311,6 +317,13 @@ public class TaskImportServiceImpl implements TaskImportService {
             }
             
             log.info("Jira import complete: {} created, {} updated, {} errors", createdCount, updatedCount, errors.size());
+            
+            // Trigger async work log sync (returns immediately, processes in background)
+            if (!savedTasks.isEmpty()) {
+                log.info("Triggering async work log sync for {} tasks (non-blocking)", savedTasks.size());
+                workLogSyncService.syncWorkLogsAsync(savedTasks);
+                warnings.add(0, String.format("⏳ Work logs are being synced in background for %d task(s)", savedTasks.size()));
+            }
             
             // Automatically analyze risks for all imported/updated tasks
             if (processedTasks.size() > 0) {

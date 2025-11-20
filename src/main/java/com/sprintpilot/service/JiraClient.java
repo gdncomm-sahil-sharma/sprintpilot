@@ -2,6 +2,7 @@ package com.sprintpilot.service;
 
 import com.sprintpilot.dto.SprintMetricsDto;
 import com.sprintpilot.dto.TaskImportRequest;
+import com.sprintpilot.entity.WorkLog;
 import java.util.List;
 
 public interface JiraClient {
@@ -23,5 +24,13 @@ public interface JiraClient {
      * @return sprint metrics including burndown and velocity
      */
     SprintMetricsDto fetchSprintMetrics(String projectKey, String sprintName);
+    
+    /**
+     * Fetch work logs for a specific issue from Jira
+     *
+     * @param issueKeyOrId The Jira issue key or ID
+     * @return List of work logs (without task reference - to be set by caller)
+     */
+    List<WorkLog> fetchWorkLogsForIssue(String issueKeyOrId);
 }
 

@@ -18,6 +18,7 @@ import com.sprintpilot.repository.LeaveDayRepository;
 import com.sprintpilot.repository.SprintEventRepository;
 import com.sprintpilot.repository.SprintRepository;
 import com.sprintpilot.repository.TaskRepository;
+import com.sprintpilot.repository.WorkLogRepository;
 import com.sprintpilot.service.MemberService;
 import com.sprintpilot.service.SprintMetricsService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -61,6 +61,9 @@ public class SprintMetricsServiceImpl implements SprintMetricsService {
     
     @Autowired
     private LeaveDayRepository leaveDayRepository;
+    
+    @Autowired
+    private WorkLogRepository workLogRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -88,7 +91,7 @@ public class SprintMetricsServiceImpl implements SprintMetricsService {
 
         BigDecimal idealCapacityPerDay = calculateIdealCapacityPerDay(sprint, totalDays);
 
-        Map<LocalDate, BigDecimal> burnByDate = buildTimeSpentByDate(tasks, sprint.getStartDate(), sprint.getEndDate(), totalTimeSpent);
+        Map<LocalDate, BigDecimal> burnByDate = buildTimeSpentByDate(sprintId, sprint.getStartDate(), sprint.getEndDate());
 
         List<SprintMetricsDto.BurndownPoint> burndownPoints = buildBurndownPoints(
                 sprint.getStartDate(),
@@ -129,59 +132,29 @@ public class SprintMetricsServiceImpl implements SprintMetricsService {
                 .build();
     }
 
-    private Map<LocalDate, BigDecimal> buildTimeSpentByDate(List<Task> tasks,
+    private Map<LocalDate, BigDecimal> buildTimeSpentByDate(String sprintId,
                                                             LocalDate sprintStart,
-                                                            LocalDate sprintEnd,
-                                                            BigDecimal totalTimeSpent) {
+                                                            LocalDate sprintEnd) {
         Map<LocalDate, BigDecimal> burnByDate = new TreeMap<>();
-
-        for (Task task : tasks) {
-            BigDecimal timeSpent = task.getTimeSpent() != null ? task.getTimeSpent() : BigDecimal.ZERO;
-            if (timeSpent.compareTo(BigDecimal.ZERO) <= 0) {
-                continue;
+        
+        // Use optimized database aggregation query to get time spent by date
+        // This is much faster than looping through tasks (avoids N+1 query problem)
+        List<Object[]> aggregatedData = workLogRepository.sumTimeSpentByDateForSprint(
+                sprintId, sprintStart, sprintEnd);
+        
+        for (Object[] row : aggregatedData) {
+            LocalDate loggedDate = (LocalDate) row[0];
+            BigDecimal timeSpent = (BigDecimal) row[1];
+            
+            if (timeSpent != null && timeSpent.compareTo(BigDecimal.ZERO) > 0) {
+                burnByDate.put(loggedDate, timeSpent);
             }
-            LocalDate logDate = determineLogDate(task, sprintStart, sprintEnd);
-            burnByDate.merge(logDate, timeSpent, BigDecimal::add);
-        }
-
-        // Ensure total time spent is reflected even if tasks lack timestamps
-        BigDecimal allocated = burnByDate.values().stream()
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        if (allocated.compareTo(totalTimeSpent) < 0 && totalTimeSpent.compareTo(BigDecimal.ZERO) > 0) {
-            BigDecimal remainder = totalTimeSpent.subtract(allocated);
-            LocalDate allocationDate = clampDate(LocalDate.now(), sprintStart, sprintEnd);
-            burnByDate.merge(allocationDate, remainder, BigDecimal::add);
         }
 
         return burnByDate;
     }
 
-    private LocalDate determineLogDate(Task task, LocalDate sprintStart, LocalDate sprintEnd) {
-        LocalDate candidate = null;
-        LocalDateTime updatedAt = task.getUpdatedAt();
-        if (updatedAt != null) {
-            candidate = updatedAt.toLocalDate();
-        } else if (task.getDueDate() != null) {
-            candidate = task.getDueDate();
-        } else if (task.getStartDate() != null) {
-            candidate = task.getStartDate();
-        } else {
-            candidate = sprintStart;
-        }
 
-        return clampDate(candidate, sprintStart, sprintEnd);
-    }
-
-    private LocalDate clampDate(LocalDate date, LocalDate sprintStart, LocalDate sprintEnd) {
-        if (date.isBefore(sprintStart)) {
-            return sprintStart;
-        }
-        if (date.isAfter(sprintEnd)) {
-            return sprintEnd;
-        }
-        return date;
-    }
 
     private List<SprintMetricsDto.BurndownPoint> buildBurndownPoints(LocalDate startDate,
                                                                      LocalDate endDate,
