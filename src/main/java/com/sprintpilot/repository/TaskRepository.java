@@ -54,10 +54,12 @@ public interface TaskRepository extends JpaRepository<Task, String> {
      * Find tasks by sprint ID and risk factor with pagination
      * Treats null riskFactor in DB as ON_TRACK
      * Sorts by assignee name (tasks with no assignees come last)
+     * Excludes tasks with status DONE
      */
     @EntityGraph(attributePaths = {"assignees", "sprint"})
     @Query("SELECT t FROM Task t " +
            "WHERE t.sprint.id = :sprintId " +
+           "AND t.status != 'DONE' " +
            "AND (:riskFactor IS NULL OR " +
            "     (t.riskFactor IS NULL AND :riskFactor = 'ON_TRACK') OR " +
            "     (STR(t.riskFactor) = :riskFactor)) " +
@@ -71,9 +73,11 @@ public interface TaskRepository extends JpaRepository<Task, String> {
     /**
      * Count tasks by sprint ID and risk factor
      * Treats null riskFactor in DB as ON_TRACK
+     * Excludes tasks with status DONE
      */
     @Query("SELECT COUNT(t) FROM Task t " +
            "WHERE t.sprint.id = :sprintId " +
+           "AND t.status != 'DONE' " +
            "AND (:riskFactor IS NULL OR " +
            "     (t.riskFactor IS NULL AND :riskFactor = 'ON_TRACK') OR " +
            "     (STR(t.riskFactor) = :riskFactor))")
