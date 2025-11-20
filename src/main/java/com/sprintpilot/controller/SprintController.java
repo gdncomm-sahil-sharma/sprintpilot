@@ -2,7 +2,6 @@ package com.sprintpilot.controller;
 
 import com.sprintpilot.config.AtlassianConfigProperties;
 import com.sprintpilot.dto.ApiResponse;
-import com.sprintpilot.dto.CompleteSprintResponse;
 import com.sprintpilot.dto.SprintDto;
 import com.sprintpilot.dto.SprintEventDto;
 import com.sprintpilot.dto.SprintMetricsDto;
@@ -161,12 +160,12 @@ public class SprintController {
     }
     
     @PostMapping("/{id}/complete-and-archive")
-    public ResponseEntity<ApiResponse<CompleteSprintResponse>> completeAndArchiveSprint(@PathVariable String id) {
+    public ResponseEntity<ApiResponse<SprintDto>> completeAndArchiveSprint(@PathVariable String id) {
         try {
-            CompleteSprintResponse response = sprintService.completeAndArchiveSprint(id);
+            SprintDto archivedSprint = sprintService.completeAndArchiveSprint(id);
             return ResponseEntity.ok(ApiResponse.success(
-                "Sprint archived and next sprint created successfully", 
-                response
+                "Sprint archived successfully", 
+                archivedSprint
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

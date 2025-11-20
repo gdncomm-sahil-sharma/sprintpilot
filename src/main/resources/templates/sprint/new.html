@@ -19,7 +19,7 @@
                     <h2 class="text-3xl font-bold text-gray-800">Sprint Setup & Configuration</h2>
                     <p class="text-gray-600 mt-2">Configure sprint dates, meetings, and key events for your team</p>
                 </div>
-                <button onclick="saveSprintSettings()" class="px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-green-300 flex items-center justify-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white transform hover:scale-105">
+                <button id="saveConfigBtn" onclick="saveSprintSettings()" class="px-6 py-3 rounded-xl font-bold text-sm transition-all duration-200 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-green-300 flex items-center justify-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white transform hover:scale-105">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
                     </svg>
@@ -27,6 +27,53 @@
                 </button>
             </div>
 
+            <!-- No Active Sprint - Create Sprint Landing -->
+            <div id="noSprintLanding" class="hidden">
+                <div class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-2xl shadow-xl border border-primary-200/50 p-12 text-center">
+                    <div class="mb-8">
+                        <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary-100 border-4 border-primary-200 mb-6">
+                            <svg class="w-12 h-12 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-3">No Active Sprint</h2>
+                        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                            Ready to start planning your next sprint? Create a new sprint to configure dates, meetings, and key events for your team.
+                        </p>
+                    </div>
+                    
+                    <div class="flex justify-center gap-4">
+                        <button onclick="showCreateSprintForm()" class="px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-primary-300 flex items-center justify-center space-x-3 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 text-white transform hover:scale-105">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <span>Create New Sprint</span>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-8 pt-8 border-t border-primary-200">
+                        <p class="text-sm text-gray-500 mb-4">Or continue with:</p>
+                        <div class="flex justify-center gap-4">
+                            <a href="/" class="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center gap-2 hover:underline">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                                Dashboard
+                            </a>
+                            <a href="/history" class="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center gap-2 hover:underline">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Sprint History
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sprint Configuration Form -->
+            <div id="sprintConfigForm">
+            
             <!-- Sprint Name Input (Top of Form) -->
             <div class="bg-white rounded-2xl shadow-lg border-2 border-primary-100 p-6 mb-6">
                 <label for="sprintName" class="block text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
@@ -51,23 +98,95 @@
                 </p>
             </div>
 
+            <!-- Progress Stepper -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+                <h4 class="text-sm font-semibold text-gray-700 mb-5 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Configuration Progress
+                </h4>
+                <div class="flex items-center justify-between">
+                    <!-- Step 1: Core Configuration -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="relative">
+                            <div id="step1Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
+                                <svg id="step1Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <p class="text-sm font-semibold text-gray-700">Core Configuration</p>
+                            <p id="step1Status" class="text-xs text-gray-500 mt-1">Required</p>
+                        </div>
+                    </div>
+
+                    <!-- Connector Line 1 -->
+                    <div id="connector1" class="flex-1 h-0.5 bg-gray-200 mx-4 -mt-8 transition-all duration-300"></div>
+
+                    <!-- Step 2: Sprint Meetings -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="relative">
+                            <div id="step2Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
+                                <svg id="step2Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <p class="text-sm font-semibold text-gray-700">Sprint Meetings</p>
+                            <p id="step2Status" class="text-xs text-gray-500 mt-1">Optional</p>
+                        </div>
+                    </div>
+
+                    <!-- Connector Line 2 -->
+                    <div id="connector2" class="flex-1 h-0.5 bg-gray-200 mx-4 -mt-8 transition-all duration-300"></div>
+
+                    <!-- Step 3: Sprint Events -->
+                    <div class="flex flex-col items-center flex-1">
+                        <div class="relative">
+                            <div id="step3Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
+                                <svg id="step3Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <p class="text-sm font-semibold text-gray-700">Sprint Events</p>
+                            <p id="step3Status" class="text-xs text-gray-500 mt-1">Optional</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- EXACT ORIGINAL LAYOUT -->
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 <!-- Left Column - Configuration Cards -->
                 <div class="lg:col-span-3 space-y-6">
                     
-                    <!-- Enhanced Core Configuration Card -->
+                    <!-- Enhanced Core Configuration Card - Collapsible -->
                     <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-                        <div class="bg-gradient-to-r from-primary-50 to-indigo-50 px-6 py-4 border-b border-gray-200/50">
-                            <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <div class="bg-gradient-to-r from-primary-50 to-indigo-50 px-6 py-4 border-b border-gray-200/50 cursor-pointer hover:from-primary-100 hover:to-indigo-100 transition-colors" onclick="toggleSection('coreConfigContent')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        Core Configuration
+                                        <span id="coreConfigStatus" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-red-100 text-red-600">Required</span>
+                                    </h3>
+                                    <p class="text-sm text-gray-600 mt-1">Define sprint timeline and duration</p>
+                                </div>
+                                <svg id="coreConfigContent-icon" class="w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
-                                Core Configuration
-                            </h3>
-                            <p class="text-sm text-gray-600 mt-1">Define sprint timeline and duration</p>
+                            </div>
                         </div>
+                        <div id="coreConfigContent" class="hidden transition-all duration-300">
                         <div class="p-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <!-- Sprint Start Date -->
@@ -105,24 +224,34 @@
                                 </div>
                             </div>
                         </div>
+                        </div> <!-- End coreConfigContent -->
                     </div>
 
-                    <!-- Enhanced Sprint Meetings Card -->
+                    <!-- Enhanced Sprint Meetings Card - Collapsible -->
                     <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-                        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200/50">
-                            <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200/50 cursor-pointer hover:from-indigo-100 hover:to-purple-100 transition-colors" onclick="toggleSection('sprintMeetingsContent')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        Sprint Meetings
+                                        <span id="sprintMeetingsStatus" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-gray-100 text-gray-500">Optional</span>
+                                    </h3>
+                                    <p class="text-sm text-gray-600 mt-1 flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                        </svg>
+                                        Schedule key sprint ceremonies and generate AI-powered Outlook invites
+                                    </p>
+                                </div>
+                                <svg id="sprintMeetingsContent-icon" class="w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                 </svg>
-                                Sprint Meetings
-                            </h3>
-                            <p class="text-sm text-gray-600 mt-1 flex items-center gap-1.5">
-                                <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                                </svg>
-                                Schedule key sprint ceremonies and generate AI-powered Outlook invites
-                            </p>
+                            </div>
                         </div>
+                        <div id="sprintMeetingsContent" class="hidden transition-all duration-300">
                         <div class="p-6">
                         <div class="divide-y divide-gray-100">
                             <!-- Sprint Planning -->
@@ -180,21 +309,52 @@
                             </div>
                         </div>
                         </div>
+                        </div>
                     </div>
 
-                    <!-- Enhanced Holiday & Deployment Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- HolidayManager -->
-                        <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-                            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 px-6 py-4 border-b border-gray-200/50">
-                                <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                                    </svg>
-                                    Sprint Holidays
-                                </h3>
-                                <p class="text-sm text-gray-600 mt-1">Mark non-working days</p>
+                    <!-- Sprint Events & Key Dates - Collapsible Accordion Section -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-gray-200/50 cursor-pointer hover:from-blue-100 hover:to-indigo-100 transition-colors" onclick="toggleSection('sprintEventsContent')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Sprint Events & Key Dates
+                                        <span id="sprintEventsStatus" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-gray-100 text-gray-500">Optional</span>
+                                    </h3>
+                                    <p class="text-sm text-gray-600 mt-1">Holidays, deployments, and code freeze dates</p>
+                                </div>
+                                <svg id="sprintEventsContent-icon" class="w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
                             </div>
+                        </div>
+                        <div id="sprintEventsContent" class="hidden transition-all duration-300">
+                            <div class="p-6 space-y-4">
+                                
+                    <!-- Enhanced Holiday & Deployment Grid - Accordion Style -->
+                    <div class="space-y-3">
+                        <!-- HolidayManager - Accordion Item -->
+                        <div class="border border-gray-200 rounded-xl overflow-hidden">
+                            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 px-6 py-4 cursor-pointer hover:from-yellow-100 hover:to-amber-100 transition-colors" onclick="toggleSection('holidaysAccordion')">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                                            </svg>
+                                            Sprint Holidays
+                                        </h4>
+                                        <p class="text-xs text-gray-600 mt-1">Mark non-working days</p>
+                                    </div>
+                                    <svg id="holidaysAccordion-icon" class="w-5 h-5 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div id="holidaysAccordion" class="hidden transition-all duration-300">
                             <div class="p-6">
                             <!-- Global/Pre-configured Holidays Section -->
                             <div id="globalHolidaysSection" class="mb-6 hidden">
@@ -254,19 +414,28 @@
                                 </button>
                             </div>
                             </div>
+                            </div>
                         </div>
                         
-                        <!-- DeploymentManager -->
-                        <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-gray-200/50">
-                                <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                        <!-- DeploymentManager - Accordion Item -->
+                        <div class="border border-gray-200 rounded-xl overflow-hidden">
+                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 cursor-pointer hover:from-green-100 hover:to-emerald-100 transition-colors" onclick="toggleSection('deploymentsAccordion')">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                            </svg>
+                                            Deployment Events
+                                        </h4>
+                                        <p class="text-xs text-gray-600 mt-1">Schedule production releases</p>
+                                    </div>
+                                    <svg id="deploymentsAccordion-icon" class="w-5 h-5 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
-                                    Deployment Events
-                                </h3>
-                                <p class="text-sm text-gray-600 mt-1">Schedule production releases</p>
+                                </div>
                             </div>
+                            <div id="deploymentsAccordion" class="hidden transition-all duration-300">
                             <div class="p-6">
                             <div id="deploymentsList" class="space-y-3 mb-4">
                                 <!-- Deployments will be dynamically added here -->
@@ -296,21 +465,29 @@
                                 </button>
                             </div>
                             </div>
+                            </div>
                         </div>
-                    </div>
                     
-                    <!-- Enhanced Code Freeze Dates (Optional) -->
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-                        <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 border-b border-gray-200/50">
-                            <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                </svg>
-                                Code Freeze Dates
-                                <span class="ml-2 text-xs font-normal bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Optional</span>
-                            </h3>
-                            <p class="text-sm text-gray-600 mt-1">Lock code changes before deployments</p>
-                        </div>
+                        <!-- Code Freeze Dates - Accordion Item -->
+                        <div class="border border-gray-200 rounded-xl overflow-hidden">
+                            <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 cursor-pointer hover:from-orange-100 hover:to-amber-100 transition-colors" onclick="toggleSection('codeFreezeAccordion')">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                            </svg>
+                                            Code Freeze Dates
+                                            <span class="ml-2 text-xs font-normal bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">Optional</span>
+                                        </h4>
+                                        <p class="text-xs text-gray-600 mt-1">Lock code changes before deployments</p>
+                                    </div>
+                                    <svg id="codeFreezeAccordion-icon" class="w-5 h-5 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div id="codeFreezeAccordion" class="hidden transition-all duration-300">
                         <div class="p-6">
                         <div id="codeFreezeList" class="space-y-3 mb-4">
                             <!-- Code freeze dates will be dynamically added here -->
@@ -340,8 +517,74 @@
                             </button>
                         </div>
                         </div>
+                            </div>
+                        </div>
+                    
+                    </div> <!-- End space-y-3 (accordion items container) -->
+                            </div> <!-- End p-6 space-y-4 -->
+                        </div> <!-- End sprintEventsContent (hidden) -->
+                    </div> <!-- End Sprint Events & Key Dates card -->
+                    <!-- End Sprint Events & Key Dates -->
+
+                    <!-- Sprint Actions Section - Collapsible -->
+                    <div id="sprintActionsSection" class="hidden">
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                            <div class="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b border-gray-200/50 cursor-pointer hover:from-purple-100 hover:to-pink-100 transition-colors" onclick="toggleSection('sprintActionsContent')">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path>
+                                            </svg>
+                                            Sprint Actions
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-1">Manage and complete current sprint</p>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span id="sprintStatusBadge" class="px-3 py-1.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                            🟢 ACTIVE
+                                        </span>
+                                        <svg id="sprintActionsContent-icon" class="w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="sprintActionsContent" class="hidden transition-all duration-300">
+                            <div class="p-6">
+                            
+                        <div class="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-6 mb-6 border border-gray-200/50">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div class="bg-white/60 rounded-lg p-4 border border-white/80 shadow-sm">
+                                    <p class="text-gray-600 mb-2 font-medium">📅 Sprint Period</p>
+                                    <p class="font-bold text-gray-900 text-lg" id="sprintPeriodDisplay">-</p>
+                                </div>
+                                <div class="bg-white/60 rounded-lg p-4 border border-white/80 shadow-sm">
+                                    <p class="text-gray-600 mb-2 font-medium">⏱️ Duration</p>
+                                    <p class="font-bold text-gray-900 text-lg" id="sprintDurationDisplay">-</p>
+                                </div>
+                            </div>
+                        </div>
+                            
+                            <div class="flex items-center justify-end">
+                                <button 
+                                    id="completeSprintBtn"
+                                    onclick="openCompleteSprintModal()"
+                                    class="px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale transition-all duration-200 shadow-lg hover:shadow-2xl transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300 flex items-center space-x-2">
+                                    <span>Complete Sprint</span>
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            </div>
+                            </div> <!-- End sprintActionsContent -->
+                        </div>
                     </div>
+                    <!-- End Sprint Actions -->
+                
                 </div>
+                <!-- End Left Column -->
 
                 <!-- Right Column - Enhanced Dynamic Timeline -->
                 <div class="lg:col-span-2">
@@ -365,49 +608,9 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- Sprint Actions Section -->
-            <div id="sprintActionsSection" class="hidden">
-                <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-2 border-purple-100">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-3xl">🎬</span>
-                            <h3 class="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                Sprint Actions
-                            </h3>
-                        </div>
-                        <span id="sprintStatusBadge" class="px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-800">
-                            🟢 ACTIVE
-                        </span>
-                    </div>
-                    
-                <div class="bg-gradient-to-br from-gray-50 to-blue-50/30 rounded-xl p-6 mb-6 border border-gray-200/50">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div class="bg-white/60 rounded-lg p-4 border border-white/80 shadow-sm">
-                            <p class="text-gray-600 mb-2 font-medium">📅 Sprint Period</p>
-                            <p class="font-bold text-gray-900 text-lg" id="sprintPeriodDisplay">-</p>
-                        </div>
-                        <div class="bg-white/60 rounded-lg p-4 border border-white/80 shadow-sm">
-                            <p class="text-gray-600 mb-2 font-medium">⏱️ Duration</p>
-                            <p class="font-bold text-gray-900 text-lg" id="sprintDurationDisplay">-</p>
-                        </div>
-                    </div>
-                </div>
-                    
-                    <div class="flex items-center justify-end">
-                        <button 
-                            id="completeSprintBtn"
-                            onclick="openCompleteSprintModal()"
-                            class="px-8 py-4 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale transition-all duration-200 shadow-lg hover:shadow-2xl transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300 flex items-center space-x-2">
-                            <span>Complete Sprint</span>
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
+        
+        </div> <!-- End Sprint Config Form -->
         
         <!-- Custom Scrollbar Styling -->
         <style>
@@ -703,6 +906,303 @@
             let sprintCodeFreezes = [];
             let globalHolidays = []; // Pre-configured global holidays
             let selectedGlobalHolidayIds = new Set(); // Track which global holidays are selected
+            
+            // Collapsible Section Toggle Function
+            function toggleSection(sectionId) {
+                const content = document.getElementById(sectionId);
+                const icon = document.getElementById(sectionId + '-icon');
+                
+                if (content.classList.contains('hidden')) {
+                    // Expand
+                    content.classList.remove('hidden');
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    // Collapse
+                    content.classList.add('hidden');
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            }
+            
+            // Show/hide landing page vs config form
+            function showNoSprintLanding() {
+                document.getElementById('noSprintLanding').classList.remove('hidden');
+                document.getElementById('sprintConfigForm').classList.add('hidden');
+                document.getElementById('saveConfigBtn').classList.add('hidden'); // Hide save button
+            }
+            
+            function showCreateSprintForm() {
+                document.getElementById('noSprintLanding').classList.add('hidden');
+                document.getElementById('sprintConfigForm').classList.remove('hidden');
+                document.getElementById('saveConfigBtn').classList.remove('hidden'); // Show save button
+                
+                // Auto-expand Core Configuration section for new sprint
+                const coreConfigContent = document.getElementById('coreConfigContent');
+                if (coreConfigContent && coreConfigContent.classList.contains('hidden')) {
+                    toggleSection('coreConfigContent');
+                }
+            }
+            
+            // Smart Checklist System - Track Completion Status
+            let completionState = {
+                coreConfig: false,
+                sprintMeetings: false,
+                sprintEvents: false
+            };
+            
+            let isNewSprint = true; // Will be set based on whether sprint exists
+            let autoSaveDebounceTimer = null;
+            
+            // Check if Core Configuration is complete
+            function isCoreConfigComplete() {
+                const startDate = document.getElementById('startDate').value;
+                const duration = document.getElementById('duration').value;
+                return !!(startDate && duration && parseInt(duration) > 0);
+            }
+            
+            // Check if Sprint Meetings has any configured
+            function hasSprintMeetings() {
+                const planningDate = document.getElementById('planningDate').value;
+                const groomingDate = document.getElementById('groomingDate').value;
+                const retrospectiveDate = document.getElementById('retrospectiveDate').value;
+                return !!(planningDate || groomingDate || retrospectiveDate);
+            }
+            
+            // Check if Sprint Events has any configured
+            function hasSprintEvents() {
+                return sprintHolidays.length > 0 || sprintDeployments.length > 0 || sprintCodeFreezes.length > 0;
+            }
+            
+            // Update completion status and UI
+            function updateCompletionStatus() {
+                // Update state
+                completionState.coreConfig = isCoreConfigComplete();
+                completionState.sprintMeetings = hasSprintMeetings();
+                completionState.sprintEvents = hasSprintEvents();
+                
+                // Update section badges (in collapsed headers)
+                const coreConfigStatus = document.getElementById('coreConfigStatus');
+                if (completionState.coreConfig) {
+                    coreConfigStatus.textContent = '✓ Complete';
+                    coreConfigStatus.className = 'ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-green-100 text-green-600';
+                } else {
+                    coreConfigStatus.textContent = 'Required';
+                    coreConfigStatus.className = 'ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-red-100 text-red-600';
+                }
+                
+                const sprintMeetingsStatus = document.getElementById('sprintMeetingsStatus');
+                if (completionState.sprintMeetings) {
+                    sprintMeetingsStatus.textContent = '✓ Complete';
+                    sprintMeetingsStatus.className = 'ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-green-100 text-green-600';
+                } else {
+                    sprintMeetingsStatus.textContent = 'Optional';
+                    sprintMeetingsStatus.className = 'ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-gray-100 text-gray-500';
+                }
+                
+                const sprintEventsStatus = document.getElementById('sprintEventsStatus');
+                if (completionState.sprintEvents) {
+                    sprintEventsStatus.textContent = '✓ Complete';
+                    sprintEventsStatus.className = 'ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-green-100 text-green-600';
+                } else {
+                    sprintEventsStatus.textContent = 'Optional';
+                    sprintEventsStatus.className = 'ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-gray-100 text-gray-500';
+                }
+                
+                // Update Progress Stepper
+                updateProgressStepper();
+            }
+            
+            // Update visual progress stepper
+            function updateProgressStepper() {
+                // Step 1: Core Configuration
+                const step1Circle = document.getElementById('step1Circle');
+                const step1Icon = document.getElementById('step1Icon');
+                const step1Status = document.getElementById('step1Status');
+                const connector1 = document.getElementById('connector1');
+                
+                if (completionState.coreConfig) {
+                    step1Circle.className = 'w-12 h-12 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center transition-all duration-300';
+                    step1Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 6L9 17l-5-5"></path>';
+                    step1Icon.className = 'w-7 h-7 text-white';
+                    step1Status.textContent = 'Complete';
+                    step1Status.className = 'text-xs text-green-600 font-medium mt-1';
+                    connector1.className = 'flex-1 h-0.5 bg-green-500 mx-4 -mt-8 transition-all duration-300';
+                } else {
+                    step1Circle.className = 'w-12 h-12 rounded-full border-2 border-primary-500 bg-primary-50 flex items-center justify-center transition-all duration-300';
+                    step1Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>';
+                    step1Icon.className = 'w-6 h-6 text-primary-600';
+                    step1Status.textContent = 'Required - In Progress';
+                    step1Status.className = 'text-xs text-primary-600 font-medium mt-1';
+                    connector1.className = 'flex-1 h-0.5 bg-gray-200 mx-4 -mt-8 transition-all duration-300';
+                }
+                
+                // Step 2: Sprint Meetings
+                const step2Circle = document.getElementById('step2Circle');
+                const step2Icon = document.getElementById('step2Icon');
+                const step2Status = document.getElementById('step2Status');
+                const connector2 = document.getElementById('connector2');
+                
+                if (completionState.sprintMeetings) {
+                    step2Circle.className = 'w-12 h-12 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center transition-all duration-300';
+                    step2Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 6L9 17l-5-5"></path>';
+                    step2Icon.className = 'w-7 h-7 text-white';
+                    step2Status.textContent = 'Complete';
+                    step2Status.className = 'text-xs text-green-600 font-medium mt-1';
+                    connector2.className = 'flex-1 h-0.5 bg-green-500 mx-4 -mt-8 transition-all duration-300';
+                } else if (completionState.coreConfig) {
+                    step2Circle.className = 'w-12 h-12 rounded-full border-2 border-primary-500 bg-white flex items-center justify-center transition-all duration-300';
+                    step2Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>';
+                    step2Icon.className = 'w-6 h-6 text-primary-600';
+                    step2Status.textContent = 'Optional - Ready';
+                    step2Status.className = 'text-xs text-primary-600 font-medium mt-1';
+                    connector2.className = 'flex-1 h-0.5 bg-gray-200 mx-4 -mt-8 transition-all duration-300';
+                } else {
+                    step2Circle.className = 'w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300';
+                    step2Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>';
+                    step2Icon.className = 'w-6 h-6 text-gray-400';
+                    step2Status.textContent = 'Optional - Pending';
+                    step2Status.className = 'text-xs text-gray-500 mt-1';
+                    connector2.className = 'flex-1 h-0.5 bg-gray-200 mx-4 -mt-8 transition-all duration-300';
+                }
+                
+                // Step 3: Sprint Events
+                const step3Circle = document.getElementById('step3Circle');
+                const step3Icon = document.getElementById('step3Icon');
+                const step3Status = document.getElementById('step3Status');
+                
+                if (completionState.sprintEvents) {
+                    step3Circle.className = 'w-12 h-12 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center transition-all duration-300';
+                    step3Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 6L9 17l-5-5"></path>';
+                    step3Icon.className = 'w-7 h-7 text-white';
+                    step3Status.textContent = 'Complete';
+                    step3Status.className = 'text-xs text-green-600 font-medium mt-1';
+                } else if (completionState.coreConfig) {
+                    step3Circle.className = 'w-12 h-12 rounded-full border-2 border-primary-500 bg-white flex items-center justify-center transition-all duration-300';
+                    step3Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>';
+                    step3Icon.className = 'w-6 h-6 text-primary-600';
+                    step3Status.textContent = 'Optional - Ready';
+                    step3Status.className = 'text-xs text-primary-600 font-medium mt-1';
+                } else {
+                    step3Circle.className = 'w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300';
+                    step3Icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>';
+                    step3Icon.className = 'w-6 h-6 text-gray-400';
+                    step3Status.textContent = 'Optional - Pending';
+                    step3Status.className = 'text-xs text-gray-500 mt-1';
+                }
+            }
+            
+            // Auto-expand next section when current is complete
+            function smartAutoExpand(completedSection) {
+                if (!isNewSprint) return; // Only for new sprints
+                
+                // If Core Config just completed, auto-expand Sprint Meetings
+                if (completedSection === 'coreConfig' && !completionState.sprintMeetings) {
+                    const coreConfigContent = document.getElementById('coreConfigContent');
+                    const sprintMeetingsContent = document.getElementById('sprintMeetingsContent');
+                    
+                    // Collapse core config (with delay for smooth UX)
+                    setTimeout(() => {
+                        if (!coreConfigContent.classList.contains('hidden')) {
+                            toggleSection('coreConfigContent');
+                        }
+                        // Expand Sprint Meetings
+                        if (sprintMeetingsContent.classList.contains('hidden')) {
+                            toggleSection('sprintMeetingsContent');
+                        }
+                    }, 800);
+                }
+                
+                // If Sprint Meetings completed, suggest Sprint Events
+                if (completedSection === 'sprintMeetings' && !completionState.sprintEvents) {
+                    const sprintMeetingsContent = document.getElementById('sprintMeetingsContent');
+                    const sprintEventsContent = document.getElementById('sprintEventsContent');
+                    
+                    setTimeout(() => {
+                        if (!sprintMeetingsContent.classList.contains('hidden')) {
+                            toggleSection('sprintMeetingsContent');
+                        }
+                        if (sprintEventsContent.classList.contains('hidden')) {
+                            toggleSection('sprintEventsContent');
+                        }
+                    }, 800);
+                }
+            }
+            
+            // Auto-save with debounce
+            function triggerAutoSave(completedSection, showPendingMessage = false) {
+                if (!completionState.coreConfig) {
+                    // Show helpful message for events added before Core Config is complete
+                    if (showPendingMessage) {
+                        console.log('⏳ Event added locally. Complete Core Configuration to save.');
+                        showWarning('Event added. Complete Core Configuration to save changes.');
+                    }
+                    return; // Don't auto-save until core config is complete
+                }
+                
+                clearTimeout(autoSaveDebounceTimer);
+                autoSaveDebounceTimer = setTimeout(() => {
+                    console.log('🔄 Auto-saving configuration...');
+                    
+                    // Check if this is a new sprint or existing sprint
+                    const sprintId = getCurrentSprintId();
+                    
+                    if (!sprintId && isNewSprint) {
+                        // New sprint - create it first with form values
+                        const startDate = document.getElementById('startDate').value;
+                        const duration = parseInt(document.getElementById('duration').value);
+                        
+                        if (startDate && duration && !isNaN(duration)) {
+                            console.log('📝 Creating new sprint with:', startDate, duration);
+                            createNewSprintAndSaveSettings(startDate, duration, true); // isAutoSave=true
+                        } else {
+                            console.warn('⚠️ Cannot auto-save: missing start date or duration');
+                        }
+                    } else if (sprintId) {
+                        // Existing sprint - update it
+                        console.log('💾 Updating existing sprint...');
+                        const startDate = document.getElementById('startDate').value;
+                        const duration = parseInt(document.getElementById('duration').value);
+                        updateSprintConfiguration(sprintId, startDate, duration, true); // isAutoSave=true
+                    }
+                    
+                    // Smart expand after a slight delay to allow save to complete
+                    setTimeout(() => {
+                        smartAutoExpand(completedSection);
+                    }, 500);
+                }, 1500); // Wait 1.5s after last change
+            }
+            
+            // Initialize completion tracking on page load
+            function initializeSmartChecklist() {
+                // Detect if editing existing sprint
+                const sprintId = getCurrentSprintId();
+                isNewSprint = !sprintId;
+                
+                // Set up event listeners for Core Config fields
+                document.getElementById('startDate').addEventListener('change', () => {
+                    updateCompletionStatus();
+                    if (isCoreConfigComplete()) {
+                        triggerAutoSave('coreConfig');
+                    }
+                });
+                
+                document.getElementById('duration').addEventListener('change', () => {
+                    updateCompletionStatus();
+                    if (isCoreConfigComplete()) {
+                        triggerAutoSave('coreConfig');
+                    }
+                });
+                
+                // Initial status update
+                updateCompletionStatus();
+                
+                // If new sprint, expand Core Config by default
+                if (isNewSprint) {
+                    const coreConfigContent = document.getElementById('coreConfigContent');
+                    if (coreConfigContent.classList.contains('hidden')) {
+                        toggleSection('coreConfigContent');
+                    }
+                }
+            }
             
             // REAL API Functions
             function calculateEndDate() {
@@ -1248,7 +1748,7 @@
                 }
             }
             
-            function createNewSprintAndSaveSettings(startDate, duration) {
+            function createNewSprintAndSaveSettings(startDate, duration, isAutoSave = false) {
                 // Get sprint name from input (can be null/empty for auto-generation)
                 const sprintName = document.getElementById('sprintName').value.trim() || null;
                 
@@ -1259,7 +1759,7 @@
                     body: JSON.stringify({
                         sprintName: sprintName,
                         startDate: startDate,
-                        duration: duration,
+                        duration: duration, // Already parsed as int before passing to this function
                         status: 'ACTIVE'
                     })
                 })
@@ -1273,8 +1773,16 @@
                         window.currentSprintId = newSprintId;
                         CookieUtils.setCookie('currentSprintId', newSprintId, 7);
                         
+                        // Update flag - no longer a new sprint
+                        isNewSprint = false;
+                        
+                        // Show success notification (only for manual saves)
+                        if (!isAutoSave) {
+                            showSuccess('✓ Sprint created successfully');
+                        }
+                        
                         // Now save the detailed configuration
-                        updateSprintConfiguration(newSprintId, startDate, duration);
+                        updateSprintConfiguration(newSprintId, startDate, duration, isAutoSave);
                     } else {
                         showError('Error creating new sprint: ' + data.message);
                     }
@@ -1285,7 +1793,7 @@
                 });
             }
             
-            function updateSprintConfiguration(sprintId, startDate, duration) {
+            function updateSprintConfiguration(sprintId, startDate, duration, isAutoSave = false) {
                 // Get sprint name from input (can be null/empty for keeping current or auto-generation)
                 const sprintName = document.getElementById('sprintName').value.trim() || null;
                 
@@ -1315,7 +1823,7 @@
                     body: JSON.stringify({
                         sprintName: sprintName,
                         startDate: startDate,
-                        duration: duration,
+                        duration: duration, // Already parsed as int before passing to this function
                         holidays: getCustomHolidaysForSaving(), // ✅ Save ONLY custom holidays (not global)
                         deployments: sprintDeployments,
                         codeFreezes: sprintCodeFreezes,
@@ -1325,7 +1833,12 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        showSuccess('Sprint configuration saved successfully!');
+                        // Show appropriate success message
+                        if (isAutoSave) {
+                            showSuccess('✓ Auto-saved');
+                        } else {
+                            showSuccess('Sprint configuration saved successfully!');
+                        }
                         
                         // Reload sprint data to show updated state (stay on same page)
                         setTimeout(() => {
@@ -1571,6 +2084,8 @@
                 nameInput.value = '';
                 renderHolidays();
                 updateTimeline();
+                updateCompletionStatus();
+                triggerAutoSave('sprintEvents', true); // Auto-save after adding holiday (show pending message)
                 console.log('✅ Holiday added:', holiday);
             }
             
@@ -1578,6 +2093,8 @@
                 sprintHolidays = sprintHolidays.filter(h => h.id !== holidayId);
                 renderHolidays();
                 updateTimeline();
+                updateCompletionStatus();
+                triggerAutoSave('sprintEvents', true); // Auto-save after removing holiday (show pending message)
             }
             
             function renderHolidays() {
@@ -1626,6 +2143,8 @@
                 nameInput.value = '';
                 renderDeployments();
                 updateTimeline();
+                updateCompletionStatus();
+                triggerAutoSave('sprintEvents', true); // Auto-save after adding deployment (show pending message)
                 console.log('✅ Deployment added:', deployment);
             }
             
@@ -1633,6 +2152,8 @@
                 sprintDeployments = sprintDeployments.filter(d => d.id !== deploymentId);
                 renderDeployments();
                 updateTimeline();
+                updateCompletionStatus();
+                triggerAutoSave('sprintEvents', true); // Auto-save after removing deployment (show pending message)
             }
             
             // Code Freeze Management Functions
@@ -1659,6 +2180,8 @@
                 nameInput.value = '';
                 renderCodeFreezes();
                 updateTimeline();
+                updateCompletionStatus();
+                triggerAutoSave('sprintEvents', true); // Auto-save after adding code freeze (show pending message)
                 console.log('✅ Code freeze added:', codeFreeze);
             }
             
@@ -1666,6 +2189,8 @@
                 sprintCodeFreezes = sprintCodeFreezes.filter(f => f.id !== freezeId);
                 renderCodeFreezes();
                 updateTimeline();
+                updateCompletionStatus();
+                triggerAutoSave('sprintEvents', true); // Auto-save after removing code freeze (show pending message)
             }
             
             function renderCodeFreezes() {
@@ -1963,11 +2488,21 @@
                             updateTimeline();
                             updateDateRestrictions(); // ✅ Restrict date pickers when loading existing sprint
                             updateSprintActionsSection(); // ✅ Show Sprint Actions section
-                            console.log('📋 Sprint data populated in form');
+                            
+                            // Update smart checklist for editing mode
+                            isNewSprint = false;
+                            updateCompletionStatus();
+                            console.log('📋 Sprint data populated in form (Editing mode)');
                         } else {
-                            console.log('ℹ️ No active sprint found - showing blank form');
+                            console.log('ℹ️ No active sprint found - showing create sprint landing');
                             window.currentSprintId = null;
                             CookieUtils.deleteCookie('currentSprintId');
+                            
+                            // Set as new sprint mode
+                            isNewSprint = true;
+                            
+                            // Show landing page instead of form
+                            showNoSprintLanding();
                         }
                     })
                     .catch(error => {
@@ -1993,6 +2528,11 @@
                 // Try to load existing sprint data first
                 loadSprintData();
                 
+                // Initialize smart checklist system
+                setTimeout(() => {
+                    initializeSmartChecklist();
+                }, 100);
+                
                 // Set defaults if no sprint data loaded
                 setTimeout(() => {
                     if (!document.getElementById('startDate').value) {
@@ -2002,6 +2542,7 @@
                         calculateEndDate(); // This should work even without sprint ID
                     }
                     
+                    updateCompletionStatus(); // Update completion status after defaults
                     console.log('✅ Sprint Setup initialization complete');
                 }, 500);
                 
@@ -2018,6 +2559,11 @@
                         field.addEventListener('change', function() {
                             console.log(`Meeting field ${fieldId} changed, updating timeline`);
                             updateTimeline();
+                            updateCompletionStatus();
+                            // Auto-save if a meeting date is set
+                            if (fieldId.includes('Date') && field.value) {
+                                triggerAutoSave('sprintMeetings');
+                            }
                         });
                     }
                 });
@@ -2258,14 +2804,17 @@
                         // Close modal
                         closeCompleteSprintModal();
                         
-                        // data.data contains: { archivedSprint, nextSprint }
-                        const archivedSprint = data.data.archivedSprint;
-                        const nextSprint = data.data.nextSprint;
+                        // data.data contains the archived sprint
+                        const archivedSprint = data.data;
                         
                         // Show success message
-                        showSuccess(`Sprint "${archivedSprint.sprintName}" archived successfully! New sprint "${nextSprint.sprintName}" created.`);
+                        showSuccess(`Sprint "${archivedSprint.sprintName}" archived successfully!`);
                         
-                        // Reload the page to show the new sprint
+                        // Clear current sprint ID
+                        window.currentSprintId = null;
+                        CookieUtils.deleteCookie('currentSprintId');
+                        
+                        // Reload the page to show the "Create New Sprint" landing
                         setTimeout(() => {
                             window.location.reload();
                         }, 1500);
