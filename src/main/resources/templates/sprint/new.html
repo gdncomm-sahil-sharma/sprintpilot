@@ -254,7 +254,7 @@
                                         </svg>
                                         Sprint Duration (working days)
                                     </label>
-                                    <input type="number" id="duration" name="duration" value="14" min="1" class="block w-full border-2 border-gray-200 rounded-xl shadow-sm p-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-colors" onchange="calculateEndDate()" />
+                                    <input type="number" id="duration" name="duration" value="10" min="1" class="block w-full border-2 border-gray-200 rounded-xl shadow-sm p-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 hover:border-primary-300 transition-colors" onchange="calculateEndDate()" />
                                 </div>
                                 
                                 <!-- Sprint End Date (Calculated) -->
@@ -273,90 +273,6 @@
                         </div> <!-- End coreConfigContent -->
                     </div>
 
-                    <!-- Enhanced Sprint Meetings Card - Collapsible -->
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
-                        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200/50 cursor-pointer hover:from-indigo-100 hover:to-purple-100 transition-colors" onclick="toggleSection('sprintMeetingsContent')">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                        </svg>
-                                        Sprint Meetings
-                                        <span id="sprintMeetingsStatus" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-gray-100 text-gray-500">Optional</span>
-                                    </h3>
-                                    <p class="text-sm text-gray-600 mt-1 flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                                        </svg>
-                                        Schedule key sprint ceremonies and generate AI-powered Outlook invites
-                                    </p>
-                                </div>
-                                <svg id="sprintMeetingsContent-icon" class="w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <div id="sprintMeetingsContent" class="hidden transition-all duration-300">
-                        <div class="p-6">
-                        <div class="divide-y divide-gray-100">
-                            <!-- Sprint Planning -->
-                            <div class="py-4 first:pt-0 last:pb-0">
-                                <div class="flex items-center justify-between mb-3">
-                                    <h4 class="font-semibold text-gray-800">Sprint Planning</h4>
-                                    <button onclick="generateInvite('planning')" class="px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 shadow-sm hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white focus:ring-indigo-500 transform hover:scale-105">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                                        </svg>
-                                        <span>Generate Invite</span>
-                                    </button>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <input type="date" id="planningDate" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                    <input type="time" id="planningTime" value="10:00" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                    <input type="number" id="planningDuration" value="60" min="30" placeholder="Duration (min)" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                </div>
-                            </div>
-                            
-                            <!-- Backlog Grooming -->
-                            <div class="py-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <h4 class="font-semibold text-gray-800">Backlog Grooming/Refinement</h4>
-                                    <button onclick="generateInvite('grooming')" class="px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 shadow-sm hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white focus:ring-indigo-500 transform hover:scale-105">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                                        </svg>
-                                        <span>Generate Invite</span>
-                                    </button>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <input type="date" id="groomingDate" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                    <input type="time" id="groomingTime" value="14:00" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                    <input type="number" id="groomingDuration" value="60" min="30" placeholder="Duration (min)" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                </div>
-                            </div>
-                            
-                            <!-- Sprint Retrospective -->
-                            <div class="py-4 last:pb-0">
-                                <div class="flex items-center justify-between mb-3">
-                                    <h4 class="font-semibold text-gray-800">Sprint Retrospective</h4>
-                                    <button onclick="generateInvite('retrospective')" class="px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 shadow-sm hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white focus:ring-indigo-500 transform hover:scale-105">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                                        </svg>
-                                        <span>Generate Invite</span>
-                                    </button>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <input type="date" id="retrospectiveDate" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                    <input type="time" id="retrospectiveTime" value="15:00" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                    <input type="number" id="retrospectiveDuration" value="60" min="30" placeholder="Duration (min)" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
-                                </div>
-                            </div>
-                        </div>
-                        </div>
-                        </div>
-                    </div>
 
                     <!-- Sprint Events & Key Dates - Collapsible Accordion Section -->
                     <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
@@ -571,6 +487,90 @@
                         </div> <!-- End sprintEventsContent (hidden) -->
                     </div> <!-- End Sprint Events & Key Dates card -->
                     <!-- End Sprint Events & Key Dates -->
+                    <!-- Enhanced Sprint Meetings Card - Collapsible -->
+                    <div class="bg-white rounded-2xl shadow-lg border border-gray-200/50 hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+                        <div class="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-gray-200/50 cursor-pointer hover:from-indigo-100 hover:to-purple-100 transition-colors" onclick="toggleSection('sprintMeetingsContent')">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                        <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        Sprint Meetings
+                                        <span id="sprintMeetingsStatus" class="ml-2 px-2 py-0.5 text-xs font-semibold rounded-md bg-gray-100 text-gray-500">Optional</span>
+                                    </h3>
+                                    <p class="text-sm text-gray-600 mt-1 flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                                        </svg>
+                                        Schedule key sprint ceremonies and generate AI-powered Outlook invites
+                                    </p>
+                                </div>
+                                <svg id="sprintMeetingsContent-icon" class="w-6 h-6 text-gray-500 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div id="sprintMeetingsContent" class="hidden transition-all duration-300">
+                        <div class="p-6">
+                        <div class="divide-y divide-gray-100">
+                            <!-- Sprint Planning -->
+                            <div class="py-4 first:pt-0 last:pb-0">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-semibold text-gray-800">Sprint Planning</h4>
+                                    <button onclick="generateInvite('planning')" class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 shadow-md hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span>Generate Invite</span>
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <input type="date" id="planningDate" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                    <input type="time" id="planningTime" value="10:00" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                    <input type="number" id="planningDuration" value="60" min="30" placeholder="Duration in minutes" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                </div>
+                            </div>
+                            
+                            <!-- Backlog Grooming -->
+                            <div class="py-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-semibold text-gray-800">Backlog Grooming/Refinement</h4>
+                                    <button onclick="generateInvite('grooming')" class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 shadow-md hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span>Generate Invite</span>
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <input type="date" id="groomingDate" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                    <input type="time" id="groomingTime" value="14:00" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                    <input type="number" id="groomingDuration" value="60" min="30" placeholder="Duration in minutes" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                </div>
+                            </div>
+                            
+                            <!-- Sprint Retrospective -->
+                            <div class="py-4 last:pb-0">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-semibold text-gray-800">Sprint Retrospective</h4>
+                                    <button onclick="generateInvite('retrospective')" class="px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 shadow-md hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white focus:ring-indigo-500">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span>Generate Invite</span>
+                                    </button>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <input type="date" id="retrospectiveDate" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                    <input type="time" id="retrospectiveTime" value="15:00" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                    <input type="number" id="retrospectiveDuration" value="60" min="30" placeholder="Duration in minutes" class="border-2 border-gray-200 rounded-xl text-sm p-3 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 hover:border-indigo-300 transition-colors" />
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                        </div>
+                    </div>
 
                     <!-- Sprint Actions Section - Collapsible -->
                     <div id="sprintActionsSection" class="hidden">
@@ -2014,50 +2014,149 @@
             }
             
             async function generateAIInvite(meetingType) {
-                const sprintId = getCurrentSprintId();
-                if (!sprintId) {
-                    showError('No active sprint found');
+                // Use static templates instead of AI generation
+                const date = document.getElementById(meetingType + 'Date').value;
+                const time = document.getElementById(meetingType + 'Time').value;
+                const duration = parseInt(document.getElementById(meetingType + 'Duration').value) || 60;
+                
+                // Static meeting templates
+                const templates = {
+                    planning: {
+                        subject: 'Sprint Planning Meeting',
+                        body: `Sprint Planning Meeting
+
+📋 MEETING OBJECTIVE
+Review and commit to sprint backlog items for the upcoming sprint cycle.
+
+📌 AGENDA
+1. Review Sprint Goals and Objectives
+   • Discuss overall sprint vision
+   • Align with product roadmap
+
+2. Team Capacity Review
+   • Review team availability
+   • Discuss any constraints or dependencies
+
+3. Sprint Backlog Review
+   • Review prioritized backlog items
+   • Discuss and estimate story points
+
+4. Task Assignment
+   • Identify dependencies
+   • Assign stories to team members
+
+5. Sprint Commitment
+   • Finalize sprint backlog
+   • Confirm team commitment
+
+🎯 EXPECTED OUTCOMES
+• Defined sprint goals
+• Estimated and committed backlog items
+• Clear task assignments
+• Identified dependencies and risks`
+                    },
+                    grooming: {
+                        subject: 'Backlog Grooming/Refinement Meeting',
+                        body: `Backlog Grooming/Refinement Meeting
+
+📋 MEETING OBJECTIVE
+Review, refine, and prepare backlog items for upcoming sprints.
+
+📌 AGENDA
+1. Product Backlog Review
+   • Review prioritized backlog items
+   • Discuss new requirements
+
+2. User Story Refinement
+   • Break down epics into user stories
+   • Add detailed acceptance criteria
+
+3. Technical Discussion
+   • Identify technical challenges
+   • Discuss implementation approaches
+
+4. Estimation
+   • Estimate story points
+   • Clarify effort and complexity
+
+5. Prioritization
+   • Reorder backlog based on value
+   • Identify dependencies
+
+🎯 EXPECTED OUTCOMES
+• Refined user stories with clear acceptance criteria
+• Estimated story points
+• Updated backlog priorities
+• Identified technical dependencies`
+                    },
+                    retrospective: {
+                        subject: 'Sprint Retrospective Meeting',
+                        body: `Sprint Retrospective Meeting
+
+📋 MEETING OBJECTIVE
+Reflect on the sprint and identify improvements for future sprints.
+
+📌 AGENDA
+1. Sprint Review
+   • What went well?
+   • What could be improved?
+
+2. Previous Action Items
+   • Review action items from last retrospective
+   • Discuss implementation status
+
+3. Challenges and Blockers
+   • Identify challenges faced
+   • Discuss resolution strategies
+
+4. Process Improvements
+   • Propose process changes
+   • Discuss team collaboration
+
+5. Action Items
+   • Define concrete action items
+   • Assign owners and timelines
+
+🎯 EXPECTED OUTCOMES
+• Identified successes and improvements
+• Actionable improvement plan
+• Team alignment on next steps
+• Enhanced team collaboration`
+                    }
+                };
+                
+                const template = templates[meetingType];
+                if (!template) {
+                    showError('Unknown meeting type');
                     closeInviteModal();
                     return;
                 }
                 
-                try {
-                    const response = await fetch(`/api/sprint-setup/${sprintId}/meetings/${meetingType}/generate-invite`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (data.success && data.data) {
-                        // Store invite data for Outlook
-                        currentInviteData = data.data;
-                        
-                        // Populate modal fields
-                        document.getElementById('inviteSubject').value = data.data.subject || 'Sprint Meeting';
-                        document.getElementById('inviteDate').value = formatDate(data.data.date);
-                        document.getElementById('inviteTime').value = formatTime(data.data.time);
-                        document.getElementById('inviteDuration').value = data.data.duration + ' min';
-                        
-                        // Store body in hidden textarea and display in formatted div
-                        const bodyContent = data.data.body || data.data.rawInvite;
-                        document.getElementById('inviteBody').value = bodyContent;
-                        document.getElementById('inviteBodyDisplay').textContent = bodyContent;
-                        
-                        // Show content, hide loading
-                        document.getElementById('inviteLoading').classList.add('hidden');
-                        document.getElementById('inviteContent').classList.remove('hidden');
-                        
-                        showSuccess('AI invite generated successfully!');
-                    } else {
-                        showError(data.message || 'Failed to generate AI invite');
-                        closeInviteModal();
-                    }
-                } catch (error) {
-                    console.error('Error generating AI invite:', error);
-                    showError('Error generating AI invite');
-                    closeInviteModal();
-                }
+                // Store invite data for Outlook
+                currentInviteData = {
+                    subject: template.subject,
+                    date: date,
+                    time: time,
+                    duration: duration,
+                    body: template.body,
+                    rawInvite: template.body
+                };
+                
+                // Populate modal fields
+                document.getElementById('inviteSubject').value = template.subject;
+                document.getElementById('inviteDate').value = formatDate(date);
+                document.getElementById('inviteTime').value = formatTime(time);
+                document.getElementById('inviteDuration').value = duration + ' min';
+                
+                // Store body in hidden textarea and display in formatted div
+                document.getElementById('inviteBody').value = template.body;
+                document.getElementById('inviteBodyDisplay').textContent = template.body;
+                
+                // Show content, hide loading
+                document.getElementById('inviteLoading').classList.add('hidden');
+                document.getElementById('inviteContent').classList.remove('hidden');
+                
+                showSuccess('Meeting invite generated successfully!');
             }
             
             function copyInviteToClipboard() {
