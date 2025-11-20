@@ -81,6 +81,17 @@ CREATE TABLE IF NOT EXISTS task (
     FOREIGN KEY (sprint_id) REFERENCES sprint(id) ON DELETE CASCADE
 );
 
+-- Work Logs (for accurate burndown tracking)
+CREATE TABLE IF NOT EXISTS work_logs (
+    id VARCHAR(100) PRIMARY KEY,
+    task_id VARCHAR(255) NOT NULL,
+    time_spent_hours DECIMAL(10,2),
+    logged_date DATE,
+    author VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE CASCADE
+);
+
 -- Task Assignment
 CREATE TABLE IF NOT EXISTS task_assignment (
     task_id VARCHAR(255) NOT NULL,
@@ -128,3 +139,5 @@ CREATE INDEX IF NOT EXISTS idx_task_category ON task(category);
 CREATE INDEX IF NOT EXISTS idx_leave_day_member ON leave_day(member_id);
 CREATE INDEX IF NOT EXISTS idx_holiday_date ON holiday(holiday_date);
 CREATE INDEX IF NOT EXISTS idx_holiday_location_gin ON holiday USING GIN (location);
+CREATE INDEX IF NOT EXISTS idx_work_logs_task ON work_logs(task_id);
+CREATE INDEX IF NOT EXISTS idx_work_logs_date ON work_logs(logged_date);

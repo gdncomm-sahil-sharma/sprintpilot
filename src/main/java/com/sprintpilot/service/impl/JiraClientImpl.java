@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprintpilot.config.AtlassianConfigProperties;
 import com.sprintpilot.dto.SprintMetricsDto;
 import com.sprintpilot.dto.TaskImportRequest;
+import com.sprintpilot.entity.WorkLog;
 import com.sprintpilot.service.JiraClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -532,6 +533,94 @@ public class JiraClientImpl implements JiraClient {
         } catch (Exception e) {
             log.warn("Failed to extract date from: {}", jiraDateString, e);
             return null;
+        }
+    }
+    
+    @Override
+    public List<WorkLog> fetchWorkLogsForIssue(String issueKeyOrId) {
+        List<WorkLog> workLogs = new ArrayList<>();
+        
+        try {
+            String url = jiraConfig.getBaseUrl() + "/rest/api/3/issue/" + issueKeyOrId + "/worklog";
+            
+            log.debug("Fetching work logs for issue: {}", issueKeyOrId);
+            
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .header("Authorization", getBasicAuthHeader())
+                    .header("Accept", "application/json")
+                    .timeout(jiraConfig.getReadTimeout())
+                    .GET()
+                    .build();
+            
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            if (response.statusCode() != 200) {
+                log.warn("Failed to fetch work logs for issue {}: status code {}", issueKeyOrId, response.statusCode());
+                return workLogs; // Return empty list on failure
+            }
+            
+            // Parse work logs
+            JsonNode root = objectMapper.readTree(response.body());
+            JsonNode worklogs = root.get("worklogs");
+            
+            if (worklogs == null || !worklogs.isArray()) {
+                log.debug("No work logs found for issue: {}", issueKeyOrId);
+                return workLogs;
+            }
+            
+            for (JsonNode worklogNode : worklogs) {
+                try {
+                    String id = worklogNode.get("id").asText();
+                    
+                    // Time spent in seconds
+                    long timeSpentSeconds = worklogNode.get("timeSpentSeconds").asLong(0);
+                    BigDecimal timeSpentHours = convertSecondsToHours(timeSpentSeconds);
+                    
+                    // Started date (when work was logged)
+                    String startedStr = worklogNode.get("started").asText();
+                    LocalDate loggedDate = extractDateFromTimestamp(startedStr);
+                    
+                    // Author
+                    String author = null;
+                    if (worklogNode.has("author") && !worklogNode.get("author").isNull()) {
+                        JsonNode authorNode = worklogNode.get("author");
+                        author = authorNode.has("displayName") 
+                                ? authorNode.get("displayName").asText() 
+                                : authorNode.get("emailAddress").asText();
+                    }
+                    
+                    WorkLog workLog = WorkLog.builder()
+                            .id(id)
+                            .timeSpentHours(timeSpentHours)
+                            .loggedDate(loggedDate)
+                            .author(author)
+                            .build();
+                    
+                    workLogs.add(workLog);
+                    
+                } catch (Exception e) {
+                    log.error("Error parsing work log for issue {}: {}", issueKeyOrId, e.getMessage());
+                    // Continue with next work log
+                }
+            }
+            
+            log.debug("Successfully fetched {} work logs for issue {}", workLogs.size(), issueKeyOrId);
+            return workLogs;
+            
+        } catch (Exception e) {
+            log.error("Error fetching work logs for issue {}", issueKeyOrId, e);
+            return workLogs; // Return empty list on error
+        }
+    }
+    
+    private LocalDate extractDateFromTimestamp(String timestamp) {
+        try {
+            // Jira timestamps are in format: "2024-11-20T10:30:00.000+0000"
+            return LocalDate.parse(timestamp.substring(0, 10));
+        } catch (Exception e) {
+            log.warn("Failed to extract date from timestamp: {}", timestamp, e);
+            return LocalDate.now(); // Fallback to today
         }
     }
 }
