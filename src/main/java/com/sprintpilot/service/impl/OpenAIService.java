@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Real implementation of AIService using Spring AI and Google Vertex AI Gemini
+ * OpenAI implementation of AIService using Spring AI and OpenAI GPT models
  * This service provides AI-powered features for sprint management including:
  * - Sprint summaries and insights
  * - Risk analysis
@@ -37,10 +37,10 @@ import java.util.stream.Collectors;
  * - Structured prompt engineering for consistent results
  */
 @Service
-@ConditionalOnProperty(name = "app.ai.mock-mode", havingValue = "false")
-public class GeminiAIService implements AIService {
+@ConditionalOnProperty(name = "app.ai.provider", havingValue = "openai")
+public class OpenAIService implements AIService {
     
-    private static final Logger logger = LoggerFactory.getLogger(GeminiAIService.class);
+    private static final Logger logger = LoggerFactory.getLogger(OpenAIService.class);
     
     @Autowired
     private ChatModel chatModel;
@@ -79,6 +79,7 @@ public class GeminiAIService implements AIService {
                        - **Workload Balance:** Comment on the team's capacity vs. assigned work. Mention any members who are overloaded or underutilized.
                        - **Potential Risks:** Identify any potential risks, such as a high workload on a specific team member or a large amount of unplanned work.
                        - **Overall Assessment:** Provide a brief, overall assessment of the sprint plan.
+                       - **Remember this is not a chat bot, this is a summarizer so act accordingly
                        """;
         
         return callAI(prompt, "Sprint Summary");
@@ -124,6 +125,7 @@ public class GeminiAIService implements AIService {
                - End with "Best regards," and "Sprint Team"
             5. Use simple numbered format (1., 2., 3.) for agenda items
             6. Add blank lines between sections for readability
+            
             
             Generate the invite following this exact structure.
             """,
@@ -283,7 +285,7 @@ public class GeminiAIService implements AIService {
             - **Pattern Analysis:** Identify bottlenecks or patterns in 'At Risk' items. Always mention assignee names when multiple tasks are assigned to the same person (e.g., "John Doe has 3 at-risk tasks: PROJ-110, PROJ-112, PROJ-115")
             - **Overall Health:** Brief sprint health assessment
             - **Actionable Recommendations:** Specific steps to mitigate risks, considering task assignments and mentioning specific assignees when relevant
-            
+            - **Remember this is not a chat bot, this is a summarizer so act accordingly
             Use clear, concise markdown formatting. Section headings should be plain text (no dash), and list items under headings should have ONE dash each. Make sure that each bullet point should not be more than 2 lines.
             """,
             taskDetails
@@ -428,6 +430,7 @@ public class GeminiAIService implements AIService {
                - Performance Strengths: Velocity trends, completion rates, positive patterns
                - Areas for Improvement: Overloaded/underutilized roles, bottlenecks, risks
                - Strategic Recommendations: Concrete, actionable steps to improve
+            5. - **Remember this is not a chat bot, this is a summarizer so act accordingly   
             
             Example format:
             **Performance Strengths:**
@@ -551,7 +554,7 @@ public class GeminiAIService implements AIService {
     }
     
     /**
-     * Calls the Vertex AI Gemini API with rate limiting and error handling
+     * Calls the OpenAI GPT API with rate limiting and error handling
      * 
      * @param promptText The prompt to send to the AI
      * @param operationType Description of the operation for logging
@@ -570,7 +573,7 @@ public class GeminiAIService implements AIService {
                 );
             }
             
-            logger.debug("Calling Vertex AI Gemini for {} operation", operationType);
+            logger.debug("Calling OpenAI for {} operation", operationType);
             
             // Call the AI using Spring AI ChatModel
             Prompt prompt = new Prompt(promptText);
@@ -582,7 +585,7 @@ public class GeminiAIService implements AIService {
             return result;
             
         } catch (Exception e) {
-            logger.error("Error calling Vertex AI Gemini for {} operation: {}", operationType, e.getMessage(), e);
+            logger.error("Error calling OpenAI for {} operation: {}", operationType, e.getMessage(), e);
             return String.format(
                 "**AI Service Error**\n\n" +
                 "An error occurred while generating the %s. Please try again.\n" +
