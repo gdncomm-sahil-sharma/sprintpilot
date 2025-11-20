@@ -120,17 +120,17 @@
                     <!-- Connector Line 2 -->
                     <div id="connector2" class="flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300"></div>
 
-                    <!-- Step 3: Sprint Meetings -->
+                    <!-- Step 3: Sprint Events -->
                     <div class="flex flex-col items-center flex-1">
                         <div class="relative">
                             <div id="step3Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
                                 <svg id="step3Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                             </div>
                         </div>
                         <div class="text-center mt-3">
-                            <p class="text-sm font-semibold text-gray-700">Meetings</p>
+                            <p class="text-sm font-semibold text-gray-700">Events</p>
                             <p id="step3Status" class="text-xs text-gray-500 mt-1">Optional</p>
                         </div>
                     </div>
@@ -138,17 +138,17 @@
                     <!-- Connector Line 3 -->
                     <div id="connector3" class="flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300"></div>
 
-                    <!-- Step 4: Sprint Events -->
+                    <!-- Step 4: Sprint Meetings -->
                     <div class="flex flex-col items-center flex-1">
                         <div class="relative">
                             <div id="step4Circle" class="w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300">
                                 <svg id="step4Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
                             </div>
                         </div>
                         <div class="text-center mt-3">
-                            <p class="text-sm font-semibold text-gray-700">Events</p>
+                            <p class="text-sm font-semibold text-gray-700">Meetings</p>
                             <p id="step4Status" class="text-xs text-gray-500 mt-1">Optional</p>
                         </div>
                     </div>
@@ -1124,13 +1124,13 @@
                     connector2.className = 'flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300';
                 }
                 
-                // Step 3: Sprint Meetings
+                // Step 3: Sprint Events
                 const step3Circle = document.getElementById('step3Circle');
                 const step3Icon = document.getElementById('step3Icon');
                 const step3Status = document.getElementById('step3Status');
                 const connector3 = document.getElementById('connector3');
                 
-                if (completionState.sprintMeetings) {
+                if (completionState.sprintEvents) {
                     step3Circle.className = 'w-12 h-12 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center transition-all duration-300';
                     step3Icon.outerHTML = '<div id="step3Icon" class="w-7 h-7 text-white">' + checkmarkSvg + '</div>';
                     step3Status.textContent = 'Complete';
@@ -1138,36 +1138,36 @@
                     connector3.className = 'flex-1 h-0.5 bg-green-500 mx-2 -mt-8 transition-all duration-300';
                 } else if (completionState.sprintName && completionState.coreConfig) {
                     step3Circle.className = 'w-12 h-12 rounded-full border-2 border-primary-500 bg-white flex items-center justify-center transition-all duration-300';
-                    step3Icon.outerHTML = '<svg id="step3Icon" class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>';
+                    step3Icon.outerHTML = '<svg id="step3Icon" class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
                     step3Status.textContent = 'Optional - Ready';
                     step3Status.className = 'text-xs text-primary-600 font-medium mt-1';
                     connector3.className = 'flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300';
                 } else {
                     step3Circle.className = 'w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300';
-                    step3Icon.outerHTML = '<svg id="step3Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>';
+                    step3Icon.outerHTML = '<svg id="step3Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
                     step3Status.textContent = 'Optional';
                     step3Status.className = 'text-xs text-gray-500 mt-1';
                     connector3.className = 'flex-1 h-0.5 bg-gray-200 mx-2 -mt-8 transition-all duration-300';
                 }
                 
-                // Step 4: Sprint Events
+                // Step 4: Sprint Meetings
                 const step4Circle = document.getElementById('step4Circle');
                 const step4Icon = document.getElementById('step4Icon');
                 const step4Status = document.getElementById('step4Status');
                 
-                if (completionState.sprintEvents) {
+                if (completionState.sprintMeetings) {
                     step4Circle.className = 'w-12 h-12 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center transition-all duration-300';
                     step4Icon.outerHTML = '<div id="step4Icon" class="w-7 h-7 text-white">' + checkmarkSvg + '</div>';
                     step4Status.textContent = 'Complete';
                     step4Status.className = 'text-xs text-green-600 font-medium mt-1';
                 } else if (completionState.sprintName && completionState.coreConfig) {
                     step4Circle.className = 'w-12 h-12 rounded-full border-2 border-primary-500 bg-white flex items-center justify-center transition-all duration-300';
-                    step4Icon.outerHTML = '<svg id="step4Icon" class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
+                    step4Icon.outerHTML = '<svg id="step4Icon" class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>';
                     step4Status.textContent = 'Optional - Ready';
                     step4Status.className = 'text-xs text-primary-600 font-medium mt-1';
                 } else {
                     step4Circle.className = 'w-12 h-12 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center transition-all duration-300';
-                    step4Icon.outerHTML = '<svg id="step4Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>';
+                    step4Icon.outerHTML = '<svg id="step4Icon" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>';
                     step4Status.textContent = 'Optional';
                     step4Status.className = 'text-xs text-gray-500 mt-1';
                 }
@@ -1194,34 +1194,34 @@
                     }, 800);
                 }
                 
-                // If Core Config just completed, auto-expand Sprint Meetings
-                if (completedSection === 'coreConfig' && !completionState.sprintMeetings) {
+                // If Core Config just completed, auto-expand Sprint Events
+                if (completedSection === 'coreConfig' && !completionState.sprintEvents) {
                     const coreConfigContent = document.getElementById('coreConfigContent');
-                    const sprintMeetingsContent = document.getElementById('sprintMeetingsContent');
+                    const sprintEventsContent = document.getElementById('sprintEventsContent');
                     
                     // Collapse core config (with delay for smooth UX)
                     setTimeout(() => {
                         if (!coreConfigContent.classList.contains('hidden')) {
                             toggleSection('coreConfigContent');
                         }
-                        // Expand Sprint Meetings
-                        if (sprintMeetingsContent.classList.contains('hidden')) {
-                            toggleSection('sprintMeetingsContent');
+                        // Expand Sprint Events
+                        if (sprintEventsContent.classList.contains('hidden')) {
+                            toggleSection('sprintEventsContent');
                         }
                     }, 800);
                 }
                 
-                // If Sprint Meetings completed, suggest Sprint Events
-                if (completedSection === 'sprintMeetings' && !completionState.sprintEvents) {
-                    const sprintMeetingsContent = document.getElementById('sprintMeetingsContent');
+                // If Sprint Events completed, suggest Sprint Meetings
+                if (completedSection === 'sprintEvents' && !completionState.sprintMeetings) {
                     const sprintEventsContent = document.getElementById('sprintEventsContent');
+                    const sprintMeetingsContent = document.getElementById('sprintMeetingsContent');
                     
                     setTimeout(() => {
-                        if (!sprintMeetingsContent.classList.contains('hidden')) {
-                            toggleSection('sprintMeetingsContent');
-                        }
-                        if (sprintEventsContent.classList.contains('hidden')) {
+                        if (!sprintEventsContent.classList.contains('hidden')) {
                             toggleSection('sprintEventsContent');
+                        }
+                        if (sprintMeetingsContent.classList.contains('hidden')) {
+                            toggleSection('sprintMeetingsContent');
                         }
                     }, 800);
                 }
