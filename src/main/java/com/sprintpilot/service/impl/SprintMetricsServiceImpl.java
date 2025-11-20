@@ -372,14 +372,15 @@ public class SprintMetricsServiceImpl implements SprintMetricsService {
         for (Sprint sprint : allSprints) {
             List<Task> tasks = taskRepository.findBySprintId(sprint.getId());
             
-            // Calculate committed points (original estimates)
+            // Calculate committed points (story points)
             BigDecimal committedPoints = tasks.stream()
-                    .map(this::resolveOriginalEstimate)
+                    .map(task -> task.getStoryPoints() != null ? task.getStoryPoints() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             
-            // Calculate completed points (time spent or completed work)
+            // Calculate completed points (story points of completed tasks only)
             BigDecimal completedPoints = tasks.stream()
-                    .map(task -> task.getTimeSpent() != null ? task.getTimeSpent() : BigDecimal.ZERO)
+                    .filter(task -> task.getStatus() == Task.TaskStatus.DONE)
+                    .map(task -> task.getStoryPoints() != null ? task.getStoryPoints() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             
             VelocityTrendDto.SprintVelocityData velocityData = new VelocityTrendDto.SprintVelocityData(
