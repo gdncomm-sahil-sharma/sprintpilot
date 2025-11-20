@@ -280,7 +280,7 @@ public class SprintServiceImpl implements SprintService {
 
     @Override
     @Transactional
-    public CompleteSprintResponse completeAndArchiveSprint(String id) {
+    public SprintDto completeAndArchiveSprint(String id) {
         // 1. Validate sprint exists and is ACTIVE
         Sprint sprint = sprintRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Sprint not found: " + id));
@@ -303,97 +303,16 @@ public class SprintServiceImpl implements SprintService {
         Sprint archivedSprint = sprintRepository.save(sprint);
         log.info("Sprint archived successfully: {}", id);
 
-        // 4. Auto-create next sprint
-        Sprint nextSprint = createNextSprint(archivedSprint);
-        log.info("Next sprint created automatically: {}", nextSprint.getId());
+        // ✅ Removed auto-creation of next sprint - users must manually create new sprints
 
-        return new CompleteSprintResponse(
-            convertToDto(archivedSprint),
-            convertToDto(nextSprint)
-        );
+        return convertToDto(archivedSprint);
     }
 
     /**
      * Helper method to create the next sprint automatically
      * Calculates start date as the next Monday after the previous sprint's end date
      */
-    private Sprint createNextSprint(Sprint previousSprint) {
-        // Calculate next sprint start date (next Monday after previous end date)
-        LocalDate nextStartDate = calculateNextMonday(previousSprint.getEndDate());
-
-        // Calculate end date based on same duration as previous sprint
-        LocalDate nextEndDate = DateUtils.addWorkingDays(nextStartDate, previousSprint.getDuration(), List.of());
-
-        // Auto-generate sprint name using "Sprint YYYY-MM-DD" format
-        String nextSprintName = "Sprint " + nextStartDate.toString();
-
-        // Check for uniqueness and append a counter if needed
-        String uniqueName = nextSprintName;
-        int counter = 1;
-        while (sprintRepository.existsBySprintName(uniqueName)) {
-            uniqueName = nextSprintName + "-" + counter;
-            counter++;
-        }
-
-        // Create the new sprint
-        String newSprintId = "sprint-" + System.currentTimeMillis();
-        Sprint nextSprint = Sprint.builder()
-            .id(newSprintId)
-            .sprintName(uniqueName)
-            .startDate(nextStartDate)
-            .endDate(nextEndDate)
-            .duration(previousSprint.getDuration())
-            .freezeDate(null) // Will be set when configured
-            .status(Sprint.SprintStatus.ACTIVE)
-            .build();
-
-        Sprint savedSprint = sprintRepository.save(nextSprint);
-        
-        // Auto-assign all active and non-deleted members to this sprint
-        autoAssignActiveMembers(newSprintId);
-        
-        return savedSprint;
-    }
-
-    /**
-     * Calculate the next Monday after a given date
-     * If the date is already a Monday, returns the next Monday
-     */
-    private LocalDate calculateNextMonday(LocalDate date) {
-        LocalDate nextDay = date.plusDays(1);
-
-        // Find the next Monday
-        while (nextDay.getDayOfWeek() != java.time.DayOfWeek.MONDAY) {
-            nextDay = nextDay.plusDays(1);
-        }
-
-        return nextDay;
-    }
-
-    /**
-     * Extract sprint number from sprint name and increment it
-     * Examples: "SCRUM Sprint 1" -> 2, "Sprint 5" -> 6
-     * If no number found, returns 1
-     */
-    private int extractAndIncrementSprintNumber(String sprintName) {
-        if (sprintName == null || sprintName.isEmpty()) {
-            return 1;
-        }
-
-        // Extract the last number from the sprint name
-        String[] parts = sprintName.split("\\s+");
-        for (int i = parts.length - 1; i >= 0; i--) {
-            try {
-                int number = Integer.parseInt(parts[i]);
-                return number + 1;
-            } catch (NumberFormatException e) {
-                // Continue searching
-            }
-        }
-
-        // No number found, default to 1
-        return 1;
-    }
+    // Removed auto-create next sprint functionality - users must manually create new sprints
 
     @Override
     @Transactional
