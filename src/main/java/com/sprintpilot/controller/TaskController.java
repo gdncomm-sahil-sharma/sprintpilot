@@ -62,6 +62,16 @@ public class TaskController {
             @RequestParam(defaultValue = "10") int size) {
         try {
             log.info("GET /api/tasks/sprint/{} - riskFactor: {}, page: {}, size: {}", sprintId, riskFactor, page, size);
+            
+            // Automatically analyze task risks before fetching
+            try {
+                int tasksAnalyzed = taskService.analyzeSprintRisks(sprintId);
+                log.info("Auto-analyzed {} tasks for sprint {}", tasksAnalyzed, sprintId);
+            } catch (Exception e) {
+                log.warn("Auto-analysis failed for sprint {}: {} - continuing with fetch", sprintId, e.getMessage());
+                // Continue even if analysis fails
+            }
+            
             TaskPageResponse response = taskService.getTasksBySprintIdPaginated(sprintId, riskFactor, page, size);
             log.info("Returning {} tasks (page {}/{})", response.tasks().size(), response.currentPage() + 1, response.totalPages());
             return ResponseEntity.ok(ApiResponse.success(response));
